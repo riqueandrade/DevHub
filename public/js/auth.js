@@ -3,6 +3,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('registerForm');
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+    const showPasswordBtns = document.querySelectorAll('.show-password');
+    
+    // Função para mostrar/ocultar senha
+    showPasswordBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.previousElementSibling;
+            const icon = btn.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+                btn.classList.add('active');
+                btn.title = 'Ocultar senha';
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+                btn.classList.remove('active');
+                btn.title = 'Mostrar senha';
+            }
+        });
+    });
     
     // Função para trocar as tabs
     const switchTab = (tabId) => {
@@ -130,4 +153,4 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => registerForm.classList.remove('shake'), 500);
         }
     });
-}); 
+});

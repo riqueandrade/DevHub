@@ -43,7 +43,7 @@ body {
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 76px);
-    padding: 20px;
+    padding: 1rem;
 }
 
 .auth-box {
@@ -52,14 +52,14 @@ body {
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 480px;
-    padding: 2rem;
+    max-width: 420px;
+    padding: 1.5rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .auth-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .auth-header h2 {
@@ -80,7 +80,7 @@ body {
 .auth-tabs {
     display: flex;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -118,7 +118,7 @@ body {
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .input-group {
@@ -127,6 +127,7 @@ body {
     overflow: hidden;
     transition: all 0.3s ease;
     background: rgba(255, 255, 255, 0.05);
+    margin-bottom: 0.75rem;
 }
 
 .input-group:focus-within {
@@ -149,15 +150,31 @@ body {
     color: var(--light-color);
 }
 
-.form-control::placeholder {
-    color: var(--light-color);
-    opacity: 0.5;
-}
-
 .form-control:focus {
     box-shadow: none;
     background: transparent;
     color: var(--light-color);
+}
+
+/* Mantém o texto branco quando preenchido */
+.form-control:not(:placeholder-shown) {
+    background: transparent;
+    color: var(--light-color);
+}
+
+/* Ajusta a cor do texto do autocomplete */
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--light-color) !important;
+    -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.05) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-control::placeholder {
+    color: var(--light-color);
+    opacity: 0.5;
 }
 
 .forgot-password {
@@ -188,9 +205,10 @@ body {
 
 .auth-footer {
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--light-color);
     opacity: 0.7;
+    margin-top: 1rem;
 }
 
 .auth-footer a {
@@ -243,4 +261,114 @@ body {
 
 .shake {
     animation: shake 0.5s ease-in-out;
-} 
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+    padding: 0 1rem;
+    color: var(--light-color);
+    opacity: 0.5;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+/* Google Button */
+.btn-google {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--light-color);
+    padding: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-google i {
+    font-size: 1.2rem;
+    color: #ea4335;
+}
+
+.btn-google:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--light-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+/* Ajuste no botão primário para manter consistência */
+.btn-primary {
+    margin-bottom: 0;
+}
+
+/* Ajustes responsivos */
+@media (max-height: 700px) {
+    .auth-container {
+        padding: 0.5rem;
+    }
+
+    .auth-box {
+        padding: 1rem;
+    }
+
+    .auth-header {
+        margin-bottom: 1rem;
+    }
+
+    .auth-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.75rem;
+    }
+
+    .input-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .divider {
+        margin: 0.75rem 0;
+    }
+}
+
+/* Botão mostrar senha */
+.show-password {
+    cursor: pointer;
+    padding-right: 1rem;
+    padding-left: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.show-password:hover {
+    opacity: 1;
+}
+
+.show-password.active {
+    color: var(--primary-color);
+    opacity: 1;
+}
+
+.show-password:focus {
+    outline: none;
+}

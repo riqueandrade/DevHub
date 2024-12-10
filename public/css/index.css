@@ -55,15 +55,25 @@ body {
     color: var(--primary-color) !important;
 }
 
-.register-btn {
-    background: var(--primary-color);
+.login-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
     border-radius: 20px;
     padding: 0.5rem 1.5rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white !important;
+    transition: all 0.3s ease;
 }
 
-.register-btn:hover {
-    background: var(--accent-color);
+.login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
     color: white !important;
+}
+
+.login-btn i {
+    font-size: 1.1rem;
 }
 
 /* Hero Section */
