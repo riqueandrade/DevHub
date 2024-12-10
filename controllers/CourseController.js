@@ -2,20 +2,6 @@ const { Course, Module, Lesson, Enrollment, LessonProgress, User, Activity } = r
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 
-// Função auxiliar para calcular tempo restante
-function calculateRemainingTime(enrollment) {
-    if (!enrollment || !enrollment.enrolled_at) return null;
-    
-    const startDate = new Date(enrollment.enrolled_at);
-    const now = new Date();
-    const diffTime = Math.abs(now - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    // Assumindo que cada curso tem um prazo de 90 dias
-    const remainingDays = 90 - diffDays;
-    return remainingDays > 0 ? remainingDays : 0;
-}
-
 // Função auxiliar para calcular progresso
 async function calculateProgress(enrollmentId) {
     const total = await LessonProgress.count({
@@ -44,29 +30,28 @@ exports.getInProgress = async (req, res) => {
             },
             include: [{
                 model: Course,
+                as: 'course',
                 include: [{
                     model: User,
                     as: 'instructor',
-                    attributes: ['name', 'avatar_url']
+                    attributes: ['id', 'name', 'avatar_url']
                 }]
             }]
         });
 
         const coursesInProgress = await Promise.all(enrollments.map(async (enrollment) => {
             const progress = await calculateProgress(enrollment.id);
-            const remainingDays = calculateRemainingTime(enrollment);
 
             return {
-                id: enrollment.Course.id,
-                title: enrollment.Course.title,
-                description: enrollment.Course.description,
-                thumbnail: enrollment.Course.thumbnail,
-                instructor: enrollment.Course.instructor,
+                id: enrollment.course.id,
+                title: enrollment.course.title,
+                description: enrollment.course.description,
+                thumbnail: enrollment.course.thumbnail,
+                instructor: enrollment.course.instructor,
                 progress,
-                remainingDays,
                 enrollmentId: enrollment.id,
-                level: enrollment.Course.level,
-                duration: enrollment.Course.duration
+                level: enrollment.course.level,
+                duration: enrollment.course.duration
             };
         }));
 
@@ -89,27 +74,23 @@ exports.getCompleted = async (req, res) => {
             },
             include: [{
                 model: Course,
-                as: 'course',
                 include: [{
                     model: User,
                     as: 'instructor',
-                    attributes: ['name', 'avatar_url']
+                    attributes: ['id', 'name', 'avatar_url']
                 }]
             }]
         });
 
         const coursesCompleted = enrollments.map(enrollment => ({
-            id: enrollment.course.id,
-            title: enrollment.course.title,
-            description: enrollment.course.description,
-            thumbnail: enrollment.course.thumbnail,
-            instructor: {
-                name: enrollment.course.instructor?.name || 'Instrutor não encontrado',
-                avatar_url: enrollment.course.instructor?.avatar_url || '/images/default-avatar.png'
-            },
-            level: enrollment.course.level,
-            duration: enrollment.course.duration,
-            completedAt: enrollment.completed_at
+            id: enrollment.Course.id,
+            title: enrollment.Course.title,
+            description: enrollment.Course.description,
+            thumbnail: enrollment.Course.thumbnail,
+            instructor: enrollment.Course.instructor,
+            level: enrollment.Course.level,
+            duration: enrollment.Course.duration,
+            completedAt: enrollment.updated_at
         }));
 
         res.json(coursesCompleted);
@@ -139,7 +120,7 @@ exports.getRecommended = async (req, res) => {
             include: [{
                 model: User,
                 as: 'instructor',
-                attributes: ['name', 'avatar_url']
+                attributes: ['id', 'name', 'avatar_url']
             }],
             limit: 5,
             order: sequelize.literal('RAND()')
@@ -188,7 +169,6 @@ exports.enroll = async (req, res) => {
         const lessons = await Lesson.findAll({
             include: [{
                 model: Module,
-                as: 'module',
                 where: { course_id: courseId }
             }]
         });
@@ -197,7 +177,7 @@ exports.enroll = async (req, res) => {
             LessonProgress.create({
                 enrollment_id: enrollment.id,
                 lesson_id: lesson.id,
-                status: 'pendente'
+                status: 'nao_iniciado'
             })
         ));
 

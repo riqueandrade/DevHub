@@ -7,10 +7,15 @@ const authMiddleware = require('../middlewares/auth');
 router.use(authMiddleware);
 
 // Rotas do perfil
-router.get('/profile', UserController.getProfile);
+router.get('/me', UserController.getProfile);
 router.put('/profile', UserController.updateProfile);
 router.put('/password', UserController.updatePassword);
 router.post('/avatar', UserController.uploadAvatar);
+
+// Rotas de configurações
+router.get('/settings', UserController.getSettings);
+router.put('/settings/notifications', UserController.updateNotifications);
+router.put('/settings/privacy', UserController.updatePrivacy);
 
 // Rotas de estatísticas e atividades
 router.get('/stats', UserController.getStats);

@@ -42,7 +42,7 @@ class UserController {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                type: user.type,
+                role: user.role,
                 avatar_url: user.avatar_url
             };
 
@@ -95,7 +95,7 @@ class UserController {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                type: user.type,
+                role: user.role,
                 avatar_url: user.avatar_url
             };
 
@@ -142,7 +142,7 @@ class UserController {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                type: user.type,
+                role: user.role,
                 avatar_url: user.avatar_url
             };
 
@@ -200,7 +200,7 @@ class UserController {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                type: user.type,
+                role: user.role,
                 avatar_url: user.avatar_url
             };
 
@@ -404,7 +404,7 @@ class UserController {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                type: user.type,
+                role: user.role,
                 avatar_url: avatarUrl
             };
 
@@ -637,10 +637,45 @@ class UserController {
             doc.rect(0, 0, doc.page.width, doc.page.height)
                .fill('#FFFFFF');
 
-            // Adicionar borda dourada
+            // Adicionar borda dourada dupla
             const borderWidth = 15;
+            const innerBorderWidth = 10;
+            
             doc.rect(borderWidth, borderWidth, doc.page.width - (2 * borderWidth), doc.page.height - (2 * borderWidth))
-               .lineWidth(2)
+               .lineWidth(3)
+               .stroke(goldColor);
+
+            doc.rect(borderWidth + innerBorderWidth, borderWidth + innerBorderWidth, 
+                    doc.page.width - (2 * (borderWidth + innerBorderWidth)), 
+                    doc.page.height - (2 * (borderWidth + innerBorderWidth)))
+               .lineWidth(1)
+               .stroke(goldColor);
+
+            // Adicionar elementos decorativos nos cantos
+            const cornerSize = 30;
+            // Superior esquerdo
+            doc.moveTo(borderWidth, borderWidth + cornerSize)
+               .lineTo(borderWidth, borderWidth)
+               .lineTo(borderWidth + cornerSize, borderWidth)
+               .lineWidth(3)
+               .stroke(goldColor);
+
+            // Superior direito
+            doc.moveTo(doc.page.width - borderWidth - cornerSize, borderWidth)
+               .lineTo(doc.page.width - borderWidth, borderWidth)
+               .lineTo(doc.page.width - borderWidth, borderWidth + cornerSize)
+               .stroke(goldColor);
+
+            // Inferior esquerdo
+            doc.moveTo(borderWidth, doc.page.height - borderWidth - cornerSize)
+               .lineTo(borderWidth, doc.page.height - borderWidth)
+               .lineTo(borderWidth + cornerSize, doc.page.height - borderWidth)
+               .stroke(goldColor);
+
+            // Inferior direito
+            doc.moveTo(doc.page.width - borderWidth - cornerSize, doc.page.height - borderWidth)
+               .lineTo(doc.page.width - borderWidth, doc.page.height - borderWidth)
+               .lineTo(doc.page.width - borderWidth, doc.page.height - borderWidth - cornerSize)
                .stroke(goldColor);
 
             // Adicionar logo DevHub
@@ -651,10 +686,12 @@ class UserController {
                 doc.font('Helvetica-Bold')
                    .fontSize(30)
                    .fillColor(primaryColor)
-                   .text('DevHub', doc.page.width / 2 - 45, 40, { 
-                       width: 90, 
+                   .text('DevHub', 0, 40, {
+                       width: doc.page.width,
                        align: 'center',
-                       lineBreak: false
+                       paragraphGap: 0,
+                       indent: 0,
+                       lineGap: 0
                    });
             }
 
@@ -688,9 +725,9 @@ class UserController {
             doc.font('Helvetica-Bold')
                .fontSize(30)
                .fillColor(accentColor)
-               .text(certificate.course.title, 0, centerY + 130, { align: 'center' });
+               .text(certificate.course.title.toUpperCase(), 0, centerY + 130, { align: 'center' });
 
-            // Informações adicionais
+            // Informações adicionais em uma tabela centralizada
             const infoY = centerY + 190;
             const infoStyle = {
                 font: 'Helvetica',
@@ -698,38 +735,55 @@ class UserController {
                 color: textColor
             };
 
-            // Coluna 1
-            doc.font(infoStyle.font)
-               .fontSize(infoStyle.fontSize)
-               .fillColor(infoStyle.color)
-               .text('Carga Horária:', 150, infoY)
-               .font('Helvetica-Bold')
-               .text(`${Math.ceil(certificate.course.duration / 60)} horas`, 270, infoY);
+            // Formatar datas
+            const dataInicio = enrollment.enrolled_at ? new Date(enrollment.enrolled_at) : new Date();
+            const dataFim = enrollment.completed_at ? new Date(enrollment.completed_at) : new Date();
 
-            // Coluna 2
-            doc.font(infoStyle.font)
-               .text('Nível:', 400, infoY)
-               .font('Helvetica-Bold')
-               .text(certificate.course.level.charAt(0).toUpperCase() + certificate.course.level.slice(1), 460, infoY);
+            // Criar uma tabela centralizada com as informações
+            const tableWidth = 800;
+            const tableX = (doc.page.width - tableWidth) / 2;
+            const columnWidth = tableWidth / 3;
 
-            // Coluna 3
-            doc.font(infoStyle.font)
-               .text('Período:', 600, infoY)
-               .font('Helvetica-Bold')
-               .text(`${new Date(enrollment.enrolled_at).toLocaleDateString('pt-BR')} a ${new Date(enrollment.completed_at).toLocaleDateString('pt-BR')}`, 670, infoY);
+            // Função auxiliar para adicionar célula da tabela
+            function addTableCell(label, value, x, y) {
+                doc.font(infoStyle.font)
+                   .fontSize(infoStyle.fontSize)
+                   .fillColor(infoStyle.color)
+                   .text(label, x, y, { width: columnWidth, align: 'center' });
 
-            // Linha decorativa
-            const lineY = doc.page.height - 150;
-            doc.moveTo(doc.page.width / 2 - 150, lineY)
-               .lineTo(doc.page.width / 2 + 150, lineY)
-               .lineWidth(1)
-               .stroke(goldColor);
+                doc.font('Helvetica-Bold')
+                   .text(value, x, y + 20, { width: columnWidth, align: 'center' });
+            }
+
+            // Adicionar células da tabela
+            addTableCell(
+                'Carga Horária',
+                `${Math.ceil(certificate.course.duration / 60)} horas`,
+                tableX,
+                infoY
+            );
+
+            addTableCell(
+                'Nível',
+                certificate.course.level.charAt(0).toUpperCase() + certificate.course.level.slice(1),
+                tableX + columnWidth,
+                infoY
+            );
+
+            addTableCell(
+                'Período',
+                `${dataInicio.toLocaleDateString('pt-BR')} a ${dataFim.toLocaleDateString('pt-BR')}`,
+                tableX + (2 * columnWidth),
+                infoY
+            );
 
             // Assinatura
+            const lineY = doc.page.height - 100;
+            
             doc.font('Helvetica-Bold')
                .fontSize(14)
                .fillColor(primaryColor)
-               .text('Maria Santos', doc.page.width / 2 - 150, lineY + 10, { 
+               .text('Henrique de Andrade Reynaud', doc.page.width / 2 - 150, lineY, { 
                    width: 300,
                    align: 'center'
                });
@@ -737,28 +791,31 @@ class UserController {
             doc.font('Helvetica')
                .fontSize(12)
                .fillColor(textColor)
-               .text('Diretora de Ensino', doc.page.width / 2 - 150, lineY + 30, { 
+               .text('Diretor de Ensino', doc.page.width / 2 - 150, lineY + 20, { 
                    width: 300,
                    align: 'center'
                });
 
-            // Data de emissão
-            doc.font('Helvetica')
-               .fontSize(12)
-               .fillColor(textColor)
-               .text(`Emitido em ${new Date(certificate.issued_at).toLocaleDateString('pt-BR')}`, 
-                     doc.page.width / 2 - 150, 
-                     lineY + 60, {
-                         width: 300,
-                         align: 'center'
-                     });
+            // Linha decorativa para assinatura
+            doc.moveTo(doc.page.width / 2 - 150, lineY + 50)
+               .lineTo(doc.page.width / 2 + 150, lineY + 50)
+               .lineWidth(1)
+               .stroke(goldColor);
 
-            // ID do certificado
+            // Data de emissão (à esquerda)
             doc.font('Helvetica')
-               .fontSize(8)
+               .fontSize(10)
                .fillColor(textColor)
-               .text(`ID do Certificado: ${certificate.id}`, 
-                     doc.page.width - 150, 
+               .text(`Emitido em ${new Date().toLocaleDateString('pt-BR')}`, 
+                     50, 
+                     doc.page.height - 30);
+
+            // ID do certificado (à direita)
+            doc.font('Helvetica')
+               .fontSize(10)
+               .fillColor(textColor)
+               .text(`Certificado Nº ${certificate.id.toString().padStart(6, '0')}`, 
+                     doc.page.width - 200, 
                      doc.page.height - 30);
 
             // Finalizar o PDF
@@ -772,6 +829,108 @@ class UserController {
         } catch (error) {
             console.error('Erro ao baixar certificado:', error);
             res.status(500).json({ error: 'Erro ao baixar certificado' });
+        }
+    }
+
+    // Obter configurações do usuário
+    async getSettings(req, res) {
+        try {
+            const userId = req.user.id;
+            const user = await User.findByPk(userId);
+
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
+
+            // Retornar configurações do usuário
+            const settings = {
+                profile: {
+                    name: user.name,
+                    email: user.email,
+                    avatar_url: user.avatar_url
+                },
+                notifications: {
+                    email_notifications: user.email_notifications || false,
+                    course_updates: user.course_updates || false,
+                    promotional_emails: user.promotional_emails || false
+                },
+                privacy: {
+                    profile_visibility: user.profile_visibility || false,
+                    show_progress: user.show_progress || false,
+                    show_certificates: user.show_certificates || false
+                }
+            };
+
+            res.json(settings);
+        } catch (error) {
+            console.error('Erro ao obter configurações:', error);
+            res.status(500).json({ error: 'Erro ao obter configurações do usuário' });
+        }
+    }
+
+    // Atualizar configurações de notificações
+    async updateNotifications(req, res) {
+        try {
+            const userId = req.user.id;
+            const { email_notifications, course_updates, promotional_emails } = req.body;
+
+            const [updated] = await User.update(
+                {
+                    email_notifications,
+                    course_updates,
+                    promotional_emails
+                },
+                { where: { id: userId } }
+            );
+
+            if (!updated) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
+
+            // Registrar atividade
+            await Activity.createActivity({
+                user_id: userId,
+                type: 'settings_update',
+                description: 'Configurações de notificação atualizadas'
+            });
+
+            res.json({ message: 'Configurações de notificação atualizadas com sucesso' });
+        } catch (error) {
+            console.error('Erro ao atualizar notificações:', error);
+            res.status(500).json({ error: 'Erro ao atualizar configurações de notificação' });
+        }
+    }
+
+    // Atualizar configurações de privacidade
+    async updatePrivacy(req, res) {
+        try {
+            const userId = req.user.id;
+            const { profile_visibility, show_progress, show_certificates } = req.body;
+
+            const [updated] = await User.update(
+                {
+                    profile_visibility,
+                    show_progress,
+                    show_certificates
+                },
+                { where: { id: userId } }
+            );
+
+            if (!updated) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
+
+            // Registrar atividade
+            await Activity.createActivity({
+                user_id: userId,
+                type: 'settings_update',
+                description: 'Configurações de privacidade atualizadas'
+            });
+
+            res.json({ message: 'Configurações de privacidade atualizadas com sucesso' });
+        } catch (error) {
+            console.error('Erro ao atualizar privacidade:', error);
+            res.status(500).json({ error: 'Erro ao atualizar configurações de privacidade' });
         }
     }
 }

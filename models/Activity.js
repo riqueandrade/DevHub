@@ -25,7 +25,7 @@ const Activity = sequelize.define('Activity', {
     }
 }, {
     createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    updatedAt: false,
     tableName: 'activities'
 });
 

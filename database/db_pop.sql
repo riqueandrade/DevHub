@@ -1,10 +1,10 @@
 USE devhub;
 
 -- Inserir usuários
-INSERT INTO users (name, email, password, role, avatar_url, bio, status) VALUES
-('Admin', 'admin@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'admin', '/images/admin-avatar.png', 'Administrador do sistema', 'ativo'),
-('João Silva', 'joao@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'aluno', '/images/default-avatar.png', 'Estudante de programação', 'ativo'),
-('Maria Santos', 'maria@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'instrutor', '/images/maria-avatar.png', 'Instrutora de desenvolvimento web', 'ativo');
+INSERT INTO users (name, email, password, role, avatar_url, bio, status, email_notifications, course_updates, promotional_emails, profile_visibility, show_progress, show_certificates) VALUES
+('Admin', 'admin@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'admin', '/images/admin-avatar.png', 'Administrador do sistema', 'ativo', true, true, false, true, true, true),
+('João Silva', 'joao@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'aluno', '/images/default-avatar.png', 'Estudante de programação', 'ativo', true, true, false, true, true, true),
+('Maria Santos', 'maria@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'instrutor', '/images/maria-avatar.png', 'Instrutora de desenvolvimento web', 'ativo', true, true, false, true, true, true);
 
 -- Inserir categorias
 INSERT INTO categories (name, description, icon) VALUES

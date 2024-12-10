@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
-const Course = require('./Course');
 
 const Enrollment = sequelize.define('Enrollment', {
     id: {
@@ -26,35 +24,18 @@ const Enrollment = sequelize.define('Enrollment', {
         }
     },
     status: {
-        type: DataTypes.ENUM('ativo', 'concluido', 'cancelado'),
-        defaultValue: 'ativo'
+        type: DataTypes.ENUM('pendente', 'em_andamento', 'concluido', 'cancelado'),
+        defaultValue: 'pendente'
     },
     progress: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0,
-        comment: 'Porcentagem de conclusão'
-    },
-    enrolled_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
-    },
-    completed_at: {
-        type: DataTypes.DATE,
-        allowNull: true
+        type: DataTypes.INTEGER,
+        defaultValue: 0
     }
 }, {
-    timestamps: false,
-    tableName: 'enrollments',
-    indexes: [
-        {
-            unique: true,
-            fields: ['user_id', 'course_id']
-        }
-    ]
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    tableName: 'enrollments'
 });
-
-// Associações
-Enrollment.belongsTo(User, { foreignKey: 'user_id' });
-Enrollment.belongsTo(Course, { foreignKey: 'course_id' });
 
 module.exports = Enrollment; 

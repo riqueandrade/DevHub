@@ -1,18 +1,17 @@
 const { Model, DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
+const sequelize = require('../config/database');
 
 class User extends Model {
-    async validatePassword(password) {
+    async checkPassword(password) {
         return bcrypt.compare(password, this.password);
     }
 
     async getStudyHours() {
-        const { LessonProgress, Lesson, Enrollment } = require('./index');
-        
+        const { Enrollment, Lesson, LessonProgress } = require('./index');
         const result = await LessonProgress.findOne({
             attributes: [
-                [sequelize.fn('SUM', sequelize.col('lesson.duration')), 'total_minutes']
+                [sequelize.fn('SUM', sequelize.col('lesson.duration')), 'total_hours']
             ],
             include: [{
                 model: Lesson,
@@ -24,14 +23,11 @@ class User extends Model {
                 attributes: [],
                 where: { user_id: this.id }
             }],
-            where: {
-                status: 'concluido'
-            },
+            where: { status: 'concluido' },
             raw: true
         });
 
-        const totalMinutes = result?.total_minutes || 0;
-        return Math.ceil(totalMinutes / 60);
+        return result?.total_hours || 0;
     }
 }
 
@@ -55,11 +51,16 @@ User.init({
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     role: {
         type: DataTypes.ENUM('aluno', 'instrutor', 'admin'),
         defaultValue: 'aluno'
+    },
+    google_id: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true
     },
     avatar_url: {
         type: DataTypes.STRING,
@@ -73,6 +74,32 @@ User.init({
     status: {
         type: DataTypes.ENUM('ativo', 'inativo'),
         defaultValue: 'ativo'
+    },
+    // Configurações de notificações
+    email_notifications: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    course_updates: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    promotional_emails: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    // Configurações de privacidade
+    profile_visibility: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    show_progress: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    show_certificates: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
 }, {
     sequelize,
@@ -82,16 +109,9 @@ User.init({
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     hooks: {
-        beforeCreate: async (user) => {
-            if (user.password) {
-                const salt = await bcrypt.genSalt(8);
-                user.password = await bcrypt.hash(user.password, salt);
-            }
-        },
-        beforeUpdate: async (user) => {
+        beforeSave: async (user) => {
             if (user.changed('password')) {
-                const salt = await bcrypt.genSalt(8);
-                user.password = await bcrypt.hash(user.password, salt);
+                user.password = await bcrypt.hash(user.password, 8);
             }
         }
     }

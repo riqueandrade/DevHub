@@ -12,8 +12,6 @@ const levelProgress = document.getElementById('levelProgress');
 const pointsToNextLevel = document.getElementById('pointsToNextLevel');
 const achievementsList = document.getElementById('achievementsList');
 const activitiesList = document.getElementById('activitiesList');
-const coursesList = document.getElementById('coursesList');
-const certificatesList = document.getElementById('certificatesList');
 
 // Configuração inicial
 document.addEventListener('DOMContentLoaded', async () => {
@@ -29,8 +27,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadUserStats();
         await loadAchievements();
         await loadActivities();
-        await loadCourses();
-        await loadCertificates();
         setupEventListeners();
     } catch (error) {
         console.error('Erro ao carregar perfil:', error);
@@ -42,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadUserProfile() {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('/api/user/profile', {
+        const response = await fetch('/api/user/me', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -118,46 +114,6 @@ async function loadActivities() {
     }
 }
 
-// Carregar cursos
-async function loadCourses() {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/courses/in-progress', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) throw new Error('Erro ao carregar cursos');
-
-        const courses = await response.json();
-        updateCoursesUI(courses);
-    } catch (error) {
-        console.error('Erro ao carregar cursos:', error);
-        // Não lançar erro para não interromper o carregamento
-    }
-}
-
-// Carregar certificados
-async function loadCertificates() {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('/api/user/certificates', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) throw new Error('Erro ao carregar certificados');
-
-        const certificates = await response.json();
-        updateCertificatesUI(certificates);
-    } catch (error) {
-        console.error('Erro ao carregar certificados:', error);
-        // Não lançar erro para não interromper o carregamento
-    }
-}
-
 // Atualizar UI do perfil
 function updateProfileUI(user) {
     // Atualizar avatar principal
@@ -216,36 +172,6 @@ function updateActivitiesUI(activities) {
                 <p class="timeline-date">${formatDate(activity.created_at)}</p>
                 <p>${activity.description}</p>
             </div>
-        </div>
-    `).join('');
-}
-
-// Atualizar UI dos cursos
-function updateCoursesUI(courses) {
-    coursesList.innerHTML = courses.map(course => `
-        <div class="course-card">
-            <img src="${course.thumbnail}" alt="${course.title}" class="course-image">
-            <div class="course-info">
-                <h4>${course.title}</h4>
-                <div class="course-progress">
-                    <div class="progress-bar" style="width: ${course.progress}%"></div>
-                </div>
-                <small>${course.progress}% concluído</small>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Atualizar UI dos certificados
-function updateCertificatesUI(certificates) {
-    certificatesList.innerHTML = certificates.map(certificate => `
-        <div class="certificate-card">
-            <i class="bi bi-award certificate-icon"></i>
-            <h4>${certificate.course_title}</h4>
-            <p>Emitido em ${formatDate(certificate.issued_at)}</p>
-            <button onclick="downloadCertificate('${certificate.certificate_url}', '${certificate.course_title}')" class="btn btn-primary btn-sm">
-                <i class="bi bi-download"></i> Download
-            </button>
         </div>
     `).join('');
 }
@@ -377,31 +303,4 @@ function handleLogout() {
     
     // Redirecionar para a página de login
     window.location.href = '/auth.html';
-}
-
-// Função para download do certificado
-async function downloadCertificate(url, courseTitle) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        if (!response.ok) throw new Error('Erro ao baixar certificado');
-
-        const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `Certificado - ${courseTitle}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(downloadUrl);
-        document.body.removeChild(a);
-    } catch (error) {
-        console.error('Erro ao baixar certificado:', error);
-        showError('Erro ao baixar certificado');
-    }
 } 
