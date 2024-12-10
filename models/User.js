@@ -22,11 +22,24 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
-    role: {
+    google_id: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: true
+    },
+    avatar_url: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    type: {
         type: DataTypes.ENUM('user', 'admin'),
         defaultValue: 'user'
+    },
+    active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
 }, {
     hooks: {
@@ -35,7 +48,10 @@ const User = sequelize.define('User', {
                 user.password = await bcrypt.hash(user.password, 8);
             }
         }
-    }
+    },
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    tableName: 'users'
 });
 
 User.prototype.checkPassword = function(password) {

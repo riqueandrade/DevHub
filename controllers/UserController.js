@@ -11,14 +11,25 @@ class UserController {
                 return res.status(400).json({ error: 'Usuário já existe' });
             }
 
-            const user = await User.create({ name, email, password });
-            user.password = undefined;
+            const user = await User.create({ 
+                name, 
+                email, 
+                password,
+                type: 'user'
+            });
+            
+            const userWithoutPassword = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                type: user.type
+            };
 
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
                 expiresIn: '1d'
             });
 
-            return res.json({ user, token });
+            return res.json({ user: userWithoutPassword, token });
         } catch (error) {
             return res.status(400).json({ error: error.message });
         }
@@ -38,13 +49,18 @@ class UserController {
                 return res.status(400).json({ error: 'Senha inválida' });
             }
 
-            user.password = undefined;
+            const userWithoutPassword = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                type: user.type
+            };
 
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
                 expiresIn: '1d'
             });
 
-            return res.json({ user, token });
+            return res.json({ user: userWithoutPassword, token });
         } catch (error) {
             return res.status(400).json({ error: error.message });
         }

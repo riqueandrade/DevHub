@@ -1,3 +1,6 @@
+-- Excluir o banco de dados se ele já existir
+DROP DATABASE IF EXISTS devhub;
+
 -- Criação do banco de dados
 CREATE DATABASE IF NOT EXISTS devhub;
 USE devhub;
@@ -7,8 +10,11 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role ENUM('user', 'admin') DEFAULT 'user',
+    password VARCHAR(255),
+    google_id VARCHAR(100) UNIQUE,
+    avatar_url VARCHAR(255),
+    type ENUM('user', 'admin') DEFAULT 'user',
+    active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
