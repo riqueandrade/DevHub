@@ -263,7 +263,7 @@ class UserController {
             const updatedUser = await User.findByPk(userId);
 
             // Registrar atividade
-            await Activity.create({
+            await Activity.createActivity({
                 user_id: userId,
                 type: 'profile_update',
                 description: 'Perfil atualizado'
@@ -303,7 +303,7 @@ class UserController {
             );
 
             // Registrar atividade
-            await Activity.create({
+            await Activity.createActivity({
                 user_id: userId,
                 type: 'profile_update',
                 description: 'Senha alterada'
@@ -352,7 +352,7 @@ class UserController {
             );
 
             // Registrar atividade
-            await Activity.create({
+            await Activity.createActivity({
                 user_id: userId,
                 type: 'profile_update',
                 description: 'Avatar atualizado'
