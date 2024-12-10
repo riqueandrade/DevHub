@@ -154,8 +154,17 @@ class UserController {
                 expiresIn: '1d'
             });
 
-            // Redirecionar para dashboard com token
-            res.redirect(`/dashboard.html?token=${token}`);
+            // Preparar dados do usuário
+            const userData = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                type: user.type,
+                avatar_url: user.avatar_url
+            };
+
+            // Redirecionar para uma página intermediária que salvará os dados
+            res.redirect(`/auth-callback.html?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`);
         } catch (error) {
             console.error('Erro no callback do Google:', error);
             res.redirect('/auth.html?error=google_auth_failed');

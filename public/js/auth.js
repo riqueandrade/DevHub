@@ -1,4 +1,23 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Verificar se há erro na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+        let errorMessage = 'Erro durante a autenticação';
+        switch (error) {
+            case 'google_auth_failed':
+                errorMessage = 'Falha na autenticação com o Google';
+                break;
+            case 'auth_failed':
+                errorMessage = 'Erro ao processar autenticação';
+                break;
+            case 'missing_data':
+                errorMessage = 'Dados de autenticação incompletos';
+                break;
+        }
+        showMessage(errorMessage);
+    }
+
     // Verificar se usuário já está autenticado
     const token = localStorage.getItem('token');
     if (token) {
