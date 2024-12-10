@@ -1,61 +1,82 @@
 USE devhub;
 
--- Inserir usuários
-INSERT INTO users (name, email, password, role, avatar_url, bio, status, email_notifications, course_updates, promotional_emails, profile_visibility, show_progress, show_certificates) VALUES
-('Admin', 'admin@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'admin', '/images/admin-avatar.png', 'Administrador do sistema', 'ativo', true, true, false, true, true, true),
-('João Silva', 'joao@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'aluno', '/images/default-avatar.png', 'Estudante de programação', 'ativo', true, true, false, true, true, true),
-('Maria Santos', 'maria@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'instrutor', '/images/maria-avatar.png', 'Instrutora de desenvolvimento web', 'ativo', true, true, false, true, true, true);
-
 -- Inserir categorias
 INSERT INTO categories (name, description, icon) VALUES
-('Programação', 'Cursos de programação e desenvolvimento', 'bi-code-slash'),
-('Design', 'Cursos de design e UX/UI', 'bi-palette'),
-('Marketing', 'Cursos de marketing digital', 'bi-graph-up');
+('Programação Web', 'Cursos de desenvolvimento web front-end e back-end', 'bi-code-slash'),
+('Mobile', 'Desenvolvimento de aplicativos móveis', 'bi-phone'),
+('DevOps', 'Cursos de infraestrutura e deploy', 'bi-gear-fill'),
+('Banco de Dados', 'Modelagem e administração de bancos de dados', 'bi-database'),
+('UI/UX Design', 'Design de interfaces e experiência do usuário', 'bi-palette');
+
+-- Inserir usuários (senha: 123456)
+INSERT INTO users (name, email, password, role, avatar_url, bio, status, email_notifications, course_updates, promotional_emails, profile_visibility, show_progress, show_certificates, created_at, updated_at) VALUES
+-- Admin
+('Admin DevHub', 'admin@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'admin', '/images/avatars/admin-avatar.png', 'Administrador da plataforma DevHub', 'ativo', true, true, false, true, true, true, NOW(), NOW()),
+
+-- Instrutores
+('Maria Silva', 'maria@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'instrutor', '/images/avatars/maria-avatar.png', 'Desenvolvedora Full Stack com 10 anos de experiência. Especialista em React e Node.js', 'ativo', true, true, false, true, true, true, NOW(), NOW()),
+('João Santos', 'joao@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'instrutor', '/images/avatars/joao-avatar.png', 'Engenheiro de Software Senior, especialista em arquitetura de sistemas e DevOps', 'ativo', true, true, false, true, true, true, NOW(), NOW()),
+('Ana Costa', 'ana@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'instrutor', '/images/avatars/ana-avatar.png', 'UI/UX Designer com foco em experiência do usuário e acessibilidade', 'ativo', true, true, false, true, true, true, NOW(), NOW()),
+
+-- Alunos
+('Pedro Oliveira', 'pedro@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'aluno', '/images/avatars/default-avatar.png', 'Estudante de desenvolvimento web', 'ativo', true, true, true, true, true, true, NOW(), NOW()),
+('Carla Souza', 'carla@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'aluno', '/images/avatars/default-avatar.png', 'Iniciante em programação', 'ativo', true, true, true, true, true, true, NOW(), NOW()),
+('Lucas Mendes', 'lucas@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'aluno', '/images/avatars/default-avatar.png', 'Desenvolvedor front-end júnior', 'ativo', true, true, true, true, true, true, NOW(), NOW());
 
 -- Inserir cursos
-INSERT INTO courses (title, description, category_id, instructor_id, thumbnail, price, duration, level, status) VALUES
-('JavaScript Básico', 'Aprenda os fundamentos do JavaScript', 1, 3, '/images/courses/js-basic.jpg', 0.00, 300, 'iniciante', 'publicado'),
-('HTML & CSS', 'Desenvolvimento web com HTML5 e CSS3', 1, 3, '/images/courses/html-css.jpg', 0.00, 240, 'iniciante', 'publicado'),
-('UI Design', 'Princípios de design de interface', 2, 3, '/images/courses/ui-design.jpg', 0.00, 180, 'intermediario', 'publicado');
+INSERT INTO courses (title, description, category_id, instructor_id, thumbnail, price, duration, level, status, created_at, updated_at) VALUES
+-- Cursos da Maria (Full Stack)
+('Desenvolvimento Web Completo', 'Aprenda HTML, CSS, JavaScript, React, Node.js e muito mais', 1, 2, '/images/courses/web-dev.jpg', 199.90, 4800, 'iniciante', 'publicado', NOW(), NOW()),
+('React Avançado', 'Desenvolvimento de aplicações modernas com React e Next.js', 1, 2, '/images/courses/react.jpg', 299.90, 3600, 'avancado', 'publicado', NOW(), NOW()),
+
+-- Cursos do João (DevOps)
+('DevOps na Prática', 'Do desenvolvimento ao deploy: Docker, CI/CD e Cloud', 3, 3, '/images/courses/devops.jpg', 399.90, 5400, 'intermediario', 'publicado', NOW(), NOW()),
+('Arquitetura de Microsserviços', 'Construindo sistemas escaláveis e resilientes', 3, 3, '/images/courses/microservices.jpg', 499.90, 4200, 'avancado', 'publicado', NOW(), NOW()),
+
+-- Cursos da Ana (UI/UX)
+('Design de Interfaces Modernas', 'Princípios de UI/UX e prototipação com Figma', 5, 4, '/images/courses/uiux.jpg', 249.90, 3000, 'iniciante', 'publicado', NOW(), NOW()),
+('Acessibilidade na Web', 'Criando interfaces acessíveis e inclusivas', 5, 4, '/images/courses/accessibility.jpg', 199.90, 2400, 'intermediario', 'publicado', NOW(), NOW());
 
 -- Inserir módulos
-INSERT INTO modules (course_id, title, description, order_number) VALUES
-(1, 'Introdução ao JavaScript', 'Conceitos básicos da linguagem', 1),
-(1, 'Variáveis e Tipos', 'Trabalhando com dados', 2),
-(2, 'HTML Fundamentos', 'Estrutura básica e tags', 1),
-(2, 'CSS Básico', 'Estilização e layouts', 2),
-(3, 'Fundamentos do Design', 'Teoria e princípios', 1);
+INSERT INTO modules (course_id, title, description, order_number, created_at) VALUES
+-- Módulos do curso Web Completo
+(1, 'Fundamentos da Web', 'Introdução a HTML, CSS e JavaScript', 1, NOW()),
+(1, 'Front-end com React', 'Desenvolvimento de interfaces com React', 2, NOW()),
+(1, 'Back-end com Node.js', 'Criação de APIs com Express', 3, NOW()),
 
--- Inserir aulas
-INSERT INTO lessons (module_id, title, description, content_type, content_url, duration, order_number) VALUES
-(1, 'O que é JavaScript?', 'Introdução à linguagem', 'video', '/videos/js-intro.mp4', 15, 1),
-(1, 'Ambiente de desenvolvimento', 'Configurando o ambiente', 'video', '/videos/js-setup.mp4', 20, 2),
-(2, 'Declarando variáveis', 'var, let e const', 'video', '/videos/js-vars.mp4', 25, 1),
-(3, 'Estrutura HTML', 'Anatomia de um documento HTML', 'video', '/videos/html-structure.mp4', 20, 1),
-(4, 'Seletores CSS', 'Trabalhando com seletores', 'video', '/videos/css-selectors.mp4', 30, 1);
+-- Módulos do curso DevOps
+(3, 'Containers com Docker', 'Fundamentos de containerização', 1, NOW()),
+(3, 'CI/CD Pipeline', 'Integração e deploy contínuo', 2, NOW()),
+(3, 'Cloud Computing', 'Deploy na AWS e Azure', 3, NOW());
 
 -- Inserir matrículas
-INSERT INTO enrollments (user_id, course_id, status, progress) VALUES
-(2, 1, 'em_andamento', 30),
-(2, 2, 'em_andamento', 50);
+INSERT INTO enrollments (user_id, course_id, status, progress, created_at, updated_at) VALUES
+-- Matrículas do Pedro
+(5, 1, 'em_andamento', 30, NOW(), NOW()),
+(5, 3, 'em_andamento', 15, NOW(), NOW()),
 
--- Inserir progresso das aulas
-INSERT INTO lesson_progress (enrollment_id, lesson_id, status, start_date, completion_date) VALUES
-(1, 1, 'concluido', DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
-(1, 2, 'em_andamento', DATE_SUB(NOW(), INTERVAL 3 DAY), NULL),
-(2, 4, 'concluido', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 6 DAY));
+-- Matrículas da Carla
+(6, 1, 'em_andamento', 45, NOW(), NOW()),
+(6, 5, 'em_andamento', 60, NOW(), NOW()),
 
--- Inserir avaliações
-INSERT INTO course_ratings (user_id, course_id, rating, comment) VALUES
-(2, 1, 5, 'Excelente curso! Muito bem explicado.'),
-(2, 2, 4, 'Bom curso, material de qualidade.');
+-- Matrículas do Lucas
+(7, 2, 'em_andamento', 25, NOW(), NOW()),
+(7, 6, 'em_andamento', 40, NOW(), NOW());
 
 -- Inserir atividades
-INSERT INTO activities (user_id, type, description) VALUES
-(2, 'lesson_complete', 'Completou a aula "O que é JavaScript?"'),
-(2, 'course_start', 'Iniciou o curso de HTML & CSS'),
-(2, 'lesson_complete', 'Completou a aula "Estrutura HTML"');
+INSERT INTO activities (user_id, type, description, created_at) VALUES
+-- Atividades dos alunos
+(5, 'course_start', 'Iniciou o curso Desenvolvimento Web Completo', NOW()),
+(5, 'course_start', 'Iniciou o curso DevOps na Prática', NOW()),
+(6, 'course_start', 'Iniciou o curso Desenvolvimento Web Completo', NOW()),
+(6, 'course_start', 'Iniciou o curso Design de Interfaces Modernas', NOW()),
+(7, 'course_start', 'Iniciou o curso React Avançado', NOW()),
+(7, 'course_start', 'Iniciou o curso Acessibilidade na Web', NOW()),
 
--- Inserir certificados
-INSERT INTO certificates (user_id, course_id) VALUES
-(2, 2); 
+-- Atividades dos instrutores
+(2, 'course_create', 'Criou o curso Desenvolvimento Web Completo', NOW()),
+(2, 'course_create', 'Criou o curso React Avançado', NOW()),
+(3, 'course_create', 'Criou o curso DevOps na Prática', NOW()),
+(3, 'course_create', 'Criou o curso Arquitetura de Microsserviços', NOW()),
+(4, 'course_create', 'Criou o curso Design de Interfaces Modernas', NOW()),
+(4, 'course_create', 'Criou o curso Acessibilidade na Web', NOW()); 
