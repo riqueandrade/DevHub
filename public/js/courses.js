@@ -1,4 +1,4 @@
-// Verificar autenticação
+// Verificar autenticação e token
 const token = localStorage.getItem('token');
 if (!token) {
     window.location.href = '/auth.html';
@@ -13,12 +13,25 @@ const headers = {
 // Carregar dados do usuário
 async function loadUserData() {
     try {
+        // Primeiro tenta usar os dados em cache
+        const cachedUser = JSON.parse(localStorage.getItem('user'));
+        if (cachedUser) {
+            console.log('Dados do cache:', cachedUser);
+            document.getElementById('userAvatar').src = cachedUser.avatar_url || cachedUser.avatar || '/images/default-avatar.png';
+            document.getElementById('userName').textContent = cachedUser.name;
+        }
+
+        // Depois atualiza com dados do servidor
         const response = await fetch('/api/user/profile', { headers });
-        const user = await response.json();
+        if (!response.ok) throw new Error('Erro ao carregar perfil');
         
-        // Atualizar avatar e nome
-        document.getElementById('userAvatar').src = user.avatar || '/images/default-avatar.png';
+        const user = await response.json();
+        console.log('Dados do servidor:', user);
+        document.getElementById('userAvatar').src = user.avatar_url || user.avatar || '/images/default-avatar.png';
         document.getElementById('userName').textContent = user.name;
+        
+        // Atualiza o cache
+        localStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
         console.error('Erro ao carregar dados do usuário:', error);
     }
@@ -26,6 +39,7 @@ async function loadUserData() {
 
 // Função de logout
 document.getElementById('logoutButton').addEventListener('click', () => {
+    localStorage.removeItem('user');
     localStorage.removeItem('token');
     window.location.href = '/auth.html';
 });

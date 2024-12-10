@@ -61,7 +61,7 @@ User.init({
         type: DataTypes.ENUM('aluno', 'instrutor', 'admin'),
         defaultValue: 'aluno'
     },
-    avatar: {
+    avatar_url: {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: '/images/default-avatar.png'
