@@ -22,7 +22,13 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: true,
+        validate: {
+            len: {
+                args: [6, 100],
+                msg: "A senha deve ter pelo menos 6 caracteres"
+            }
+        }
     },
     google_id: {
         type: DataTypes.STRING,
@@ -47,6 +53,11 @@ const User = sequelize.define('User', {
             if (user.password) {
                 user.password = await bcrypt.hash(user.password, 8);
             }
+        },
+        beforeUpdate: async (user) => {
+            if (user.changed('password')) {
+                user.password = await bcrypt.hash(user.password, 8);
+            }
         }
     },
     createdAt: 'created_at',
@@ -54,8 +65,8 @@ const User = sequelize.define('User', {
     tableName: 'users'
 });
 
-User.prototype.checkPassword = function(password) {
-    return bcrypt.compare(password, this.password);
+User.prototype.checkPassword = async function(password) {
+    return await bcrypt.compare(password, this.password);
 };
 
 module.exports = User; 
