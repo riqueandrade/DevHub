@@ -1,8 +1,41 @@
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
 
-const User = sequelize.define('User', {
+class User extends Model {
+    async validatePassword(password) {
+        return bcrypt.compare(password, this.password);
+    }
+
+    async getStudyHours() {
+        const { LessonProgress, Lesson, Enrollment } = require('./index');
+        
+        const result = await LessonProgress.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('lesson.duration')), 'total_minutes']
+            ],
+            include: [{
+                model: Lesson,
+                as: 'lesson',
+                attributes: []
+            }, {
+                model: Enrollment,
+                as: 'enrollment',
+                attributes: [],
+                where: { user_id: this.id }
+            }],
+            where: {
+                status: 'concluido'
+            },
+            raw: true
+        });
+
+        const totalMinutes = result?.total_minutes || 0;
+        return Math.ceil(totalMinutes / 60);
+    }
+}
+
+User.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -22,51 +55,46 @@ const User = sequelize.define('User', {
     },
     password: {
         type: DataTypes.STRING,
+        allowNull: false
+    },
+    role: {
+        type: DataTypes.ENUM('aluno', 'instrutor', 'admin'),
+        defaultValue: 'aluno'
+    },
+    avatar: {
+        type: DataTypes.STRING,
         allowNull: true,
-        validate: {
-            len: {
-                args: [6, 100],
-                msg: "A senha deve ter pelo menos 6 caracteres"
-            }
-        }
+        defaultValue: '/images/default-avatar.png'
     },
-    google_id: {
-        type: DataTypes.STRING,
-        unique: true,
+    bio: {
+        type: DataTypes.TEXT,
         allowNull: true
     },
-    avatar_url: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    type: {
-        type: DataTypes.ENUM('user', 'admin'),
-        defaultValue: 'user'
-    },
-    active: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: true
+    status: {
+        type: DataTypes.ENUM('ativo', 'inativo'),
+        defaultValue: 'ativo'
     }
 }, {
+    sequelize,
+    modelName: 'User',
+    tableName: 'users',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     hooks: {
         beforeCreate: async (user) => {
             if (user.password) {
-                user.password = await bcrypt.hash(user.password, 8);
+                const salt = await bcrypt.genSalt(8);
+                user.password = await bcrypt.hash(user.password, salt);
             }
         },
         beforeUpdate: async (user) => {
             if (user.changed('password')) {
-                user.password = await bcrypt.hash(user.password, 8);
+                const salt = await bcrypt.genSalt(8);
+                user.password = await bcrypt.hash(user.password, salt);
             }
         }
-    },
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    tableName: 'users'
+    }
 });
-
-User.prototype.checkPassword = async function(password) {
-    return await bcrypt.compare(password, this.password);
-};
 
 module.exports = User; 

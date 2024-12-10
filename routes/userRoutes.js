@@ -11,7 +11,11 @@ router.get('/profile', UserController.getProfile);
 router.put('/profile', UserController.updateProfile);
 router.put('/password', UserController.updatePassword);
 router.post('/avatar', UserController.uploadAvatar);
+
+// Rotas de estatísticas e atividades
 router.get('/stats', UserController.getStats);
 router.get('/activities', UserController.getActivities);
+router.get('/achievements', UserController.getAchievements);
+router.get('/certificates', UserController.getCertificates);
 
 module.exports = router; 

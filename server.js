@@ -11,6 +11,7 @@ const CourseController = require('./controllers/CourseController');
 const StatsController = require('./controllers/StatsController');
 const authMiddleware = require('./middlewares/auth');
 const userRoutes = require('./routes/userRoutes');
+const courseRoutes = require('./routes/courseRoutes');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.get('/api/auth/google/callback', UserController.googleCallback);
 // Rotas protegidas
 app.use('/api/courses', authMiddleware);
 app.use('/api/user', userRoutes);
+app.use('/api/courses', courseRoutes);
 
 // Rotas de Cursos
 app.get('/api/courses/in-progress', CourseController.getInProgress);

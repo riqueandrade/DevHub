@@ -1,12 +1,9 @@
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Enrollment = require('./Enrollment');
-const Lesson = require('./Lesson');
-const Module = require('./Module');
-const Course = require('./Course');
-const { Op } = require('sequelize');
 
-const LessonProgress = sequelize.define('LessonProgress', {
+class LessonProgress extends Model {}
+
+LessonProgress.init({
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -14,63 +11,46 @@ const LessonProgress = sequelize.define('LessonProgress', {
     },
     enrollment_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'enrollments',
-            key: 'id'
-        }
+        allowNull: false
     },
     lesson_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'lessons',
-            key: 'id'
-        }
+        allowNull: false
     },
     status: {
-        type: DataTypes.ENUM('nao_iniciado', 'em_andamento', 'concluido'),
-        defaultValue: 'nao_iniciado'
+        type: DataTypes.ENUM('pendente', 'em_andamento', 'concluido'),
+        defaultValue: 'pendente'
     },
-    progress: {
-        type: DataTypes.FLOAT,
-        defaultValue: 0
+    start_date: {
+        type: DataTypes.DATE
     },
-    last_accessed: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-    completed_at: {
-        type: DataTypes.DATE,
-        allowNull: true
+    completion_date: {
+        type: DataTypes.DATE
     }
 }, {
-    timestamps: false,
+    sequelize,
+    modelName: 'LessonProgress',
     tableName: 'lesson_progress',
-    indexes: [
-        {
-            unique: true,
-            fields: ['enrollment_id', 'lesson_id']
-        }
-    ]
+    timestamps: true
 });
-
-// Associações
-LessonProgress.belongsTo(Enrollment, { foreignKey: 'enrollment_id' });
-LessonProgress.belongsTo(Lesson, { foreignKey: 'lesson_id' });
 
 // Método estático para calcular o progresso total de uma matrícula
 LessonProgress.getProgress = async function(enrollmentId) {
     try {
+        const { Lesson, Module, Course, Enrollment } = require('./index');
+        
         const totalLessons = await Lesson.count({
             include: [{
                 model: Module,
+                as: 'module',
                 required: true,
                 include: [{
                     model: Course,
+                    as: 'course',
                     required: true,
                     include: [{
                         model: Enrollment,
+                        as: 'enrollments',
                         required: true,
                         where: { id: enrollmentId }
                     }]
@@ -91,33 +71,6 @@ LessonProgress.getProgress = async function(enrollmentId) {
     } catch (error) {
         console.error('Erro ao calcular progresso:', error);
         return 0;
-    }
-};
-
-// Método estático para atualizar o progresso de uma matrícula
-LessonProgress.updateEnrollmentProgress = async function(enrollmentId) {
-    try {
-        const progress = await this.getProgress(enrollmentId);
-        await Enrollment.update(
-            { progress },
-            { where: { id: enrollmentId } }
-        );
-
-        // Se o progresso for 100%, marcar como concluído
-        if (progress === 100) {
-            await Enrollment.update(
-                {
-                    status: 'concluido',
-                    completed_at: new Date()
-                },
-                { where: { id: enrollmentId } }
-            );
-        }
-
-        return progress;
-    } catch (error) {
-        console.error('Erro ao atualizar progresso da matrícula:', error);
-        throw error;
     }
 };
 

@@ -1,0 +1,93 @@
+.course-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+}
+
+.course-card .card-img-top {
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    height: 180px;
+    object-fit: cover;
+}
+
+.course-card .progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.course-card .instructor-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.course-card .instructor-info {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.course-card .course-level {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background-color: #e9ecef;
+}
+
+.course-card .course-duration {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.course-card .btn-continue {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.course-card .remaining-time {
+    font-size: 0.8rem;
+    color: #dc3545;
+}
+
+.course-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: white;
+}
+
+.status-completed {
+    background-color: #198754;
+}
+
+.status-in-progress {
+    background-color: #0d6efd;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 0;
+} 

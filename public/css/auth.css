@@ -355,20 +355,20 @@ body {
 /* Botão mostrar senha */
 .show-password {
     cursor: pointer;
-    padding-right: 1rem;
-    padding-left: 0.5rem;
+    background: none;
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--light-color);
+    opacity: 0.7;
     transition: all 0.3s ease;
 }
 
 .show-password:hover {
     opacity: 1;
-}
-
-.show-password.active {
-    color: var(--primary-color);
-    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .show-password:focus {
     outline: none;
+    box-shadow: none;
 }

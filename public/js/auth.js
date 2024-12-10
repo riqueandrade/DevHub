@@ -196,4 +196,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage('Erro ao iniciar login com Google');
         }
     };
+
+    // Adicionar funcionalidade de mostrar/ocultar senha
+    const showPasswordButtons = document.querySelectorAll('.show-password');
+    showPasswordButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const input = button.parentElement.querySelector('input');
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+                button.title = 'Ocultar senha';
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+                button.title = 'Mostrar senha';
+            }
+        });
+    });
 });

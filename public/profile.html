@@ -85,7 +85,7 @@
                                 </button>
                             </div>
                             <h2 id="profileName">Carregando...</h2>
-                            <p id="profileEmail" class="text-muted">carregando@email.com</p>
+                            <p id="profileEmail" class="user-email">carregando@email.com</p>
                         </div>
                         <div class="profile-stats">
                             <div class="stat-item">
@@ -102,6 +102,30 @@
                                     <p>Certificados</p>
                                 </div>
                             </div>
+                            <div class="stat-item">
+                                <i class="bi bi-clock-history"></i>
+                                <div class="stat-info">
+                                    <h4 id="totalHours">0h</h4>
+                                    <p>Estudadas</p>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <i class="bi bi-fire"></i>
+                                <div class="stat-info">
+                                    <h4 id="streakDays">0</h4>
+                                    <p>Dias Seguidos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-level">
+                            <div class="level-info">
+                                <span class="level-badge">Nível <span id="userLevel">1</span></span>
+                                <span class="level-title" id="levelTitle">Iniciante</span>
+                            </div>
+                            <div class="progress level-progress">
+                                <div class="progress-bar" id="levelProgress" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="level-text">Mais <span id="pointsToNextLevel">100</span> pontos para o próximo nível</small>
                         </div>
                         <div class="profile-actions">
                             <button class="btn btn-primary w-100 mb-2" id="editProfileBtn">
@@ -112,11 +136,68 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Conquistas -->
+                    <div class="profile-card">
+                        <h3 class="card-title"><i class="bi bi-trophy"></i> Conquistas</h3>
+                        <div class="achievements-grid" id="achievementsList">
+                            <!-- As conquistas serão carregadas dinamicamente -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Coluna da Direita - Conteúdo do Perfil -->
                 <div class="col-lg-8">
-                    <!-- Formulário de Edição -->
+                    <!-- Tabs de Navegação -->
+                    <ul class="nav nav-tabs profile-tabs mb-4" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
+                                <i class="bi bi-activity"></i> Atividades
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab">
+                                <i class="bi bi-collection-play"></i> Meus Cursos
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="certificates-tab" data-bs-toggle="tab" data-bs-target="#certificates" type="button" role="tab">
+                                <i class="bi bi-award"></i> Certificados
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Conteúdo das Tabs -->
+                    <div class="tab-content" id="profileTabsContent">
+                        <!-- Tab Atividades -->
+                        <div class="tab-pane fade show active" id="activity" role="tabpanel">
+                            <div class="content-card">
+                                <div class="timeline" id="activitiesList">
+                                    <!-- As atividades serão carregadas dinamicamente -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Cursos -->
+                        <div class="tab-pane fade" id="courses" role="tabpanel">
+                            <div class="content-card">
+                                <div class="courses-grid" id="coursesList">
+                                    <!-- Os cursos serão carregados dinamicamente -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Certificados -->
+                        <div class="tab-pane fade" id="certificates" role="tabpanel">
+                            <div class="content-card">
+                                <div class="certificates-grid" id="certificatesList">
+                                    <!-- Os certificados serão carregados dinamicamente -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulários (inicialmente ocultos) -->
                     <div class="content-card" id="editProfileForm" style="display: none;">
                         <h3>Editar Perfil</h3>
                         <form id="profileForm">
@@ -139,7 +220,6 @@
                         </form>
                     </div>
 
-                    <!-- Formulário de Alteração de Senha -->
                     <div class="content-card" id="changePasswordForm" style="display: none;">
                         <h3>Alterar Senha</h3>
                         <form id="passwordForm">
@@ -160,21 +240,6 @@
                                 <button type="submit" class="btn btn-primary">Alterar Senha</button>
                             </div>
                         </form>
-                    </div>
-
-                    <!-- Histórico de Atividades -->
-                    <div class="content-card" id="activityHistory">
-                        <h3>Histórico de Atividades</h3>
-                        <div class="timeline" id="activitiesList">
-                            <div class="timeline-item">
-                                <div class="timeline-icon">
-                                    <i class="bi bi-play-circle"></i>
-                                </div>
-                                <div class="timeline-content">
-                                    <p class="timeline-date">Carregando atividades...</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

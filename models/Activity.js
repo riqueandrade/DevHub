@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Op } = require('sequelize');
 const sequelize = require('../config/database');
 
 const Activity = sequelize.define('Activity', {
@@ -50,6 +50,67 @@ Activity.findByUser = async function(userId) {
     } catch (error) {
         console.error('Erro ao buscar atividades do usuário:', error);
         throw error;
+    }
+};
+
+// Método estático para calcular streak de dias seguidos
+Activity.getStreak = async function(userId) {
+    try {
+        const activities = await this.findAll({
+            attributes: [
+                [sequelize.fn('DATE', sequelize.col('created_at')), 'date']
+            ],
+            where: { 
+                user_id: userId,
+                created_at: {
+                    [Op.gte]: sequelize.literal('DATE_SUB(CURDATE(), INTERVAL 30 DAY)')
+                }
+            },
+            group: [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+            order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'DESC']],
+            raw: true
+        });
+
+        if (activities.length === 0) return 0;
+
+        let streak = 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (let i = 0; i < activities.length; i++) {
+            const activityDate = new Date(activities[i].date);
+            const expectedDate = new Date(today);
+            expectedDate.setDate(today.getDate() - i);
+
+            if (activityDate.getTime() === expectedDate.getTime()) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+
+        // Se o usuário não tiver atividade hoje, verificar se teve ontem
+        if (streak === 0) {
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+
+            for (let i = 0; i < activities.length; i++) {
+                const activityDate = new Date(activities[i].date);
+                const expectedDate = new Date(yesterday);
+                expectedDate.setDate(yesterday.getDate() - i);
+
+                if (activityDate.getTime() === expectedDate.getTime()) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return streak;
+    } catch (error) {
+        console.error('Erro ao calcular streak:', error);
+        return 0;
     }
 };
 

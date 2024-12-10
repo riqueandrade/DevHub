@@ -69,4 +69,20 @@ Course.countInProgress = async function(userId) {
     }
 };
 
+// Método estático para contar cursos completados por um usuário
+Course.countCompletedByUser = async function(userId) {
+    try {
+        const { Enrollment } = require('./index');
+        return await Enrollment.count({
+            where: {
+                user_id: userId,
+                status: 'concluido'
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao contar cursos completados:', error);
+        return 0;
+    }
+};
+
 module.exports = Course; 

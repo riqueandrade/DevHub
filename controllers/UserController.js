@@ -8,6 +8,8 @@ const Certificate = require('../models/Certificate');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const { Op } = require('sequelize');
+const Enrollment = require('../models/Enrollment');
 
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -25,10 +27,13 @@ class UserController {
                 return res.status(400).json({ error: 'Usuário já existe' });
             }
 
+            // Hash da senha antes de criar o usuário
+            const hashedPassword = await bcrypt.hash(password, 8);
+
             const user = await User.create({ 
                 name, 
                 email, 
-                password,
+                password: hashedPassword,
                 type: 'user'
             });
             
@@ -36,7 +41,8 @@ class UserController {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                type: user.type
+                type: user.type,
+                avatar_url: user.avatar_url
             };
 
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
@@ -45,20 +51,41 @@ class UserController {
 
             return res.json({ user: userWithoutPassword, token });
         } catch (error) {
-            return res.status(400).json({ error: error.message });
+            console.error('Erro no registro:', error);
+            return res.status(400).json({ error: 'Erro ao registrar usuário' });
         }
     }
 
     async login(req, res) {
         try {
             const { email, password } = req.body;
+            console.log('Tentativa de login:', { email });
 
             const user = await User.findOne({ where: { email } });
             if (!user) {
+                console.log('Usuário não encontrado:', email);
                 return res.status(400).json({ error: 'Usuário não encontrado' });
             }
 
-            const validPassword = await user.checkPassword(password);
+            console.log('Usuário encontrado:', {
+                id: user.id,
+                email: user.email,
+                hasPassword: !!user.password
+            });
+
+            // Verificar se o usuário tem senha (pode ser um usuário do Google)
+            if (!user.password) {
+                console.log('Usuário sem senha (Google):', email);
+                return res.status(400).json({ error: 'Este email está vinculado a uma conta Google. Por favor, faça login com o Google.' });
+            }
+
+            const validPassword = await bcrypt.compare(password, user.password);
+            console.log('Verificação de senha:', {
+                inputPassword: password,
+                hashedPassword: user.password,
+                isValid: validPassword
+            });
+
             if (!validPassword) {
                 return res.status(400).json({ error: 'Senha inválida' });
             }
@@ -67,16 +94,23 @@ class UserController {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                type: user.type
+                type: user.type,
+                avatar_url: user.avatar_url
             };
 
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
                 expiresIn: '1d'
             });
 
+            console.log('Login bem-sucedido:', {
+                userId: user.id,
+                email: user.email
+            });
+
             return res.json({ user: userWithoutPassword, token });
         } catch (error) {
-            return res.status(400).json({ error: error.message });
+            console.error('Erro no login:', error);
+            return res.status(400).json({ error: 'Erro ao fazer login' });
         }
     }
 
@@ -331,8 +365,13 @@ class UserController {
                 return res.status(400).json({ error: 'Arquivo deve ser uma imagem' });
             }
 
+            // Validar tamanho (max 5MB)
+            if (avatar.size > 5 * 1024 * 1024) {
+                return res.status(400).json({ error: 'Imagem deve ter no máximo 5MB' });
+            }
+
             // Gerar nome único para o arquivo
-            const fileName = `${uuidv4()}${path.extname(avatar.name)}`;
+            const fileName = `avatar_${userId}_${Date.now()}${path.extname(avatar.name)}`;
             const uploadPath = path.join(__dirname, '../public/uploads/avatars', fileName);
 
             // Criar diretório se não existir
@@ -344,7 +383,7 @@ class UserController {
             // Mover arquivo
             await avatar.mv(uploadPath);
 
-            // Atualizar URL do avatar no banco de dados
+            // Atualizar usuário
             const avatarUrl = `/uploads/avatars/${fileName}`;
             await User.update(
                 { avatar_url: avatarUrl },
@@ -355,13 +394,26 @@ class UserController {
             await Activity.createActivity({
                 user_id: userId,
                 type: 'profile_update',
-                description: 'Avatar atualizado'
+                description: 'Atualizou sua foto de perfil'
             });
 
-            res.json({ avatar_url: avatarUrl });
+            // Atualizar dados do usuário no localStorage
+            const user = await User.findByPk(userId);
+            const userData = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                type: user.type,
+                avatar_url: avatarUrl
+            };
+
+            res.json({ 
+                avatar_url: avatarUrl,
+                user: userData
+            });
         } catch (error) {
-            console.error('Erro ao fazer upload do avatar:', error);
-            res.status(500).json({ error: 'Erro ao fazer upload do avatar' });
+            console.error('Erro no upload de avatar:', error);
+            res.status(500).json({ error: 'Erro no upload de avatar' });
         }
     }
 
@@ -369,20 +421,40 @@ class UserController {
     async getStats(req, res) {
         try {
             const userId = req.user.id;
+            const user = await User.findByPk(userId);
 
-            // Obter número de cursos em andamento
-            const coursesInProgress = await Course.countInProgress(userId);
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
 
-            // Obter número de certificados
-            const certificates = await Certificate.countByUser(userId);
+            const studyHours = await user.getStudyHours();
+            const coursesInProgress = await Enrollment.count({
+                where: {
+                    user_id: userId,
+                    status: 'em_andamento'
+                }
+            });
+
+            const coursesCompleted = await Enrollment.count({
+                where: {
+                    user_id: userId,
+                    status: 'concluido'
+                }
+            });
+
+            const certificates = await Certificate.count({
+                where: { user_id: userId }
+            });
 
             res.json({
+                studyHours,
                 coursesInProgress,
+                coursesCompleted,
                 certificates
             });
         } catch (error) {
-            console.error('Erro ao obter estatísticas:', error);
-            res.status(500).json({ error: 'Erro ao obter estatísticas do usuário' });
+            console.error('Erro ao buscar estatísticas:', error);
+            res.status(500).json({ error: 'Erro ao buscar estatísticas' });
         }
     }
 
@@ -393,8 +465,104 @@ class UserController {
             const activities = await Activity.findByUser(userId);
             res.json(activities);
         } catch (error) {
-            console.error('Erro ao obter atividades:', error);
-            res.status(500).json({ error: 'Erro ao obter histórico de atividades' });
+            console.error('Erro ao buscar atividades:', error);
+            res.status(500).json({ error: 'Erro ao buscar atividades' });
+        }
+    }
+
+    async getAchievements(req, res) {
+        try {
+            const userId = req.user.id;
+
+            // Buscar dados necessários
+            const [coursesCompleted, certificatesCount, activitiesCount] = await Promise.all([
+                Enrollment.count({
+                    where: { 
+                        user_id: userId,
+                        status: 'concluido'
+                    }
+                }),
+                Certificate.count({
+                    where: { user_id: userId }
+                }),
+                Activity.count({
+                    where: { 
+                        user_id: userId,
+                        type: 'lesson_complete'
+                    }
+                })
+            ]);
+
+            // Definir conquistas
+            const achievements = [
+                {
+                    id: 'first_course',
+                    name: 'Primeiro Curso',
+                    description: 'Completou seu primeiro curso',
+                    icon: 'bi-trophy',
+                    unlocked: coursesCompleted >= 1
+                },
+                {
+                    id: 'course_master',
+                    name: 'Mestre dos Cursos',
+                    description: 'Completou 5 cursos',
+                    icon: 'bi-mortarboard',
+                    unlocked: coursesCompleted >= 5
+                },
+                {
+                    id: 'certified',
+                    name: 'Certificado',
+                    description: 'Obteve seu primeiro certificado',
+                    icon: 'bi-award',
+                    unlocked: certificatesCount >= 1
+                },
+                {
+                    id: 'study_beginner',
+                    name: 'Iniciante Dedicado',
+                    description: 'Completou 10 aulas',
+                    icon: 'bi-book',
+                    unlocked: activitiesCount >= 10
+                },
+                {
+                    id: 'study_master',
+                    name: 'Mestre do Estudo',
+                    description: 'Completou 50 aulas',
+                    icon: 'bi-book-half',
+                    unlocked: activitiesCount >= 50
+                }
+            ];
+
+            res.json(achievements);
+        } catch (error) {
+            console.error('Erro ao buscar conquistas:', error);
+            res.status(500).json({ error: 'Erro ao buscar conquistas' });
+        }
+    }
+
+    async getCertificates(req, res) {
+        try {
+            const userId = req.user.id;
+            const { Certificate, Course } = require('../models');
+
+            const certificates = await Certificate.findAll({
+                where: { user_id: userId },
+                include: [{
+                    model: Course,
+                    as: 'course',
+                    attributes: ['title']
+                }],
+                order: [['issued_at', 'DESC']]
+            });
+
+            res.json(certificates.map(cert => ({
+                id: cert.id,
+                course_title: cert.course.title,
+                certificate_url: cert.certificate_url,
+                issued_at: cert.issued_at
+            })));
+        } catch (error) {
+            console.error('Erro ao buscar certificados:', error);
+            res.status(500).json({ error: 'Erro ao buscar certificados' });
         }
     }
 }

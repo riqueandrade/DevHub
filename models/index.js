@@ -4,9 +4,11 @@ const Module = require('./Module');
 const Lesson = require('./Lesson');
 const Enrollment = require('./Enrollment');
 const LessonProgress = require('./LessonProgress');
+const Certificate = require('./Certificate');
+const Activity = require('./Activity');
 
 // Associações User-Course (Instrutor)
-User.hasMany(Course, { foreignKey: 'instructor_id', as: 'courses' });
+User.hasMany(Course, { foreignKey: 'instructor_id', as: 'coursesTeaching' });
 Course.belongsTo(User, { foreignKey: 'instructor_id', as: 'instructor' });
 
 // Associações User-Enrollment
@@ -33,11 +35,23 @@ LessonProgress.belongsTo(Enrollment, { foreignKey: 'enrollment_id', as: 'enrollm
 Lesson.hasMany(LessonProgress, { foreignKey: 'lesson_id', as: 'lessonProgresses' });
 LessonProgress.belongsTo(Lesson, { foreignKey: 'lesson_id', as: 'lesson' });
 
+// Associações Certificate
+User.hasMany(Certificate, { foreignKey: 'user_id', as: 'certificates' });
+Certificate.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+Course.hasMany(Certificate, { foreignKey: 'course_id', as: 'certificates' });
+Certificate.belongsTo(Course, { foreignKey: 'course_id', as: 'course' });
+
+// Associações Activity
+User.hasMany(Activity, { foreignKey: 'user_id', as: 'activities' });
+Activity.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 module.exports = {
     User,
     Course,
     Module,
     Lesson,
     Enrollment,
-    LessonProgress
+    LessonProgress,
+    Certificate,
+    Activity
 }; 

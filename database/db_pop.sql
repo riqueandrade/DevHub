@@ -1,66 +1,61 @@
 USE devhub;
 
--- Inserindo usuários (senha: 123456)
-INSERT INTO users (name, email, password, type) VALUES
-('Admin', 'admin@devhub.com', '$2a$08$PQqxj5eCQGrRxQdPGHJmGOYu0Aq9uR5UYSrJUANQGcP0IG7HD6QZy', 'admin'),
-('João Silva', 'joao@email.com', '$2a$08$PQqxj5eCQGrRxQdPGHJmGOYu0Aq9uR5UYSrJUANQGcP0IG7HD6QZy', 'user'),
-('Maria Santos', 'maria@email.com', '$2a$08$PQqxj5eCQGrRxQdPGHJmGOYu0Aq9uR5UYSrJUANQGcP0IG7HD6QZy', 'user');
+-- Inserir usuários
+INSERT INTO users (name, email, password, role, avatar, bio, status) VALUES
+('Admin', 'admin@devhub.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'admin', '/images/admin-avatar.png', 'Administrador do sistema', 'ativo'),
+('João Silva', 'joao@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'aluno', '/images/default-avatar.png', 'Estudante de programação', 'ativo'),
+('Maria Santos', 'maria@email.com', '$2a$08$TZsTtExcGFpLyHJlUwPRPev2Wug2eioBgxHsBYBCEc3CArrGplGVq', 'instrutor', '/images/maria-avatar.png', 'Instrutora de desenvolvimento web', 'ativo');
 
--- Inserindo categorias
+-- Inserir categorias
 INSERT INTO categories (name, description, icon) VALUES
-('Frontend', 'Desenvolvimento de interfaces web', 'bi-window'),
-('Backend', 'Desenvolvimento de servidores e APIs', 'bi-server'),
-('Mobile', 'Desenvolvimento de aplicativos móveis', 'bi-phone'),
-('DevOps', 'Práticas de integração e deploy', 'bi-gear'),
-('Database', 'Banco de dados e modelagem', 'bi-database'),
-('UI/UX', 'Design de interfaces e experiência', 'bi-palette');
+('Programação', 'Cursos de programação e desenvolvimento', 'bi-code-slash'),
+('Design', 'Cursos de design e UX/UI', 'bi-palette'),
+('Marketing', 'Cursos de marketing digital', 'bi-graph-up');
 
--- Inserindo cursos
-INSERT INTO courses (title, description, category_id, instructor_id, price, duration, level, status) VALUES
-('HTML5 e CSS3 Fundamentos', 'Aprenda os fundamentos do desenvolvimento web moderno', 1, 1, 0.00, 300, 'iniciante', 'publicado'),
-('JavaScript Moderno', 'Do básico ao avançado com ES6+', 1, 1, 97.00, 480, 'intermediario', 'publicado'),
-('Node.js Completo', 'Desenvolvimento backend com Node.js', 2, 1, 127.00, 600, 'intermediario', 'publicado'),
-('React Native do Zero', 'Crie aplicativos móveis multiplataforma', 3, 1, 147.00, 720, 'avancado', 'publicado');
+-- Inserir cursos
+INSERT INTO courses (title, description, category_id, instructor_id, thumbnail, price, duration, level, status) VALUES
+('JavaScript Básico', 'Aprenda os fundamentos do JavaScript', 1, 3, '/images/courses/js-basic.jpg', 0.00, 300, 'iniciante', 'publicado'),
+('HTML & CSS', 'Desenvolvimento web com HTML5 e CSS3', 1, 3, '/images/courses/html-css.jpg', 0.00, 240, 'iniciante', 'publicado'),
+('UI Design', 'Princípios de design de interface', 2, 3, '/images/courses/ui-design.jpg', 0.00, 180, 'intermediario', 'publicado');
 
--- Inserindo módulos para o curso de HTML5 e CSS3
+-- Inserir módulos
 INSERT INTO modules (course_id, title, description, order_number) VALUES
-(1, 'Introdução ao HTML', 'Conceitos básicos de HTML', 1),
-(1, 'Estilização com CSS', 'Fundamentos de CSS', 2),
-(1, 'Layout Responsivo', 'Media Queries e Flexbox', 3);
+(1, 'Introdução ao JavaScript', 'Conceitos básicos da linguagem', 1),
+(1, 'Variáveis e Tipos', 'Trabalhando com dados', 2),
+(2, 'HTML Fundamentos', 'Estrutura básica e tags', 1),
+(2, 'CSS Básico', 'Estilização e layouts', 2),
+(3, 'Fundamentos do Design', 'Teoria e princípios', 1);
 
--- Inserindo aulas para o módulo de Introdução ao HTML
+-- Inserir aulas
 INSERT INTO lessons (module_id, title, description, content_type, content_url, duration, order_number) VALUES
-(1, 'O que é HTML?', 'Introdução aos conceitos de HTML', 'video', 'videos/html-intro.mp4', 15, 1),
-(1, 'Estrutura básica', 'Criando sua primeira página', 'video', 'videos/html-basic.mp4', 20, 2),
-(1, 'Tags principais', 'Conhecendo as tags mais usadas', 'video', 'videos/html-tags.mp4', 25, 3);
+(1, 'O que é JavaScript?', 'Introdução à linguagem', 'video', '/videos/js-intro.mp4', 15, 1),
+(1, 'Ambiente de desenvolvimento', 'Configurando o ambiente', 'video', '/videos/js-setup.mp4', 20, 2),
+(2, 'Declarando variáveis', 'var, let e const', 'video', '/videos/js-vars.mp4', 25, 1),
+(3, 'Estrutura HTML', 'Anatomia de um documento HTML', 'video', '/videos/html-structure.mp4', 20, 1),
+(4, 'Seletores CSS', 'Trabalhando com seletores', 'video', '/videos/css-selectors.mp4', 30, 1);
 
--- Inserindo algumas matrículas
+-- Inserir matrículas
 INSERT INTO enrollments (user_id, course_id, status, progress) VALUES
-(2, 1, 'ativo', 0),
-(2, 2, 'ativo', 0),
-(3, 1, 'ativo', 0);
+(2, 1, 'em_andamento', 30),
+(2, 2, 'em_andamento', 50);
 
--- Inserindo progresso nas aulas
-INSERT INTO lesson_progress (enrollment_id, lesson_id, status, progress) VALUES
-(1, 1, 'concluido', 100),
-(1, 2, 'em_andamento', 50),
-(1, 3, 'nao_iniciado', 0);
+-- Inserir progresso das aulas
+INSERT INTO lesson_progress (enrollment_id, lesson_id, status, start_date, completion_date) VALUES
+(1, 1, 'concluido', DATE_SUB(NOW(), INTERVAL 5 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
+(1, 2, 'em_andamento', DATE_SUB(NOW(), INTERVAL 3 DAY), NULL),
+(2, 4, 'concluido', DATE_SUB(NOW(), INTERVAL 7 DAY), DATE_SUB(NOW(), INTERVAL 6 DAY));
 
--- Inserindo algumas avaliações
+-- Inserir avaliações
 INSERT INTO course_ratings (user_id, course_id, rating, comment) VALUES
-(2, 1, 5, 'Excelente curso para iniciantes!'),
-(3, 1, 4, 'Muito bom, mas poderia ter mais exercícios práticos.');
+(2, 1, 5, 'Excelente curso! Muito bem explicado.'),
+(2, 2, 4, 'Bom curso, material de qualidade.');
 
--- Inserindo atividades de exemplo
+-- Inserir atividades
 INSERT INTO activities (user_id, type, description) VALUES
-(2, 'course_start', 'Iniciou o curso HTML5 e CSS3 Fundamentos'),
-(2, 'lesson_complete', 'Completou a aula "O que é HTML?"'),
-(2, 'course_start', 'Iniciou o curso JavaScript Moderno'),
-(3, 'course_start', 'Iniciou o curso HTML5 e CSS3 Fundamentos'),
-(3, 'profile_update', 'Atualizou suas informações de perfil'),
-(2, 'lesson_complete', 'Completou a aula "Estrutura básica"');
+(2, 'lesson_complete', 'Completou a aula "O que é JavaScript?"'),
+(2, 'course_start', 'Iniciou o curso de HTML & CSS'),
+(2, 'lesson_complete', 'Completou a aula "Estrutura HTML"');
 
--- Inserindo certificados de exemplo
+-- Inserir certificados
 INSERT INTO certificates (user_id, course_id, certificate_url) VALUES
-(2, 1, '/certificates/joao-silva-html5-css3.pdf'),
-(3, 1, '/certificates/maria-santos-html5-css3.pdf'); 
+(2, 2, '/certificates/user2-course2.pdf'); 
