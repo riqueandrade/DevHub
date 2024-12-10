@@ -10,6 +10,26 @@ const headers = {
     'Content-Type': 'application/json'
 };
 
+// Carregar dados do usuário
+async function loadUserData() {
+    try {
+        const response = await fetch('/api/user/profile', { headers });
+        const user = await response.json();
+        
+        // Atualizar avatar e nome
+        document.getElementById('userAvatar').src = user.avatar || '/images/default-avatar.png';
+        document.getElementById('userName').textContent = user.name;
+    } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error);
+    }
+}
+
+// Função de logout
+document.getElementById('logoutButton').addEventListener('click', () => {
+    localStorage.removeItem('token');
+    window.location.href = '/auth.html';
+});
+
 // Carregar cursos em andamento
 async function loadCoursesInProgress() {
     try {
@@ -200,15 +220,10 @@ async function enrollCourse(courseId) {
     }
 }
 
-// Função de logout
-document.getElementById('btnLogout').addEventListener('click', () => {
-    localStorage.removeItem('token');
-    window.location.href = '/auth.html';
-});
-
 // Carregar dados ao iniciar a página
 document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([
+        loadUserData(),
         loadCoursesInProgress(),
         loadCoursesCompleted(),
         loadCoursesRecommended()

@@ -1,53 +1,238 @@
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #10b981;
+    --dark-color: #1e293b;
+    --light-color: #f8fafc;
+    --accent-color: #7c3aed;
+    --white-color: #ffffff;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--dark-color), #0f172a);
+    color: var(--light-color);
+    min-height: 100vh;
+    padding-top: 76px;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.nav-link {
+    color: var(--light-color) !important;
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.8;
+}
+
+.nav-link:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+/* User Menu */
+.user-menu {
+    margin-left: 1rem;
+}
+
+.user-button {
+    color: var(--light-color) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.user-button:hover, 
+.user-button:focus {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.user-button:after {
+    margin-left: auto;
+}
+
+.user-button .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-button #userName {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.dropdown-menu {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+}
+
+.dropdown-item {
+    color: var(--light-color);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--light-color);
+}
+
+.dropdown-item i {
+    font-size: 1.1rem;
+}
+
+.dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 0;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-danger:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+}
+
+/* Course Cards */
 .course-card {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(10px);
 }
 
 .course-card:hover {
     transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.course-card .card-img-top {
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    height: 180px;
-    object-fit: cover;
+.course-card .card-body {
+    color: var(--light-color);
+}
+
+.course-card .card-title {
+    color: var(--white-color);
+}
+
+.course-card .card-text {
+    color: var(--light-color);
+    opacity: 0.8;
 }
 
 .course-card .progress {
-    height: 8px;
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.course-card .instructor-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    object-fit: cover;
+.course-card .progress-bar {
+    background: var(--primary-color);
 }
 
 .course-card .instructor-info {
-    font-size: 0.9rem;
-    color: #6c757d;
+    color: var(--light-color);
+    opacity: 0.8;
 }
 
 .course-card .course-level {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-    border-radius: 12px;
-    background-color: #e9ecef;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--light-color);
+    padding: 4px 12px;
+    border-radius: 100px;
 }
 
 .course-card .course-duration {
-    font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--light-color);
+    opacity: 0.8;
 }
 
 .course-card .btn-continue {
-    width: 100%;
+    background: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    padding: 0.5rem 1rem;
     border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.course-card .btn-continue:hover {
+    transform: translateY(-2px);
+    background: var(--accent-color);
+}
+
+.course-card .btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.course-card .btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: var(--white-color);
+    transform: translateY(-2px);
+}
+
+.course-card .btn-success {
+    background: var(--secondary-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.course-card .btn-success:hover {
+    transform: translateY(-2px);
+    background: var(--secondary-color);
+    filter: brightness(1.1);
 }
 
 .course-card .remaining-time {
@@ -75,19 +260,24 @@
 
 .empty-state {
     text-align: center;
-    padding: 2rem;
-    background-color: #f8f9fa;
-    border-radius: 15px;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
     margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
 }
 
 .empty-state i {
     font-size: 3rem;
-    color: #6c757d;
+    color: var(--light-color);
+    opacity: 0.5;
     margin-bottom: 1rem;
 }
 
 .empty-state p {
-    color: #6c757d;
+    color: var(--light-color);
+    opacity: 0.8;
     margin-bottom: 0;
+    font-size: 1.1rem;
 } 
