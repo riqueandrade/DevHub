@@ -16,6 +16,22 @@ function calculateRemainingTime(enrollment) {
     return remainingDays > 0 ? remainingDays : 0;
 }
 
+// Função auxiliar para calcular progresso
+async function calculateProgress(enrollmentId) {
+    const total = await LessonProgress.count({
+        where: { enrollment_id: enrollmentId }
+    });
+    
+    const completed = await LessonProgress.count({
+        where: { 
+            enrollment_id: enrollmentId,
+            status: 'concluido'
+        }
+    });
+    
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
+}
+
 // Obter cursos em andamento do usuário
 exports.getInProgress = async (req, res) => {
     try {
@@ -28,30 +44,29 @@ exports.getInProgress = async (req, res) => {
             },
             include: [{
                 model: Course,
-                as: 'course',
                 include: [{
                     model: User,
                     as: 'instructor',
-                    attributes: ['name', 'avatar']
+                    attributes: ['name', 'avatar_url']
                 }]
             }]
         });
 
         const coursesInProgress = await Promise.all(enrollments.map(async (enrollment) => {
-            const progress = await LessonProgress.getProgress(enrollment.id);
+            const progress = await calculateProgress(enrollment.id);
             const remainingDays = calculateRemainingTime(enrollment);
 
             return {
-                id: enrollment.course.id,
-                title: enrollment.course.title,
-                description: enrollment.course.description,
-                thumbnail: enrollment.course.thumbnail,
-                instructor: enrollment.course.instructor,
+                id: enrollment.Course.id,
+                title: enrollment.Course.title,
+                description: enrollment.Course.description,
+                thumbnail: enrollment.Course.thumbnail,
+                instructor: enrollment.Course.instructor,
                 progress,
                 remainingDays,
                 enrollmentId: enrollment.id,
-                level: enrollment.course.level,
-                duration: enrollment.course.duration
+                level: enrollment.Course.level,
+                duration: enrollment.Course.duration
             };
         }));
 
@@ -115,15 +130,16 @@ exports.getRecommended = async (req, res) => {
                         FROM enrollments 
                         WHERE user_id = ${userId}
                     )`)
-                }
+                },
+                status: 'publicado'
             },
             include: [{
                 model: User,
                 as: 'instructor',
-                attributes: ['name', 'avatar']
+                attributes: ['name', 'avatar_url']
             }],
             limit: 5,
-            order: sequelize.random()
+            order: sequelize.literal('RAND()')
         });
 
         res.json(courses);

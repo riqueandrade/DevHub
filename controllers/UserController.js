@@ -554,12 +554,14 @@ class UserController {
                 order: [['issued_at', 'DESC']]
             });
 
-            res.json(certificates.map(cert => ({
+            const formattedCertificates = certificates.map(cert => ({
                 id: cert.id,
-                course_title: cert.course.title,
+                course_title: cert.course?.title || 'Curso não encontrado',
                 certificate_url: cert.certificate_url,
                 issued_at: cert.issued_at
-            })));
+            }));
+
+            res.json(formattedCertificates);
         } catch (error) {
             console.error('Erro ao buscar certificados:', error);
             res.status(500).json({ error: 'Erro ao buscar certificados' });
