@@ -74,6 +74,7 @@ exports.getCompleted = async (req, res) => {
             },
             include: [{
                 model: Course,
+                as: 'course',
                 include: [{
                     model: User,
                     as: 'instructor',
@@ -83,13 +84,13 @@ exports.getCompleted = async (req, res) => {
         });
 
         const coursesCompleted = enrollments.map(enrollment => ({
-            id: enrollment.Course.id,
-            title: enrollment.Course.title,
-            description: enrollment.Course.description,
-            thumbnail: enrollment.Course.thumbnail,
-            instructor: enrollment.Course.instructor,
-            level: enrollment.Course.level,
-            duration: enrollment.Course.duration,
+            id: enrollment.course.id,
+            title: enrollment.course.title,
+            description: enrollment.course.description,
+            thumbnail: enrollment.course.thumbnail,
+            instructor: enrollment.course.instructor,
+            level: enrollment.course.level,
+            duration: enrollment.course.duration,
             completedAt: enrollment.updated_at
         }));
 

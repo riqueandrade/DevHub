@@ -10,11 +10,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event Listeners para os formulários
     setupFormListeners();
+
+    // Handler do botão de logout
+    document.getElementById('logoutButton').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/auth.html';
+    });
 });
 
 async function loadUserData() {
     try {
-        const response = await fetch('/api/users/me', {
+        const response = await fetch('/api/user/me', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -52,7 +59,7 @@ async function loadUserData() {
             document.getElementById('showCertificates').checked = userData.preferences.show_certificates;
         }
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro ao carregar dados do usuário:', error);
         showAlert('Erro ao carregar dados do usuário', 'danger');
     }
 }
@@ -69,7 +76,7 @@ function setupFormListeners() {
         };
 
         try {
-            const response = await fetch('/api/users/profile', {
+            const response = await fetch('/api/user/profile', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -103,7 +110,7 @@ function setupFormListeners() {
         }
 
         try {
-            const response = await fetch('/api/users/password', {
+            const response = await fetch('/api/user/password', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -137,7 +144,7 @@ function setupFormListeners() {
         };
 
         try {
-            const response = await fetch('/api/users/notifications', {
+            const response = await fetch('/api/user/notifications', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -167,7 +174,7 @@ function setupFormListeners() {
         };
 
         try {
-            const response = await fetch('/api/users/privacy', {
+            const response = await fetch('/api/user/privacy', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -186,22 +193,19 @@ function setupFormListeners() {
     });
 }
 
-function showAlert(message, type) {
-    // Remove alertas existentes
-    const existingAlerts = document.querySelectorAll('.alert');
-    existingAlerts.forEach(alert => alert.remove());
-
-    // Cria novo alerta
+// Função para mostrar alertas
+function showAlert(message, type = 'success') {
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-4`;
-    alertDiv.style.zIndex = '1050';
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
     alertDiv.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
 
-    // Adiciona o alerta ao corpo do documento
-    document.body.appendChild(alertDiv);
+    // Adiciona o alerta no topo da página
+    const container = document.querySelector('.settings-content .container');
+    container.insertBefore(alertDiv, container.firstChild);
 
     // Remove o alerta após 5 segundos
     setTimeout(() => {

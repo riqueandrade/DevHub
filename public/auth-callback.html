@@ -3,72 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecionando...</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f8f9fa;
-            font-family: Arial, sans-serif;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 4px solid #3498db;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .message {
-            color: #666;
-            font-size: 18px;
-        }
-        .container {
-            display: flex;
-            align-items: center;
-        }
-    </style>
+    <title>Autenticando... - DevHub</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
 </head>
 <body>
-    <div class="container">
-        <div class="loader"></div>
-        <div class="message">Redirecionando...</div>
-    </div>
-
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Obter parâmetros da URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            const userStr = urlParams.get('user');
+        // Obter parâmetros da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const userStr = urlParams.get('user');
 
-            if (token && userStr) {
-                try {
-                    // Decodificar e salvar dados do usuário
-                    const user = JSON.parse(decodeURIComponent(userStr));
-                    
-                    // Salvar no localStorage
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('user', JSON.stringify(user));
-
-                    // Redirecionar para o dashboard
-                    window.location.href = '/dashboard.html';
-                } catch (error) {
-                    console.error('Erro ao processar dados:', error);
-                    window.location.href = '/auth.html?error=auth_failed';
-                }
-            } else {
+        if (token && userStr) {
+            try {
+                // Decodificar e salvar dados do usuário
+                const user = JSON.parse(decodeURIComponent(userStr));
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                
+                // Redirecionar para o dashboard
+                window.location.href = '/dashboard.html';
+            } catch (error) {
+                console.error('Erro ao processar dados:', error);
                 window.location.href = '/auth.html?error=missing_data';
             }
-        });
+        } else {
+            window.location.href = '/auth.html?error=auth_failed';
+        }
     </script>
 </body>
 </html> 

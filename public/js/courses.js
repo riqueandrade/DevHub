@@ -22,7 +22,7 @@ async function loadUserData() {
         }
 
         // Depois atualiza com dados do servidor
-        const response = await fetch('/api/user/profile', { headers });
+        const response = await fetch('/api/user/me', { headers });
         if (!response.ok) throw new Error('Erro ao carregar perfil');
         
         const user = await response.json();
@@ -73,7 +73,7 @@ async function loadCoursesInProgress() {
                         <p class="card-text">${course.description}</p>
                         
                         <div class="d-flex align-items-center mb-3">
-                            <img src="${course.instructor.avatar}" class="instructor-avatar me-2" alt="${course.instructor.name}">
+                            <img src="${course.instructor.avatar_url}" class="instructor-avatar me-2" alt="${course.instructor.name}">
                             <span class="instructor-info">${course.instructor.name}</span>
                         </div>
 
@@ -134,7 +134,7 @@ async function loadCoursesCompleted() {
                         <p class="card-text">${course.description}</p>
                         
                         <div class="d-flex align-items-center mb-3">
-                            <img src="${course.instructor.avatar}" class="instructor-avatar me-2" alt="${course.instructor.name}">
+                            <img src="${course.instructor.avatar_url}" class="instructor-avatar me-2" alt="${course.instructor.name}">
                             <span class="instructor-info">${course.instructor.name}</span>
                         </div>
 
@@ -188,7 +188,7 @@ async function loadCoursesRecommended() {
                         <p class="card-text">${course.description}</p>
                         
                         <div class="d-flex align-items-center mb-3">
-                            <img src="${course.instructor.avatar}" class="instructor-avatar me-2" alt="${course.instructor.name}">
+                            <img src="${course.instructor.avatar_url}" class="instructor-avatar me-2" alt="${course.instructor.name}">
                             <span class="instructor-info">${course.instructor.name}</span>
                         </div>
 

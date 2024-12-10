@@ -182,11 +182,12 @@ class UserController {
                     avatar_url,
                     type: 'user'
                 });
-            } else if (!user.google_id) {
-                // Atualizar usuário existente com dados do Google
+            } else {
+                // Atualizar dados do usuário
                 await user.update({
                     google_id,
-                    avatar_url
+                    avatar_url,
+                    name: name || user.name
                 });
             }
 
@@ -201,10 +202,10 @@ class UserController {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                avatar_url: user.avatar_url
+                avatar_url: avatar_url
             };
 
-            // Redirecionar para uma página intermediária que salvará os dados
+            // Redirecionar para página intermediária
             res.redirect(`/auth-callback.html?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`);
         } catch (error) {
             console.error('Erro no callback do Google:', error);
@@ -249,68 +250,52 @@ class UserController {
     // Obter dados do perfil do usuário
     async getProfile(req, res) {
         try {
-            const userId = req.user.id;
-            const user = await User.findByPk(userId);
-
+            const user = await User.findByPk(req.user.id);
             if (!user) {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
 
-            // Remover campos sensíveis
-            const userData = user.toJSON();
-            delete userData.password;
-            res.json(userData);
+            const userWithoutPassword = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                avatar_url: user.avatar_url || user.avatar,
+                bio: user.bio
+            };
+
+            res.json(userWithoutPassword);
         } catch (error) {
-            console.error('Erro ao obter perfil:', error);
-            res.status(500).json({ error: 'Erro ao obter perfil do usuário' });
+            console.error('Erro ao buscar perfil:', error);
+            res.status(500).json({ error: 'Erro ao buscar perfil' });
         }
     }
 
     // Atualizar perfil do usuário
     async updateProfile(req, res) {
         try {
-            const userId = req.user.id;
-            const { name, email, bio } = req.body;
+            const { name, bio } = req.body;
+            const user = await User.findByPk(req.user.id);
 
-            // Verificar se o email já está em uso
-            if (email) {
-                const existingUser = await User.findOne({ where: { email } });
-                if (existingUser && existingUser.id !== userId) {
-                    return res.status(400).json({ error: 'Email já está em uso' });
-                }
-            }
-
-            // Atualizar usuário
-            const [updated] = await User.update(
-                {
-                    name: name || undefined,
-                    email: email || undefined,
-                    bio: bio || undefined
-                },
-                { where: { id: userId } }
-            );
-
-            if (!updated) {
+            if (!user) {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
 
-            // Buscar usuário atualizado
-            const updatedUser = await User.findByPk(userId);
+            await user.update({ name, bio });
 
-            // Registrar atividade
-            await Activity.createActivity({
-                user_id: userId,
-                type: 'profile_update',
-                description: 'Perfil atualizado'
-            });
+            const userWithoutPassword = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                avatar_url: user.avatar_url || user.avatar,
+                bio: user.bio
+            };
 
-            // Remover campos sensíveis
-            const userData = updatedUser.toJSON();
-            delete userData.password;
-            res.json(userData);
+            res.json(userWithoutPassword);
         } catch (error) {
             console.error('Erro ao atualizar perfil:', error);
-            res.status(500).json({ error: 'Erro ao atualizar perfil do usuário' });
+            res.status(500).json({ error: 'Erro ao atualizar perfil' });
         }
     }
 
@@ -359,62 +344,38 @@ class UserController {
             }
 
             const avatar = req.files.avatar;
-            const userId = req.user.id;
+            const user = await User.findByPk(req.user.id);
 
-            // Validar tipo de arquivo
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
+
+            // Verificar tipo do arquivo
             if (!avatar.mimetype.startsWith('image/')) {
                 return res.status(400).json({ error: 'Arquivo deve ser uma imagem' });
             }
 
-            // Validar tamanho (max 5MB)
-            if (avatar.size > 5 * 1024 * 1024) {
-                return res.status(400).json({ error: 'Imagem deve ter no máximo 5MB' });
+            // Criar diretório de uploads se não existir
+            const uploadDir = path.join(__dirname, '..', 'uploads', 'avatars');
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
             }
 
             // Gerar nome único para o arquivo
-            const fileName = `avatar_${userId}_${Date.now()}${path.extname(avatar.name)}`;
-            const uploadPath = path.join(__dirname, '../public/uploads/avatars', fileName);
+            const filename = `${uuidv4()}${path.extname(avatar.name)}`;
+            const filepath = path.join(uploadDir, filename);
 
-            // Criar diretório se não existir
-            const dir = path.dirname(uploadPath);
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
+            // Salvar arquivo
+            await avatar.mv(filepath);
 
-            // Mover arquivo
-            await avatar.mv(uploadPath);
+            // Atualizar URL do avatar no banco
+            const avatarUrl = `/uploads/avatars/${filename}`;
+            await user.update({ avatar_url: avatarUrl });
 
-            // Atualizar usuário
-            const avatarUrl = `/uploads/avatars/${fileName}`;
-            await User.update(
-                { avatar_url: avatarUrl },
-                { where: { id: userId } }
-            );
-
-            // Registrar atividade
-            await Activity.createActivity({
-                user_id: userId,
-                type: 'profile_update',
-                description: 'Atualizou sua foto de perfil'
-            });
-
-            // Atualizar dados do usuário no localStorage
-            const user = await User.findByPk(userId);
-            const userData = {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                avatar_url: avatarUrl
-            };
-
-            res.json({
-                avatar_url: avatarUrl,
-                user: userData
-            });
+            res.json({ avatar_url: avatarUrl });
         } catch (error) {
-            console.error('Erro no upload de avatar:', error);
-            res.status(500).json({ error: 'Erro no upload de avatar' });
+            console.error('Erro ao fazer upload do avatar:', error);
+            res.status(500).json({ error: 'Erro ao fazer upload do avatar' });
         }
     }
 
