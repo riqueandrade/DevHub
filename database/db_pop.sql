@@ -49,4 +49,18 @@ INSERT INTO lesson_progress (enrollment_id, lesson_id, status, progress) VALUES
 -- Inserindo algumas avaliações
 INSERT INTO course_ratings (user_id, course_id, rating, comment) VALUES
 (2, 1, 5, 'Excelente curso para iniciantes!'),
-(3, 1, 4, 'Muito bom, mas poderia ter mais exercícios práticos.'); 
+(3, 1, 4, 'Muito bom, mas poderia ter mais exercícios práticos.');
+
+-- Inserindo atividades de exemplo
+INSERT INTO activities (user_id, type, description) VALUES
+(2, 'course_start', 'Iniciou o curso HTML5 e CSS3 Fundamentos'),
+(2, 'lesson_complete', 'Completou a aula "O que é HTML?"'),
+(2, 'course_start', 'Iniciou o curso JavaScript Moderno'),
+(3, 'course_start', 'Iniciou o curso HTML5 e CSS3 Fundamentos'),
+(3, 'profile_update', 'Atualizou suas informações de perfil'),
+(2, 'lesson_complete', 'Completou a aula "Estrutura básica"');
+
+-- Inserindo certificados de exemplo
+INSERT INTO certificates (user_id, course_id, certificate_url) VALUES
+(2, 1, '/certificates/joao-silva-html5-css3.pdf'),
+(3, 1, '/certificates/maria-santos-html5-css3.pdf'); 
