@@ -93,7 +93,7 @@ exports.getCompleted = async (req, res) => {
                 include: [{
                     model: User,
                     as: 'instructor',
-                    attributes: ['name', 'avatar']
+                    attributes: ['name', 'avatar_url']
                 }]
             }]
         });
@@ -103,7 +103,10 @@ exports.getCompleted = async (req, res) => {
             title: enrollment.course.title,
             description: enrollment.course.description,
             thumbnail: enrollment.course.thumbnail,
-            instructor: enrollment.course.instructor,
+            instructor: {
+                name: enrollment.course.instructor?.name || 'Instrutor não encontrado',
+                avatar_url: enrollment.course.instructor?.avatar_url || '/images/default-avatar.png'
+            },
             level: enrollment.course.level,
             duration: enrollment.course.duration,
             completedAt: enrollment.completed_at

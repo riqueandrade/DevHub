@@ -7,6 +7,7 @@ const Course = require('../models/Course');
 const Certificate = require('../models/Certificate');
 const path = require('path');
 const fs = require('fs');
+const PDFDocument = require('pdfkit');
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 const Enrollment = require('../models/Enrollment');
@@ -21,7 +22,7 @@ class UserController {
     async register(req, res) {
         try {
             const { name, email, password } = req.body;
-            
+
             const userExists = await User.findOne({ where: { email } });
             if (userExists) {
                 return res.status(400).json({ error: 'Usuário já existe' });
@@ -30,13 +31,13 @@ class UserController {
             // Hash da senha antes de criar o usuário
             const hashedPassword = await bcrypt.hash(password, 8);
 
-            const user = await User.create({ 
-                name, 
-                email, 
+            const user = await User.create({
+                name,
+                email,
                 password: hashedPassword,
                 type: 'user'
             });
-            
+
             const userWithoutPassword = {
                 id: user.id,
                 name: user.name,
@@ -171,7 +172,7 @@ class UserController {
 
             // Buscar ou criar usuário
             let user = await User.findOne({ where: { email } });
-            
+
             if (!user) {
                 // Criar novo usuário
                 user = await User.create({
@@ -220,7 +221,7 @@ class UserController {
 
             // Verificar token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            
+
             // Verificar se o usuário ainda existe
             const user = await User.findByPk(decoded.id);
             if (!user) {
@@ -250,7 +251,7 @@ class UserController {
         try {
             const userId = req.user.id;
             const user = await User.findByPk(userId);
-            
+
             if (!user) {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
@@ -407,7 +408,7 @@ class UserController {
                 avatar_url: avatarUrl
             };
 
-            res.json({ 
+            res.json({
                 avatar_url: avatarUrl,
                 user: userData
             });
@@ -477,7 +478,7 @@ class UserController {
             // Buscar dados necessários
             const [coursesCompleted, certificatesCount, activitiesCount] = await Promise.all([
                 Enrollment.count({
-                    where: { 
+                    where: {
                         user_id: userId,
                         status: 'concluido'
                     }
@@ -486,7 +487,7 @@ class UserController {
                     where: { user_id: userId }
                 }),
                 Activity.count({
-                    where: { 
+                    where: {
                         user_id: userId,
                         type: 'lesson_complete'
                     }
@@ -557,7 +558,7 @@ class UserController {
             const formattedCertificates = certificates.map(cert => ({
                 id: cert.id,
                 course_title: cert.course?.title || 'Curso não encontrado',
-                certificate_url: cert.certificate_url,
+                certificate_url: `/api/user/certificates/${cert.id}/download`,
                 issued_at: cert.issued_at
             }));
 
@@ -565,6 +566,212 @@ class UserController {
         } catch (error) {
             console.error('Erro ao buscar certificados:', error);
             res.status(500).json({ error: 'Erro ao buscar certificados' });
+        }
+    }
+
+    async downloadCertificate(req, res) {
+        try {
+            const userId = req.user.id;
+            const certificateId = req.params.id;
+            const { Certificate, Course, User, Enrollment } = require('../models');
+
+            const certificate = await Certificate.findOne({
+                where: { 
+                    id: certificateId,
+                    user_id: userId
+                },
+                include: [{
+                    model: Course,
+                    as: 'course',
+                    attributes: ['title', 'duration', 'level']
+                }, {
+                    model: User,
+                    as: 'user',
+                    attributes: ['name']
+                }]
+            });
+
+            if (!certificate) {
+                return res.status(404).json({ error: 'Certificado não encontrado' });
+            }
+
+            // Buscar informações da matrícula
+            const enrollment = await Enrollment.findOne({
+                where: {
+                    user_id: userId,
+                    course_id: certificate.course_id
+                }
+            });
+
+            if (!enrollment) {
+                return res.status(404).json({ error: 'Matrícula não encontrada' });
+            }
+
+            // Criar diretório de certificados se não existir
+            const certificatesDir = path.join(__dirname, '..', 'public', 'certificates');
+            if (!fs.existsSync(certificatesDir)) {
+                fs.mkdirSync(certificatesDir, { recursive: true });
+            }
+
+            // Gerar certificado se não existir
+            const filePath = path.join(certificatesDir, `certificate_${certificate.id}.pdf`);
+            
+            // Criar um novo documento PDF
+            const doc = new PDFDocument({
+                layout: 'landscape',
+                size: 'A4',
+                margin: 0
+            });
+
+            // Pipe o PDF para o arquivo
+            const stream = fs.createWriteStream(filePath);
+            doc.pipe(stream);
+
+            // Definir cores
+            const primaryColor = '#1B1464';    // Azul escuro
+            const accentColor = '#0652DD';     // Azul médio
+            const goldColor = '#FFD700';       // Dourado
+            const textColor = '#2C2C2C';       // Quase preto
+
+            // Adicionar fundo branco
+            doc.rect(0, 0, doc.page.width, doc.page.height)
+               .fill('#FFFFFF');
+
+            // Adicionar borda dourada
+            const borderWidth = 15;
+            doc.rect(borderWidth, borderWidth, doc.page.width - (2 * borderWidth), doc.page.height - (2 * borderWidth))
+               .lineWidth(2)
+               .stroke(goldColor);
+
+            // Adicionar logo DevHub
+            const logoPath = path.join(__dirname, '..', 'public', 'images', 'logo.png');
+            if (fs.existsSync(logoPath)) {
+                doc.image(logoPath, doc.page.width / 2 - 50, 40, { width: 100 });
+            } else {
+                doc.font('Helvetica-Bold')
+                   .fontSize(30)
+                   .fillColor(primaryColor)
+                   .text('DevHub', doc.page.width / 2 - 45, 40, { 
+                       width: 90, 
+                       align: 'center',
+                       lineBreak: false
+                   });
+            }
+
+            // Título principal
+            doc.font('Helvetica-Bold')
+               .fontSize(60)
+               .fillColor(primaryColor)
+               .text('CERTIFICADO', 0, 120, { align: 'center' });
+
+            // Texto principal
+            const centerY = doc.page.height / 2 - 80;
+
+            doc.font('Helvetica')
+               .fontSize(16)
+               .fillColor(textColor)
+               .text('Certificamos que', 0, centerY, { align: 'center' });
+
+            // Nome do aluno
+            doc.font('Helvetica-Bold')
+               .fontSize(40)
+               .fillColor(primaryColor)
+               .text(certificate.user.name, 0, centerY + 40, { align: 'center' });
+
+            // Descrição do curso
+            doc.font('Helvetica')
+               .fontSize(16)
+               .fillColor(textColor)
+               .text('concluiu com êxito o curso online', 0, centerY + 100, { align: 'center' });
+
+            // Nome do curso
+            doc.font('Helvetica-Bold')
+               .fontSize(30)
+               .fillColor(accentColor)
+               .text(certificate.course.title, 0, centerY + 130, { align: 'center' });
+
+            // Informações adicionais
+            const infoY = centerY + 190;
+            const infoStyle = {
+                font: 'Helvetica',
+                fontSize: 14,
+                color: textColor
+            };
+
+            // Coluna 1
+            doc.font(infoStyle.font)
+               .fontSize(infoStyle.fontSize)
+               .fillColor(infoStyle.color)
+               .text('Carga Horária:', 150, infoY)
+               .font('Helvetica-Bold')
+               .text(`${Math.ceil(certificate.course.duration / 60)} horas`, 270, infoY);
+
+            // Coluna 2
+            doc.font(infoStyle.font)
+               .text('Nível:', 400, infoY)
+               .font('Helvetica-Bold')
+               .text(certificate.course.level.charAt(0).toUpperCase() + certificate.course.level.slice(1), 460, infoY);
+
+            // Coluna 3
+            doc.font(infoStyle.font)
+               .text('Período:', 600, infoY)
+               .font('Helvetica-Bold')
+               .text(`${new Date(enrollment.enrolled_at).toLocaleDateString('pt-BR')} a ${new Date(enrollment.completed_at).toLocaleDateString('pt-BR')}`, 670, infoY);
+
+            // Linha decorativa
+            const lineY = doc.page.height - 150;
+            doc.moveTo(doc.page.width / 2 - 150, lineY)
+               .lineTo(doc.page.width / 2 + 150, lineY)
+               .lineWidth(1)
+               .stroke(goldColor);
+
+            // Assinatura
+            doc.font('Helvetica-Bold')
+               .fontSize(14)
+               .fillColor(primaryColor)
+               .text('Maria Santos', doc.page.width / 2 - 150, lineY + 10, { 
+                   width: 300,
+                   align: 'center'
+               });
+
+            doc.font('Helvetica')
+               .fontSize(12)
+               .fillColor(textColor)
+               .text('Diretora de Ensino', doc.page.width / 2 - 150, lineY + 30, { 
+                   width: 300,
+                   align: 'center'
+               });
+
+            // Data de emissão
+            doc.font('Helvetica')
+               .fontSize(12)
+               .fillColor(textColor)
+               .text(`Emitido em ${new Date(certificate.issued_at).toLocaleDateString('pt-BR')}`, 
+                     doc.page.width / 2 - 150, 
+                     lineY + 60, {
+                         width: 300,
+                         align: 'center'
+                     });
+
+            // ID do certificado
+            doc.font('Helvetica')
+               .fontSize(8)
+               .fillColor(textColor)
+               .text(`ID do Certificado: ${certificate.id}`, 
+                     doc.page.width - 150, 
+                     doc.page.height - 30);
+
+            // Finalizar o PDF
+            doc.end();
+
+            // Esperar o stream terminar antes de enviar o arquivo
+            stream.on('finish', () => {
+                res.download(filePath, `Certificado - ${certificate.course.title}.pdf`);
+            });
+
+        } catch (error) {
+            console.error('Erro ao baixar certificado:', error);
+            res.status(500).json({ error: 'Erro ao baixar certificado' });
         }
     }
 }

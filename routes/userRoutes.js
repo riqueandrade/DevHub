@@ -17,5 +17,6 @@ router.get('/stats', UserController.getStats);
 router.get('/activities', UserController.getActivities);
 router.get('/achievements', UserController.getAchievements);
 router.get('/certificates', UserController.getCertificates);
+router.get('/certificates/:id/download', UserController.downloadCertificate);
 
 module.exports = router; 

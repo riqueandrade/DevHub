@@ -243,9 +243,9 @@ function updateCertificatesUI(certificates) {
             <i class="bi bi-award certificate-icon"></i>
             <h4>${certificate.course_title}</h4>
             <p>Emitido em ${formatDate(certificate.issued_at)}</p>
-            <a href="${certificate.certificate_url}" class="btn btn-primary btn-sm" target="_blank">
+            <button onclick="downloadCertificate('${certificate.certificate_url}', '${certificate.course_title}')" class="btn btn-primary btn-sm">
                 <i class="bi bi-download"></i> Download
-            </a>
+            </button>
         </div>
     `).join('');
 }
@@ -377,4 +377,31 @@ function handleLogout() {
     
     // Redirecionar para a página de login
     window.location.href = '/auth.html';
+}
+
+// Função para download do certificado
+async function downloadCertificate(url, courseTitle) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Erro ao baixar certificado');
+
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `Certificado - ${courseTitle}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(downloadUrl);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Erro ao baixar certificado:', error);
+        showError('Erro ao baixar certificado');
+    }
 } 

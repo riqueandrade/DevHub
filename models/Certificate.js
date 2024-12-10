@@ -24,8 +24,10 @@ const Certificate = sequelize.define('Certificate', {
         }
     },
     certificate_url: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+        type: DataTypes.VIRTUAL,
+        get() {
+            return `/certificates/certificate_${this.id}.pdf`;
+        }
     },
     issued_at: {
         type: DataTypes.DATE,

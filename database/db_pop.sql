@@ -57,5 +57,5 @@ INSERT INTO activities (user_id, type, description) VALUES
 (2, 'lesson_complete', 'Completou a aula "Estrutura HTML"');
 
 -- Inserir certificados
-INSERT INTO certificates (user_id, course_id, certificate_url) VALUES
-(2, 2, '/certificates/user2-course2.pdf'); 
+INSERT INTO certificates (user_id, course_id) VALUES
+(2, 2); 

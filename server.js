@@ -30,6 +30,9 @@ app.use(fileUpload({
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Rota protegida para certificados
+app.use('/certificates', authMiddleware, express.static(path.join(__dirname, 'certificates')));
+
 // Rotas de Autenticação
 app.post('/api/auth/register', UserController.register);
 app.post('/api/auth/login', UserController.login);
