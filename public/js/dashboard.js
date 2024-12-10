@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const duration = formatDuration(course.duration);
         const progress = course.progress || 0;
         const remainingTime = course.remainingTime ? formatDuration(course.remainingTime) : '--';
+        const price = typeof course.price === 'number' ? course.price : 0;
 
         return `
             <div class="col-md-6 col-lg-4 mb-4">
@@ -107,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <a href="/course/${course.id}" class="btn btn-primary w-100">Continuar</a>
                         ` : `
                             <button class="btn btn-primary w-100" onclick="enrollCourse(${course.id})">
-                                ${course.price > 0 ? `Comprar por R$ ${course.price.toFixed(2)}` : 'Começar Agora'}
+                                ${price > 0 ? `Comprar por R$ ${price.toFixed(2)}` : 'Começar Agora'}
                             </button>
                         `}
                     </div>

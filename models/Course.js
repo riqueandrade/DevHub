@@ -33,7 +33,11 @@ const Course = sequelize.define('Course', {
     },
     price: {
         type: DataTypes.DECIMAL(10, 2),
-        defaultValue: 0.00
+        defaultValue: 0.00,
+        get() {
+            const value = this.getDataValue('price');
+            return value === null ? 0 : Number(value);
+        }
     },
     duration: {
         type: DataTypes.INTEGER,
