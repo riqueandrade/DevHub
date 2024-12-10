@@ -13,6 +13,7 @@ const authMiddleware = require('./middlewares/auth');
 const userRoutes = require('./routes/userRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const catalogRoutes = require('./routes/catalogRoutes');
+const certificateRoutes = require('./routes/certificateRoutes');
 
 const app = express();
 
@@ -42,10 +43,10 @@ app.get('/api/auth/google/config', UserController.getGoogleConfig);
 app.get('/api/auth/google/callback', UserController.googleCallback);
 
 // Rotas protegidas
-app.use('/api/courses', authMiddleware);
 app.use('/api/user', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/catalog', catalogRoutes);
+app.use('/api/certificates', certificateRoutes);
 
 // Rotas de Cursos
 app.get('/api/courses/in-progress', CourseController.getInProgress);

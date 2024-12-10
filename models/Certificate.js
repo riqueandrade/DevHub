@@ -23,32 +23,23 @@ const Certificate = sequelize.define('Certificate', {
             key: 'id'
         }
     },
-    certificate_url: {
-        type: DataTypes.VIRTUAL,
-        get() {
-            return `/certificates/certificate_${this.id}.pdf`;
-        }
+    code: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        unique: true
     },
-    issued_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+    preview_url: {
+        type: DataTypes.STRING(255),
+        allowNull: false
+    },
+    pdf_url: {
+        type: DataTypes.STRING(255),
+        allowNull: false
     }
 }, {
     createdAt: 'created_at',
     updatedAt: 'updated_at',
     tableName: 'certificates'
 });
-
-// Método estático para contar certificados de um usuário
-Certificate.countByUser = async function(userId) {
-    try {
-        return await this.count({
-            where: { user_id: userId }
-        });
-    } catch (error) {
-        console.error('Erro ao contar certificados:', error);
-        return 0;
-    }
-};
 
 module.exports = Certificate; 
