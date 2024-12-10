@@ -6,6 +6,7 @@ const Enrollment = require('./Enrollment');
 const LessonProgress = require('./LessonProgress');
 const Activity = require('./Activity');
 const Certificate = require('./Certificate');
+const Category = require('./Category');
 
 // Associações User
 User.hasMany(Course, { foreignKey: 'instructor_id', as: 'courses' });
@@ -15,9 +16,13 @@ User.hasMany(Certificate, { foreignKey: 'user_id', as: 'certificates' });
 
 // Associações Course
 Course.belongsTo(User, { foreignKey: 'instructor_id', as: 'instructor' });
+Course.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
 Course.hasMany(Module, { foreignKey: 'course_id', as: 'modules' });
 Course.hasMany(Enrollment, { foreignKey: 'course_id', as: 'enrollments' });
 Course.hasMany(Certificate, { foreignKey: 'course_id', as: 'certificates' });
+
+// Associações Category
+Category.hasMany(Course, { foreignKey: 'category_id', as: 'courses' });
 
 // Associações Module
 Module.belongsTo(Course, { foreignKey: 'course_id', as: 'course' });
@@ -48,5 +53,6 @@ module.exports = {
     Enrollment,
     LessonProgress,
     Activity,
-    Certificate
+    Certificate,
+    Category
 }; 
