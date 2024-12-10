@@ -1,31 +1,34 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Verificar se usuário já está autenticado
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            // Verificar se o token ainda é válido
+            const response = await fetch('/api/auth/verify', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                window.location.href = '/dashboard.html';
+                return;
+            } else {
+                // Se o token não for válido, limpar o localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
+        } catch (error) {
+            console.error('Erro ao verificar token:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+    }
+
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-    const showPasswordBtns = document.querySelectorAll('.show-password');
-    
-    // Função para mostrar/ocultar senha
-    showPasswordBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const input = btn.previousElementSibling;
-            const icon = btn.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('bi-eye');
-                icon.classList.add('bi-eye-slash');
-                btn.classList.add('active');
-                btn.title = 'Ocultar senha';
-            } else {
-                input.type = 'password';
-                icon.classList.remove('bi-eye-slash');
-                icon.classList.add('bi-eye');
-                btn.classList.remove('active');
-                btn.title = 'Mostrar senha';
-            }
-        });
-    });
     
     // Função para trocar as tabs
     const switchTab = (tabId) => {
@@ -155,4 +158,23 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => registerForm.classList.remove('shake'), 500);
         }
     });
+
+    // Função para lidar com o login do Google
+    window.handleGoogleLogin = async () => {
+        try {
+            // Buscar configurações do Google do backend
+            const response = await fetch('/api/auth/google/config');
+            const { clientId } = await response.json();
+            
+            const redirectUri = window.location.origin + '/api/auth/google/callback';
+            const scope = 'email profile';
+            const responseType = 'code';
+            
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+            
+            window.location.href = authUrl;
+        } catch (error) {
+            showMessage('Erro ao iniciar login com Google');
+        }
+    };
 });

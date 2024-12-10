@@ -17,6 +17,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Rotas de Autenticação
 app.post('/api/auth/register', UserController.register);
 app.post('/api/auth/login', UserController.login);
+app.get('/api/auth/verify', UserController.verifyToken);
+app.get('/api/auth/google/config', UserController.getGoogleConfig);
+app.get('/api/auth/google/callback', UserController.googleCallback);
 
 // Rota de verificação de saúde da API
 app.get('/api/health', (req, res) => {

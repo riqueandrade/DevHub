@@ -1,48 +1,63 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Verificar se o usuário está logado
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/auth.html';
-        return;
-    }
+document.addEventListener('DOMContentLoaded', async () => {
+    // Função para verificar o token
+    const verifyToken = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/auth.html';
+            return false;
+        }
 
-    // Elementos da interface
-    const userNameElement = document.getElementById('userName');
-    const welcomeUserNameElement = document.getElementById('welcomeUserName');
-    const userAvatarElement = document.getElementById('userAvatar');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const continueWatchingElement = document.getElementById('continueWatching');
-    const recommendedCoursesElement = document.getElementById('recommendedCourses');
+        try {
+            const response = await fetch('/api/auth/verify', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-    // Carregar dados do usuário
-    const loadUserData = () => {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (userData) {
-            userNameElement.textContent = userData.name;
-            welcomeUserNameElement.textContent = userData.name;
-            
-            // Se tiver avatar, mostrar; senão, usar inicial do nome
-            if (userData.avatar_url) {
-                userAvatarElement.src = userData.avatar_url;
-            } else {
-                userAvatarElement.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=2563eb&color=fff`;
+            if (!response.ok) {
+                throw new Error('Token inválido');
             }
+
+            return true;
+        } catch (error) {
+            console.error('Erro na verificação do token:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth.html';
+            return false;
         }
     };
 
-    // Função de logout
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/';
-    };
+    // Verificar token inicialmente
+    if (!await verifyToken()) {
+        return;
+    }
 
-    // Event listeners
-    logoutBtn.addEventListener('click', handleLogout);
+    // Verificar token a cada 5 minutos
+    setInterval(verifyToken, 5 * 60 * 1000);
 
-    // Carregar dados iniciais
-    loadUserData();
+    // Carregar dados do usuário
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+        // Atualizar elementos da interface com dados do usuário
+        const userNameElement = document.getElementById('userName');
+        if (userNameElement) {
+            userNameElement.textContent = user.name;
+        }
 
-    // TODO: Implementar carregamento de cursos em andamento e recomendados
-    // Por enquanto, vamos manter os placeholders
+        const userAvatarElement = document.getElementById('userAvatar');
+        if (userAvatarElement && user.avatar_url) {
+            userAvatarElement.src = user.avatar_url;
+        }
+    }
+
+    // Handler do botão de logout
+    const logoutButton = document.getElementById('logoutButton');
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/auth.html';
+        });
+    }
 }); 

@@ -291,18 +291,13 @@ body {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--light-color);
-    padding: 0.75rem;
-    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    font-weight: 500;
     transition: all 0.3s ease;
-}
-
-.btn-google i {
-    font-size: 1.2rem;
-    color: #ea4335;
 }
 
 .btn-google:hover {
@@ -310,6 +305,11 @@ body {
     color: var(--light-color);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+}
+
+.btn-google i {
+    font-size: 1.2rem;
+    color: #EA4335;
 }
 
 /* Ajuste no botão primário para manter consistência */
