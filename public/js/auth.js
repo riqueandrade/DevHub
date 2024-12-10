@@ -101,12 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Erro ao fazer login');
             }
             
-            // Salvar token
+            // Salvar token e dados do usuário
             localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
             
             // Mostrar mensagem de sucesso e redirecionar
             showMessage('Login realizado com sucesso!', 'success');
-            setTimeout(() => window.location.href = '/', 1500);
+            setTimeout(() => window.location.href = '/dashboard.html', 1500);
             
         } catch (error) {
             showMessage(error.message);
@@ -140,12 +141,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Erro ao registrar');
             }
             
-            // Salvar token
+            // Salvar token e dados do usuário
             localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
             
             // Mostrar mensagem de sucesso e redirecionar
             showMessage('Registro realizado com sucesso!', 'success');
-            setTimeout(() => window.location.href = '/', 1500);
+            setTimeout(() => window.location.href = '/dashboard.html', 1500);
             
         } catch (error) {
             showMessage(error.message);
