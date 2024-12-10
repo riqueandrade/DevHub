@@ -1,0 +1,78 @@
+
+# Estrutura Básica do Projeto: Plataforma de Cursos Interativa (Dev Hub)
+
+## Estrutura Principal do Projeto
+### Front-end (UI/UX)
+- HTML, CSS, Bootstrap: Criação de um layout responsivo e atrativo.
+  - Página inicial com informações sobre os cursos.
+  - Páginas de curso individual, com detalhes como descrição, conteúdo e progresso.
+  - Perfil do usuário com progresso, certificados e configurações.
+- JavaScript: Para interatividade, como:
+  - Animações de progresso.
+  - Navegação dinâmica (sem recarregar a página usando AJAX).
+  - Validação de formulários.
+
+### Back-end
+- Node.js e Express:
+  - Gestão de rotas para diferentes funcionalidades (login, cadastro, busca de cursos).
+  - Middleware para autenticação e segurança (JWT para autenticação de usuários).
+- RESTful API:
+  - Rotas para:
+    - Criar, buscar e atualizar dados de cursos.
+    - Gerenciar progresso e certificados de usuários.
+    - Conectar o front-end ao banco de dados.
+
+### Banco de Dados
+- MySQL:
+  - Estruturas básicas:
+    - Tabela `users` (id, nome, email, senha, progresso).
+    - Tabela `courses` (id, título, descrição, duração).
+    - Tabela `enrollments` (id_usuario, id_curso, progresso).
+  - Queries otimizadas para busca de dados.
+
+## Funcionalidades Iniciais
+1. Página Inicial
+   - Apresentar os cursos disponíveis, com destaque para os mais populares.
+   - Barra de busca e filtros (por tema, nível de dificuldade, etc.).
+2. Cadastro/Login
+   - Cadastro de usuários com validação de dados.
+   - Login com autenticação JWT.
+   - Reset de senha via e-mail.
+3. Gestão de Cursos
+   - Admin pode adicionar/editar cursos.
+   - Usuário pode se inscrever nos cursos.
+4. Progresso do Curso
+   - Sistema para salvar progresso de vídeo/aulas.
+   - Marcar lições como concluídas.
+5. Certificado
+   - Gerar certificados em PDF após conclusão de curso (utilizando bibliotecas como `jsPDF`).
+6. Feedback e Avaliações
+   - Usuários podem deixar avaliações e comentários nos cursos.
+
+### Tecnologias e Ferramentas
+- Front-end: HTML, CSS (Bootstrap), JavaScript.
+- Back-end: Node.js, Express.
+- Banco de Dados: MySQL.
+- Autenticação: JWT.
+- Hospedagem: Heroku (ou similar para back-end), Netlify/Vercel para front-end.
+
+## Expansões Sugeridas
+1. Gamificação:
+   - Pontos e conquistas, níveis de usuário, ranking.
+2. Sistema de Recomendação:
+   - Baseado no histórico do usuário e popularidade.
+3. Interação Social:
+   - Fóruns, grupos de estudo, chat em tempo real.
+4. Integração com Plataformas Externas:
+   - YouTube/Vimeo, GitHub, LinkedIn API.
+5. Cursos ao Vivo:
+   - Integração com Zoom/Webex, calendário para aulas ao vivo.
+6. Feedback Avançado:
+   - Testes personalizados, relatórios detalhados.
+7. Administração Avançada:
+   - Painel administrativo completo, análise de dados.
+8. Acessibilidade e Inclusão:
+   - Modo noturno, modo leitura, tradução e legendas.
+
+### Próximo Passo
+Implementar o básico e expandir gradualmente com novas funcionalidades.

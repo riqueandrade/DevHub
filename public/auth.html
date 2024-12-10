@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Hub - Login/Registro</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="/images/favicon.svg" alt="Dev Hub Logo" class="brand-icon me-2">
+                Dev Hub
+            </a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h2>Bem-vindo ao Dev Hub</h2>
+                <p class="subtitle">Sua jornada de aprendizado começa aqui</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="tab-btn active" data-tab="login">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </button>
+                <button class="tab-btn" data-tab="register">
+                    <i class="bi bi-person-plus"></i> Registro
+                </button>
+            </div>
+
+            <div class="auth-content">
+                <!-- Login Form -->
+                <div class="tab-content active" id="login">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control" id="loginEmail" placeholder="Seu email" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="loginPassword" placeholder="Sua senha" required>
+                            </div>
+                        </div>
+                        <div class="form-group text-end mb-3">
+                            <a href="#" class="forgot-password">Esqueceu a senha?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Entrar
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div class="tab-content" id="register">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control" id="registerName" placeholder="Seu nome" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control" id="registerEmail" placeholder="Seu email" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="registerPassword" placeholder="Sua senha" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirme sua senha" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-person-plus"></i> Criar Conta
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="auth-footer">
+                <p>Ao se registrar, você concorda com nossos <a href="#">Termos de Uso</a> e <a href="#">Política de Privacidade</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html> 
