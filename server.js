@@ -28,11 +28,12 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 // Rota protegida para certificados
 app.use('/certificates', authMiddleware, express.static(path.join(__dirname, 'certificates')));
 
-// Rotas de Autenticaç����o
+// Rotas de Autenticação
 app.post('/api/auth/register', UserController.register);
 app.post('/api/auth/login', UserController.login);
 app.get('/api/auth/verify', UserController.verifyToken);
 app.get('/api/auth/google/config', UserController.getGoogleConfig);
+app.get('/auth/google/callback', UserController.googleCallback);
 app.get('/api/auth/google/callback', UserController.googleCallback);
 
 // Rotas protegidas
