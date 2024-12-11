@@ -1,19 +1,43 @@
--- Excluir o banco de dados se ele já existir
-DROP DATABASE IF EXISTS devhub;
--- Criação do banco de dados
-CREATE DATABASE IF NOT EXISTS devhub;
-USE devhub;
+-- Criação dos tipos ENUM
+DROP TYPE IF EXISTS user_role CASCADE;
+DROP TYPE IF EXISTS user_status CASCADE;
+DROP TYPE IF EXISTS course_level CASCADE;
+DROP TYPE IF EXISTS course_status CASCADE;
+DROP TYPE IF EXISTS content_type CASCADE;
+DROP TYPE IF EXISTS enrollment_status CASCADE;
+DROP TYPE IF EXISTS lesson_status CASCADE;
+
+CREATE TYPE user_role AS ENUM ('aluno', 'instrutor', 'admin');
+CREATE TYPE user_status AS ENUM ('ativo', 'inativo');
+CREATE TYPE course_level AS ENUM ('iniciante', 'intermediario', 'avancado');
+CREATE TYPE course_status AS ENUM ('rascunho', 'publicado', 'arquivado');
+CREATE TYPE content_type AS ENUM ('video', 'texto', 'quiz', 'slides', 'documento', 'pdf');
+CREATE TYPE enrollment_status AS ENUM ('pendente', 'em_andamento', 'concluido', 'cancelado');
+CREATE TYPE lesson_status AS ENUM ('nao_iniciado', 'em_andamento', 'concluido');
+
+-- Drop das tabelas existentes em ordem reversa para evitar problemas com chaves estrangeiras
+DROP TABLE IF EXISTS certificates CASCADE;
+DROP TABLE IF EXISTS activities CASCADE;
+DROP TABLE IF EXISTS course_ratings CASCADE;
+DROP TABLE IF EXISTS lesson_progress CASCADE;
+DROP TABLE IF EXISTS enrollments CASCADE;
+DROP TABLE IF EXISTS lessons CASCADE;
+DROP TABLE IF EXISTS modules CASCADE;
+DROP TABLE IF EXISTS courses CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
 -- Tabela de usuários
 CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255),
-    role ENUM('aluno', 'instrutor', 'admin') DEFAULT 'aluno',
+    role user_role DEFAULT 'aluno',
     google_id VARCHAR(255) UNIQUE,
     avatar_url VARCHAR(255) DEFAULT '/images/default-avatar.png',
     bio TEXT,
-    status ENUM('ativo', 'inativo') DEFAULT 'ativo',
+    status user_status DEFAULT 'ativo',
     -- Configurações de notificações
     email_notifications BOOLEAN DEFAULT TRUE,
     course_updates BOOLEAN DEFAULT TRUE,
@@ -23,123 +47,166 @@ CREATE TABLE IF NOT EXISTS users (
     show_progress BOOLEAN DEFAULT TRUE,
     show_certificates BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de categorias de cursos
 CREATE TABLE IF NOT EXISTS categories (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     icon VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de cursos
 CREATE TABLE IF NOT EXISTS courses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    category_id INT,
-    instructor_id INT,
+    category_id INTEGER REFERENCES categories(id),
+    instructor_id INTEGER REFERENCES users(id),
     thumbnail VARCHAR(255),
     price DECIMAL(10, 2) DEFAULT 0.00,
-    duration INT COMMENT 'Duração em minutos',
-    level ENUM('iniciante', 'intermediario', 'avancado'),
-    status ENUM('rascunho', 'publicado', 'arquivado') DEFAULT 'rascunho',
+    duration INTEGER,
+    level course_level,
+    status course_status DEFAULT 'rascunho',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES categories(id),
-    FOREIGN KEY (instructor_id) REFERENCES users(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de módulos dos cursos
 CREATE TABLE IF NOT EXISTS modules (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id INT NOT NULL,
+    id SERIAL PRIMARY KEY,
+    course_id INTEGER NOT NULL REFERENCES courses(id),
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    order_number INT NOT NULL,
+    order_number INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (course_id) REFERENCES courses(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de aulas
 CREATE TABLE IF NOT EXISTS lessons (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    module_id INT NOT NULL,
+    id SERIAL PRIMARY KEY,
+    module_id INTEGER NOT NULL REFERENCES modules(id),
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    content_type ENUM('video', 'texto', 'quiz', 'slides', 'documento', 'pdf'),
+    content_type content_type,
     content_url TEXT,
-    duration INT COMMENT 'Duração em minutos',
-    order_number INT NOT NULL,
+    duration INTEGER,
+    order_number INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (module_id) REFERENCES modules(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de matrículas
 CREATE TABLE IF NOT EXISTS enrollments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    course_id INT NOT NULL,
-    status ENUM(
-        'pendente',
-        'em_andamento',
-        'concluido',
-        'cancelado'
-    ) DEFAULT 'pendente',
-    progress INT DEFAULT 0,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    course_id INTEGER NOT NULL REFERENCES courses(id),
+    status enrollment_status DEFAULT 'pendente',
+    progress INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (course_id) REFERENCES courses(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de progresso das aulas
 CREATE TABLE IF NOT EXISTS lesson_progress (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    enrollment_id INT NOT NULL,
-    lesson_id INT NOT NULL,
-    status ENUM('nao_iniciado', 'em_andamento', 'concluido') DEFAULT 'nao_iniciado',
-    start_date TIMESTAMP NULL,
-    completion_date TIMESTAMP NULL,
+    id SERIAL PRIMARY KEY,
+    enrollment_id INTEGER NOT NULL REFERENCES enrollments(id),
+    lesson_id INTEGER NOT NULL REFERENCES lessons(id),
+    status lesson_status DEFAULT 'nao_iniciado',
+    start_date TIMESTAMP,
+    completion_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (enrollment_id) REFERENCES enrollments(id),
-    FOREIGN KEY (lesson_id) REFERENCES lessons(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de avaliações dos cursos
 CREATE TABLE IF NOT EXISTS course_ratings (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    course_id INT NOT NULL,
-    rating INT NOT NULL CHECK (
-        rating >= 1
-        AND rating <= 5
-    ),
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    course_id INTEGER NOT NULL REFERENCES courses(id),
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (course_id) REFERENCES courses(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de atividades dos usuários
 CREATE TABLE IF NOT EXISTS activities (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
     type VARCHAR(50) NOT NULL,
     description TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- Tabela de certificados
 CREATE TABLE IF NOT EXISTS certificates (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    course_id INT NOT NULL,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    course_id INTEGER NOT NULL REFERENCES courses(id),
     code VARCHAR(50) NOT NULL UNIQUE,
     preview_url VARCHAR(255) NOT NULL,
     pdf_url VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (course_id) REFERENCES courses(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Função para atualizar o updated_at automaticamente
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Triggers para atualizar updated_at
+CREATE TRIGGER update_users_updated_at
+    BEFORE UPDATE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_categories_updated_at
+    BEFORE UPDATE ON categories
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_courses_updated_at
+    BEFORE UPDATE ON courses
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_modules_updated_at
+    BEFORE UPDATE ON modules
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_lessons_updated_at
+    BEFORE UPDATE ON lessons
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_enrollments_updated_at
+    BEFORE UPDATE ON enrollments
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_lesson_progress_updated_at
+    BEFORE UPDATE ON lesson_progress
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_course_ratings_updated_at
+    BEFORE UPDATE ON course_ratings
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_certificates_updated_at
+    BEFORE UPDATE ON certificates
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

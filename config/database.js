@@ -1,28 +1,38 @@
 const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize(process.env.DATABASE_URL || {
-    database: process.env.DB_NAME,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 5432,
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
+    protocol: 'postgres',
     dialectOptions: {
         ssl: {
             require: true,
             rejectUnauthorized: false
-        }
-    },
-    logging: false,
-    define: {
-        timestamps: true,
-        underscored: true
+        },
+        keepAlive: true
     },
     pool: {
         max: 5,
         min: 0,
         acquire: 30000,
         idle: 10000
+    },
+    retry: {
+        match: [
+            /SequelizeConnectionError/,
+            /SequelizeConnectionRefusedError/,
+            /SequelizeHostNotFoundError/,
+            /SequelizeHostNotReachableError/,
+            /SequelizeInvalidConnectionError/,
+            /SequelizeConnectionTimedOutError/,
+            /TimeoutError/,
+            /ECONNRESET/
+        ],
+        max: 3
+    },
+    logging: false,
+    define: {
+        timestamps: true,
+        underscored: true
     }
 });
 
