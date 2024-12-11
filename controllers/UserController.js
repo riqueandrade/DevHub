@@ -13,10 +13,16 @@ const { Op } = require('sequelize');
 const Enrollment = require('../models/Enrollment');
 const axios = require('axios');
 
+// Determinar ambiente e URI de redirecionamento
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const redirectUri = isDevelopment
+    ? 'http://localhost:3000/api/auth/google/callback'
+    : 'https://devhub-app.onrender.com/auth/google/callback';
+
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri: process.env.GOOGLE_REDIRECT_URI
+    redirectUri: redirectUri
 });
 
 class UserController {
@@ -333,8 +339,7 @@ class UserController {
     async getGoogleConfig(req, res) {
         try {
             res.json({
-                clientId: process.env.GOOGLE_CLIENT_ID,
-                redirectUri: process.env.GOOGLE_REDIRECT_URI
+                clientId: process.env.GOOGLE_CLIENT_ID
             });
         } catch (error) {
             console.error('Erro ao obter configurações do Google:', error);

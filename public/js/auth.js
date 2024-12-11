@@ -189,7 +189,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             // Buscar configurações do Google do backend
             const response = await fetch('/api/auth/google/config');
-            const { clientId, redirectUri } = await response.json();
+            const { clientId } = await response.json();
+            
+            // URI de redirecionamento fixa para desenvolvimento
+            const redirectUri = window.location.hostname === 'localhost' 
+                ? 'http://localhost:3000/api/auth/google/callback'
+                : 'https://devhub-app.onrender.com/auth/google/callback';
             
             const scope = encodeURIComponent('email profile');
             const responseType = 'code';
@@ -197,6 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&prompt=${prompt}`;
             
+            console.log('Redirecionando para:', authUrl);
             window.location.href = authUrl;
         } catch (error) {
             console.error('Erro ao iniciar login com Google:', error);
