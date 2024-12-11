@@ -297,6 +297,41 @@ const enrollCourse = async (courseId) => {
     }
 };
 
+// Função para ir para a página do curso
+function goToCourse(courseId) {
+    window.location.href = `/course/${courseId}`;
+}
+
+// Renderizar card do curso
+function renderCourseCard(course) {
+    const level = formatLevel(course.level);
+    return `
+        <div class="col">
+            <div class="card h-100 course-card">
+                <img src="${course.thumbnail || '/images/default-course.jpg'}" class="card-img-top" alt="${course.title}">
+                <div class="card-body">
+                    <h5 class="card-title">${course.title}</h5>
+                    <p class="card-text text-muted">${course.description}</p>
+                    <div class="course-info">
+                        <span class="badge ${level.class}">${level.text}</span>
+                        <span class="duration"><i class="bi bi-clock"></i> ${formatDuration(course.duration)}</span>
+                    </div>
+                    <div class="instructor-info">
+                        <img src="${course.instructor?.avatar_url || '/images/default-avatar.png'}" alt="${course.instructor?.name}" class="instructor-avatar">
+                        <span class="instructor-name">${course.instructor?.name}</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="price">${course.price > 0 ? `R$ ${course.price.toFixed(2)}` : 'Grátis'}</span>
+                        <button class="btn btn-primary" onclick="goToCourse(${course.id})">Ver Curso</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async () => {
     if (!verifyAuth()) return;

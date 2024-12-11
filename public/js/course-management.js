@@ -510,4 +510,46 @@ function showAlert(message, type = 'success') {
 // Função para gerenciar conteúdo do curso
 function manageCourseContent(courseId) {
     window.location.href = `/course-content.html?id=${courseId}`;
+}
+
+// Função para ir para a página do curso
+function goToCourse(courseId) {
+    window.location.href = `/course/${courseId}`;
+}
+
+// Renderizar card do curso
+function renderCourseCard(course) {
+    const level = formatLevel(course.level);
+    const status = formatStatus(course.status);
+    return `
+        <div class="col">
+            <div class="card h-100 course-card">
+                <img src="${course.thumbnail || '/images/default-course.jpg'}" class="card-img-top" alt="${course.title}">
+                <div class="card-body">
+                    <h5 class="card-title">${course.title}</h5>
+                    <p class="card-text text-muted">${course.description}</p>
+                    <div class="course-info">
+                        <span class="badge ${level.class}">${level.text}</span>
+                        <span class="badge ${status.class}">${status.text}</span>
+                        <span class="duration"><i class="bi bi-clock"></i> ${formatDuration(course.duration)}</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <button class="btn btn-outline-primary" onclick="goToCourse(${course.id})">
+                            <i class="bi bi-eye"></i> Ver
+                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary" onclick="editCourse(${course.id})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteCourse(${course.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 } 

@@ -7,8 +7,8 @@ const authMiddleware = require('../middlewares/auth');
 router.use(authMiddleware);
 
 // Rotas de certificados
-router.get('/', CertificateController.getCertificates);
 router.get('/:id', CertificateController.getCertificate);
-router.post('/generate/:courseId', CertificateController.generateCertificate);
+router.get('/:id/download', CertificateController.downloadCertificate);
+router.get('/verify/:code', CertificateController.verifyCertificate);
 
 module.exports = router; 

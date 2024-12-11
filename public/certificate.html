@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado - DevHub</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/certificate.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard.html">
+                <img src="/images/favicon.svg" alt="Dev Hub Logo" class="brand-icon me-2">
+                Dev Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/courses.html">
+                            <i class="bi bi-collection-play"></i> Meus Cursos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog.html">
+                            <i class="bi bi-grid"></i> Catálogo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/certificates.html">
+                            <i class="bi bi-award"></i> Certificados
+                        </a>
+                    </li>
+                </ul>
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle user-button" type="button" data-bs-toggle="dropdown">
+                            <div class="d-flex align-items-center">
+                                <img src="" alt="Avatar" class="user-avatar" id="userAvatar">
+                                <span id="userName" class="ms-2">Carregando...</span>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/profile.html">
+                                    <i class="bi bi-person"></i> Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/settings.html">
+                                    <i class="bi bi-gear"></i> Configurações
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button class="dropdown-item text-danger" id="logoutButton">
+                                    <i class="bi bi-box-arrow-right"></i> Sair
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="certificate-content">
+        <div class="container">
+            <div class="certificate-container">
+                <div class="certificate-header">
+                    <h1>Certificado de Conclusão</h1>
+                </div>
+
+                <div class="certificate-body">
+                    <div class="certificate-info">
+                        <h2>Certificamos que</h2>
+                        <h3 id="studentName">Carregando...</h3>
+                        <p>concluiu com sucesso o curso</p>
+                        <h4 id="courseName">Carregando...</h4>
+                        <p>com carga horária de <span id="courseDuration">0</span> horas</p>
+                        <p>em <span id="completionDate">--/--/----</span></p>
+                    </div>
+
+                    <div class="certificate-signatures">
+                        <div class="signature">
+                            <img id="instructorSignature" src="" alt="Assinatura do Instrutor">
+                            <hr>
+                            <p id="instructorName">Carregando...</p>
+                            <small>Instrutor</small>
+                        </div>
+                        <div class="signature">
+                            <img src="/images/platform-signature.svg" alt="Assinatura da Plataforma" class="platform-signature">
+                            <hr>
+                            <p>DevHub</p>
+                            <small>Plataforma</small>
+                        </div>
+                    </div>
+
+                    <div class="certificate-footer">
+                        <p>Código de Verificação: <span id="certificateCode">Carregando...</span></p>
+                    </div>
+                </div>
+
+                <div class="certificate-actions">
+                    <button class="btn btn-primary" id="downloadButton">
+                        <i class="bi bi-download"></i> Baixar Certificado
+                    </button>
+                    <button class="btn btn-outline-primary" id="shareButton">
+                        <i class="bi bi-share"></i> Compartilhar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="/js/certificate.js"></script>
+</body>
+
+</html> 

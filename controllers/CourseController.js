@@ -1092,3 +1092,220 @@ exports.reorderLessons = async (req, res) => {
         res.status(500).json({ error: 'Erro ao reordenar aulas' });
     }
 };
+
+// Obter aula específica
+exports.getLesson = async (req, res) => {
+    try {
+        const { courseId, moduleIndex, lessonIndex } = req.params;
+        const userId = req.user.id;
+
+        // Buscar o curso com módulos e aulas
+        const course = await Course.findOne({
+            where: { id: courseId },
+            include: [{
+                model: Module,
+                as: 'modules',
+                include: [{
+                    model: Lesson,
+                    as: 'lessons',
+                    attributes: ['id', 'title', 'description', 'content_type', 'content_url', 'duration', 'order_number'],
+                    include: [{
+                        model: LessonProgress,
+                        as: 'progress',
+                        required: false,
+                        include: [{
+                            model: Enrollment,
+                            as: 'enrollment',
+                            required: false,
+                            where: { user_id: userId }
+                        }]
+                    }]
+                }]
+            }],
+            order: [
+                [{ model: Module, as: 'modules' }, 'order_number', 'ASC'],
+                [{ model: Module, as: 'modules' }, { model: Lesson, as: 'lessons' }, 'order_number', 'ASC']
+            ]
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar se o usuário tem acesso ao curso
+        const enrollment = await Enrollment.findOne({
+            where: {
+                user_id: userId,
+                course_id: courseId
+            }
+        });
+
+        if (!enrollment && course.instructor_id !== userId && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Sem permissão para acessar esta aula' });
+        }
+
+        // Obter o módulo pelo índice
+        const module = course.modules[moduleIndex];
+        if (!module) {
+            return res.status(404).json({ error: 'Módulo não encontrado' });
+        }
+
+        // Obter a aula pelo índice
+        const lesson = module.lessons[lessonIndex];
+        if (!lesson) {
+            return res.status(404).json({ error: 'Aula não encontrada' });
+        }
+
+        // Formatar a aula
+        const formattedLesson = {
+            ...lesson.toJSON(),
+            completed: lesson.progress && 
+                      lesson.progress.length > 0 && 
+                      lesson.progress[0].status === 'concluido',
+            moduleTitle: module.title,
+            moduleIndex: parseInt(moduleIndex),
+            lessonIndex: parseInt(lessonIndex)
+        };
+
+        // Log para debug
+        console.log('Aula formatada:', {
+            id: formattedLesson.id,
+            title: formattedLesson.title,
+            moduleTitle: formattedLesson.moduleTitle,
+            moduleIndex: formattedLesson.moduleIndex,
+            lessonIndex: formattedLesson.lessonIndex,
+            completed: formattedLesson.completed
+        });
+
+        res.json(formattedLesson);
+    } catch (error) {
+        console.error('Erro ao buscar aula:', error);
+        res.status(500).json({ error: 'Erro ao buscar aula' });
+    }
+};
+
+// Marcar aula como concluída
+exports.completeLesson = async (req, res) => {
+    try {
+        const { courseId, moduleIndex, lessonIndex } = req.params;
+        const userId = req.user.id;
+
+        // Buscar o curso com módulos e aulas
+        const course = await Course.findOne({
+            where: { id: courseId },
+            include: [{
+                model: Module,
+                as: 'modules',
+                include: [{
+                    model: Lesson,
+                    as: 'lessons',
+                    attributes: ['id', 'title', 'description', 'content_type', 'content_url', 'duration', 'order_number']
+                }]
+            }],
+            order: [
+                [{ model: Module, as: 'modules' }, 'order_number', 'ASC'],
+                [{ model: Module, as: 'modules' }, { model: Lesson, as: 'lessons' }, 'order_number', 'ASC']
+            ]
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar se o usuário está matriculado
+        const enrollment = await Enrollment.findOne({
+            where: {
+                user_id: userId,
+                course_id: courseId
+            }
+        });
+
+        if (!enrollment) {
+            return res.status(403).json({ error: 'Você não está matriculado neste curso' });
+        }
+
+        // Obter o módulo pelo índice
+        const module = course.modules[moduleIndex];
+        if (!module) {
+            return res.status(404).json({ error: 'Módulo não encontrado' });
+        }
+
+        // Obter a aula pelo índice
+        const lesson = module.lessons[lessonIndex];
+        if (!lesson) {
+            return res.status(404).json({ error: 'Aula não encontrada' });
+        }
+
+        // Atualizar ou criar progresso da aula
+        const [progress, created] = await LessonProgress.findOrCreate({
+            where: {
+                enrollment_id: enrollment.id,
+                lesson_id: lesson.id
+            },
+            defaults: {
+                status: 'concluido',
+                completion_date: new Date()
+            }
+        });
+
+        if (!created) {
+            await progress.update({ 
+                status: 'concluido',
+                completion_date: new Date()
+            });
+        }
+
+        // Verificar se todas as aulas foram concluídas
+        const totalLessons = await Lesson.count({
+            include: [{
+                model: Module,
+                where: { course_id: courseId }
+            }]
+        });
+
+        const completedLessons = await LessonProgress.count({
+            where: {
+                enrollment_id: enrollment.id,
+                status: 'concluido'
+            }
+        });
+
+        // Se todas as aulas foram concluídas, marcar curso como concluído
+        if (totalLessons === completedLessons) {
+            await enrollment.update({ 
+                status: 'concluido',
+                progress: 100
+            });
+
+            // Registrar atividade de conclusão do curso
+            await Activity.create({
+                user_id: userId,
+                type: 'course_complete',
+                description: `Concluiu o curso ${course.title}`
+            });
+        } else {
+            // Atualizar progresso do curso
+            const progress = Math.round((completedLessons / totalLessons) * 100);
+            await enrollment.update({ progress });
+        }
+
+        // Log para debug
+        console.log('Progresso atualizado:', {
+            courseId,
+            moduleIndex,
+            lessonIndex,
+            lessonId: lesson.id,
+            totalLessons,
+            completedLessons,
+            progress: Math.round((completedLessons / totalLessons) * 100)
+        });
+
+        res.json({ 
+            message: 'Aula marcada como concluída',
+            progress: Math.round((completedLessons / totalLessons) * 100)
+        });
+    } catch (error) {
+        console.error('Erro ao marcar aula como concluída:', error);
+        res.status(500).json({ error: 'Erro ao marcar aula como concluída' });
+    }
+};

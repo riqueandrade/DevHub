@@ -28,7 +28,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 // Rota protegida para certificados
 app.use('/certificates', authMiddleware, express.static(path.join(__dirname, 'certificates')));
 
-// Rotas de Autenticação
+// Rotas de Autenticaç����o
 app.post('/api/auth/register', UserController.register);
 app.post('/api/auth/login', UserController.login);
 app.get('/api/auth/verify', UserController.verifyToken);
@@ -54,9 +54,18 @@ app.get('/course/:id', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'course.html'));
 });
 
+// Rota específica para a página do certificado
+app.get('/certificate/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'certificate.html'));
+});
+
 // Redirecionar todas as outras rotas para o index.html
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    if (req.path.startsWith('/api/')) {
+        res.status(404).json({ error: 'Rota não encontrada' });
+    } else {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
 });
 
 // Sincronizar banco de dados e iniciar servidor

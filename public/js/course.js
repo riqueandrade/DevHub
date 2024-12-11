@@ -18,7 +18,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('userAvatar').src = user.avatar_url || '/images/default-avatar.png';
 
         // Obter ID do curso da URL
-        const courseId = window.location.pathname.split('/').pop();
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = window.location.pathname.split('/course/')[1];
+        
+        if (!courseId) {
+            throw new Error('ID do curso não encontrado');
+        }
+
+        console.log('Carregando curso:', courseId);
         
         // Carregar dados do curso
         const courseResponse = await fetch(`/api/courses/${courseId}`, {
@@ -28,11 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!courseResponse.ok) {
-            throw new Error('Erro ao carregar dados do curso');
+            const errorData = await courseResponse.json();
+            throw new Error(errorData.error || 'Erro ao carregar dados do curso');
         }
 
         const course = await courseResponse.json();
-        console.log('Dados do curso:', course); // Debug
+        console.log('Dados do curso:', course);
 
         // Atualizar informações do curso
         document.getElementById('courseTitle').textContent = course.title;
@@ -130,7 +138,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadLesson(moduleIndex, lessonIndex) {
     try {
         const token = localStorage.getItem('token');
-        const courseId = window.location.pathname.split('/').pop();
+        const courseId = window.location.pathname.split('/course/')[1];
+
+        if (!courseId) {
+            throw new Error('ID do curso não encontrado');
+        }
 
         // Remover classe active de todas as aulas
         document.querySelectorAll('.lesson-item').forEach(item => {
@@ -155,20 +167,17 @@ async function loadLesson(moduleIndex, lessonIndex) {
         }
 
         const lesson = await lessonResponse.json();
+        console.log('Dados da aula:', lesson);
 
         // Atualizar conteúdo da aula
         const lessonContent = document.getElementById('lessonContent');
         lessonContent.innerHTML = `
             <h2>${lesson.title}</h2>
-            <div class="lesson-video mb-4">
-                ${lesson.videoUrl ? `
-                    <div class="ratio ratio-16x9">
-                        <iframe src="${lesson.videoUrl}" allowfullscreen></iframe>
-                    </div>
-                ` : ''}
+            <div class="lesson-content mb-4">
+                ${renderLessonContent(lesson)}
             </div>
             <div class="lesson-description">
-                ${lesson.content}
+                ${lesson.description || ''}
             </div>
         `;
 
@@ -181,6 +190,44 @@ async function loadLesson(moduleIndex, lessonIndex) {
     } catch (error) {
         console.error('Erro:', error);
         showAlert('Erro ao carregar aula. Tente novamente mais tarde.', 'danger');
+    }
+}
+
+// Função para renderizar o conteúdo da aula baseado no tipo
+function renderLessonContent(lesson) {
+    switch (lesson.content_type) {
+        case 'video':
+            return `
+                <div class="ratio ratio-16x9">
+                    <iframe src="${lesson.content_url}" allowfullscreen></iframe>
+                </div>
+            `;
+        case 'pdf':
+            return `
+                <div class="pdf-viewer">
+                    <embed src="${lesson.content_url}" type="application/pdf" width="100%" height="600px">
+                </div>
+            `;
+        case 'slides':
+            return `
+                <div class="slides-viewer">
+                    <iframe src="${lesson.content_url}" width="100%" height="600px"></iframe>
+                </div>
+            `;
+        case 'documento':
+            return `
+                <div class="document-viewer">
+                    <iframe src="${lesson.content_url}" width="100%" height="600px"></iframe>
+                </div>
+            `;
+        case 'texto':
+            return `
+                <div class="text-content">
+                    ${lesson.content_url ? `<pre>${lesson.content_url}</pre>` : ''}
+                </div>
+            `;
+        default:
+            return `<p>Tipo de conteúdo não suportado</p>`;
     }
 }
 
@@ -228,7 +275,11 @@ function updateNavigationButtons(currentModule, currentLesson) {
 async function markLessonAsCompleted(moduleIndex, lessonIndex) {
     try {
         const token = localStorage.getItem('token');
-        const courseId = window.location.pathname.split('/').pop();
+        const courseId = window.location.pathname.split('/course/')[1];
+
+        if (!courseId) {
+            throw new Error('ID do curso não encontrado');
+        }
 
         const response = await fetch(`/api/courses/${courseId}/modules/${moduleIndex}/lessons/${lessonIndex}/complete`, {
             method: 'POST',

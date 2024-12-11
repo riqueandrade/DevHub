@@ -1,0 +1,375 @@
+/* Variáveis */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #10b981;
+    --dark-color: #1e293b;
+    --light-color: #f8fafc;
+    --accent-color: #7c3aed;
+    --white-color: #ffffff;
+}
+
+/* Estilos Gerais */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--dark-color), #0f172a);
+    color: var(--light-color);
+    min-height: 100vh;
+    padding-top: 76px;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.nav-link {
+    color: var(--light-color) !important;
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.8;
+}
+
+.nav-link:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.nav-link i {
+    font-size: 1.2rem;
+}
+
+/* User Menu */
+.user-menu {
+    margin-left: 1rem;
+}
+
+.user-button {
+    color: var(--light-color) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.user-button:hover, 
+.user-button:focus {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.user-button:after {
+    margin-left: auto;
+}
+
+.user-button .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-button #userName {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Conteúdo principal */
+.certificate-content {
+    padding: 2rem 0;
+}
+
+.certificate-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 3rem;
+    margin: 2rem auto;
+    max-width: 900px;
+    position: relative;
+    overflow: hidden;
+}
+
+.certificate-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('/images/certificate-bg.svg') center/cover;
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+/* Cabeçalho do certificado */
+.certificate-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 1rem;
+    position: relative;
+}
+
+.certificate-header h1 {
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Corpo do certificado */
+.certificate-body {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.certificate-info {
+    margin-bottom: 3rem;
+}
+
+.certificate-info h2 {
+    font-size: 1.5rem;
+    color: var(--light-color);
+    margin-bottom: 1rem;
+    font-weight: normal;
+    opacity: 0.8;
+}
+
+.certificate-info h3 {
+    font-size: 2rem;
+    color: var(--white-color);
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.certificate-info h4 {
+    font-size: 1.8rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 1.5rem 0;
+    font-weight: bold;
+}
+
+.certificate-info p {
+    font-size: 1.2rem;
+    color: var(--light-color);
+    margin: 0.5rem 0;
+    opacity: 0.8;
+}
+
+/* Assinaturas */
+.certificate-signatures {
+    display: flex;
+    justify-content: space-around;
+    margin: 3rem 0;
+}
+
+.signature {
+    text-align: center;
+    width: 200px;
+}
+
+.signature img {
+    width: 150px;
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+}
+
+.signature img.platform-signature {
+    filter: brightness(0) invert(1);
+}
+
+.signature hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    margin: 0.5rem auto;
+    width: 80%;
+}
+
+.signature p {
+    margin: 0;
+    font-weight: bold;
+    color: var(--white-color);
+}
+
+.signature small {
+    color: var(--light-color);
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+/* Rodapé do certificado */
+.certificate-footer {
+    margin-top: 3rem;
+    text-align: center;
+    color: var(--light-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+    opacity: 0.8;
+}
+
+.certificate-footer p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Ações do certificado */
+.certificate-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.certificate-actions button {
+    min-width: 200px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.certificate-actions button.btn-primary {
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    color: var(--white-color);
+}
+
+.certificate-actions button.btn-outline-primary {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--light-color);
+}
+
+.certificate-actions button i {
+    font-size: 1.2rem;
+}
+
+.certificate-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .certificate-container {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+
+    .certificate-header h1 {
+        font-size: 2rem;
+    }
+
+    .certificate-info h3 {
+        font-size: 1.5rem;
+    }
+
+    .certificate-info h4 {
+        font-size: 1.3rem;
+    }
+
+    .certificate-signatures {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .certificate-actions {
+        flex-direction: column;
+    }
+
+    .certificate-actions button {
+        width: 100%;
+    }
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem;
+}
+
+.dropdown-item {
+    color: var(--light-color);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--light-color);
+}
+
+.dropdown-item i {
+    font-size: 1.1rem;
+}
+
+.dropdown-divider {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 0;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-danger:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
+} 

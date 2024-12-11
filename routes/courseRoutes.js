@@ -33,6 +33,8 @@ router.delete('/:courseId/modules/:moduleId', checkRole(['admin', 'instrutor']),
 router.put('/:courseId/modules/reorder', checkRole(['admin', 'instrutor']), CourseController.reorderModules);
 
 // Rotas de aulas
+router.get('/:courseId/modules/:moduleIndex/lessons/:lessonIndex', CourseController.getLesson);
+router.post('/:courseId/modules/:moduleIndex/lessons/:lessonIndex/complete', CourseController.completeLesson);
 router.get('/:courseId/modules/:moduleId/lessons', checkRole(['admin', 'instrutor']), CourseController.getLessons);
 router.post('/:courseId/modules/:moduleId/lessons', checkRole(['admin', 'instrutor']), CourseController.uploadFile, CourseController.createLesson);
 router.put('/:courseId/modules/:moduleId/lessons/:lessonId', checkRole(['admin', 'instrutor']), CourseController.uploadFile, CourseController.updateLesson);

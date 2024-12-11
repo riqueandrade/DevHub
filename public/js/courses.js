@@ -234,6 +234,36 @@ async function enrollCourse(courseId) {
     }
 }
 
+// Função para ir para a página do curso
+function goToCourse(courseId) {
+    window.location.href = `/course/${courseId}`;
+}
+
+// Renderizar card do curso
+function renderCourseCard(course) {
+    const progress = course.progress || 0;
+    return `
+        <div class="col">
+            <div class="card h-100 course-card">
+                <img src="${course.thumbnail || '/images/default-course.jpg'}" class="card-img-top" alt="${course.title}">
+                <div class="card-body">
+                    <h5 class="card-title">${course.title}</h5>
+                    <p class="card-text text-muted">${course.description}</p>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: ${progress}%" 
+                             aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100">
+                            ${progress}%
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="goToCourse(${course.id})">
+                        Continuar Curso
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 // Carregar dados ao iniciar a página
 document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([
