@@ -1,4 +1,71 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Configurar máscaras dos campos
+    const cardNumberMask = IMask(document.getElementById('cardNumber'), {
+        mask: '0000 0000 0000 0000'
+    });
+
+    const expiryDateMask = IMask(document.getElementById('expiryDate'), {
+        mask: 'MM{/}YY',
+        blocks: {
+            MM: {
+                mask: IMask.MaskedRange,
+                from: 1,
+                to: 12,
+                maxLength: 2,
+                placeholderChar: 'M'
+            },
+            YY: {
+                mask: IMask.MaskedRange,
+                from: 23,
+                to: 33,
+                maxLength: 2,
+                placeholderChar: 'A'
+            }
+        },
+        lazy: false
+    });
+
+    const cvvMask = IMask(document.getElementById('cvv'), {
+        mask: '000'
+    });
+
+    // Máscara para nome do cartão em maiúsculas
+    const cardNameMask = IMask(document.getElementById('cardName'), {
+        mask: /^[A-Z\s]*$/,
+        prepare: (str) => str.toUpperCase()
+    });
+
+    // Eventos adicionais para garantir texto em maiúsculas
+    const cardNameInput = document.getElementById('cardName');
+    cardNameInput.addEventListener('input', function(e) {
+        const cursorPos = this.selectionStart;
+        this.value = this.value.toUpperCase();
+        this.setSelectionRange(cursorPos, cursorPos);
+    });
+
+    cardNameInput.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+        this.value = text.toUpperCase();
+    });
+
+    cardNameInput.addEventListener('drop', function(e) {
+        e.preventDefault();
+        const text = e.dataTransfer.getData('text/plain');
+        this.value = text.toUpperCase();
+    });
+
+    // Adicionar zero à esquerda no mês quando necessário
+    expiryDateMask.on('accept', () => {
+        const value = expiryDateMask.value;
+        if (value.length >= 2) {
+            const month = value.substring(0, 2);
+            if (month.length === 1 && !isNaN(month) && month > 0) {
+                expiryDateMask.value = '0' + value;
+            }
+        }
+    });
+
     // Verificar autenticação
     const token = localStorage.getItem('token');
     if (!token) {
@@ -96,6 +163,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             try {
                 if (paymentMethod === 'credit') {
+                    // Validar formato do cartão
+                    if (!cardNumberMask.masked.isComplete) {
+                        throw new Error('Número do cartão inválido');
+                    }
+                    if (!expiryDateMask.masked.isComplete) {
+                        throw new Error('Data de validade inválida');
+                    }
+                    if (!cvvMask.masked.isComplete) {
+                        throw new Error('CVV inválido');
+                    }
+
                     await processCreditCardPayment(courseId, price);
                 } else {
                     await processPixPayment(courseId, price);
