@@ -189,14 +189,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             // Buscar configurações do Google do backend
             const response = await fetch('/api/auth/google/config');
-            const { clientId } = await response.json();
+            const { clientId, redirectUri } = await response.json();
             
-            const redirectUri = encodeURIComponent(window.location.origin + '/api/auth/google/callback');
             const scope = encodeURIComponent('email profile');
             const responseType = 'code';
             const prompt = 'select_account';
             
-            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&prompt=${prompt}`;
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&prompt=${prompt}`;
             
             window.location.href = authUrl;
         } catch (error) {

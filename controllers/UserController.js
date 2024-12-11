@@ -311,7 +311,8 @@ class UserController {
     async getGoogleConfig(req, res) {
         try {
             res.json({
-                clientId: process.env.GOOGLE_CLIENT_ID
+                clientId: process.env.GOOGLE_CLIENT_ID,
+                redirectUri: process.env.GOOGLE_REDIRECT_URI
             });
         } catch (error) {
             console.error('Erro ao obter configurações do Google:', error);
