@@ -78,6 +78,21 @@ function setupEventHandlers() {
 
     // Configurar modais
     setupModals();
+
+    // Atualizar campos de conteúdo quando o tipo mudar
+    const contentTypeSelect = document.getElementById('contentType');
+    if (contentTypeSelect) {
+        contentTypeSelect.addEventListener('change', function() {
+            updateFileInput(this.value, false);
+        });
+    }
+
+    const editContentTypeSelect = document.getElementById('editContentType');
+    if (editContentTypeSelect) {
+        editContentTypeSelect.addEventListener('change', function() {
+            updateFileInput(this.value, true);
+        });
+    }
 }
 
 // Configurar modais
@@ -85,10 +100,26 @@ function setupModals() {
     // Configurar modal de nova aula
     const newLessonModal = document.getElementById('newLessonModal');
     if (newLessonModal) {
-        newLessonModal.addEventListener('shown.bs.modal', function() {
+        const bsModal = new bootstrap.Modal(newLessonModal);
+        
+        newLessonModal.addEventListener('show.bs.modal', function() {
+            // Resetar formulário
+            const form = document.getElementById('newLessonForm');
+            if (form) {
+                form.reset();
+            }
+            
+            // Configurar tipo de conteúdo padrão
             const contentTypeSelect = document.getElementById('contentType');
             if (contentTypeSelect) {
                 contentTypeSelect.value = 'pdf';
+            }
+        });
+
+        newLessonModal.addEventListener('shown.bs.modal', function() {
+            // Configurar event listeners após o modal estar completamente visível
+            const contentTypeSelect = document.getElementById('contentType');
+            if (contentTypeSelect) {
                 updateFileInput('pdf', false);
                 contentTypeSelect.addEventListener('change', function() {
                     updateFileInput(this.value, false);
@@ -115,17 +146,22 @@ function setupModals() {
 // Atualizar configurações do input de arquivo
 function updateFileInput(contentType, isEdit = false) {
     const prefix = isEdit ? 'edit' : '';
-    const fileInput = document.getElementById(`${prefix}ContentFile`);
-    const fileHelp = document.querySelector(`#${prefix}ContentFileGroup .text-muted`);
+    const modalId = isEdit ? 'editLessonModal' : 'newLessonModal';
+    const modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        console.error('Modal não encontrado');
+        return;
+    }
+
+    const fileInput = modal.querySelector('#contentFile');
+    const fileHelp = modal.querySelector('#contentFileGroup .text-muted');
 
     if (!fileInput || !fileHelp) {
         console.error('Elementos do formulário não encontrados');
         return;
     }
 
-    // Limpar valor
-    fileInput.value = '';
-    
     // Atualizar mensagem de ajuda e tipos de arquivo aceitos
     switch (contentType) {
         case 'pdf':
@@ -166,10 +202,27 @@ function openNewLessonModal(moduleId) {
     const moduleIdInput = document.getElementById('moduleId');
     if (moduleIdInput) {
         moduleIdInput.value = moduleId;
+        console.log('Module ID definido:', moduleId);
+    } else {
+        console.error('Input moduleId não encontrado');
+        return;
     }
-    
+
+    // Resetar formulário
+    const form = document.getElementById('newLessonForm');
+    if (form) {
+        form.reset();
+    }
+
+    // Configurar tipo de conteúdo padrão
+    const contentTypeSelect = document.getElementById('contentType');
+    if (contentTypeSelect) {
+        contentTypeSelect.value = 'pdf';
+        updateFileInput('pdf', false);
+    }
+
     // Mostrar o modal
-    const modal = new bootstrap.Modal(modalElement);
+    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     modal.show();
 }
 
@@ -214,22 +267,55 @@ async function handleNewLesson(event) {
     
     try {
         const moduleId = document.getElementById('moduleId').value;
-        const title = document.getElementById('lessonTitle').value;
-        const description = document.getElementById('lessonDescription').value;
+        console.log('Module ID no envio:', moduleId);
+        
+        if (!moduleId) {
+            throw new Error('ID do módulo não encontrado');
+        }
+
+        // Validar campos obrigatórios
+        const title = document.getElementById('lessonTitle').value.trim();
+        const description = document.getElementById('lessonDescription').value.trim();
         const contentType = document.getElementById('contentType').value;
         const duration = document.getElementById('lessonDuration').value;
-        const contentFile = document.getElementById('contentFile').files[0];
         
+        // Validar campos vazios ou inválidos
+        if (!title) {
+            throw new Error('O título é obrigatório');
+        }
+        if (!description) {
+            throw new Error('A descrição é obrigatória');
+        }
+        if (!contentType) {
+            throw new Error('O tipo de conteúdo é obrigatório');
+        }
+        if (!duration || duration < 1) {
+            throw new Error('A duração deve ser maior que zero');
+        }
+
+        // Validar arquivo
+        const contentFile = document.getElementById('contentFile').files[0];
         if (!contentFile) {
             throw new Error('Por favor, selecione um arquivo');
         }
 
+        // Criar FormData com dados sanitizados
         const formData = new FormData();
+        formData.append('module_id', moduleId);
         formData.append('title', title);
         formData.append('description', description);
         formData.append('content_type', contentType);
         formData.append('duration', duration);
         formData.append('content_file', contentFile);
+
+        console.log('Dados do formulário:', {
+            moduleId,
+            title,
+            description,
+            contentType,
+            duration,
+            fileName: contentFile.name
+        });
 
         const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons`, {
             method: 'POST',
@@ -240,11 +326,15 @@ async function handleNewLesson(event) {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Erro ao criar aula');
+            const responseData = await response.json();
+            console.error('Erro na resposta:', responseData);
+            throw new Error(responseData.error || 'Erro ao criar aula');
         }
 
-        // Fechar modal e recarregar módulos
+        const responseData = await response.json();
+        console.log('Aula criada com sucesso:', responseData);
+
+        // Fechar modal e atualizar lista
         const modal = bootstrap.Modal.getInstance(document.getElementById('newLessonModal'));
         modal.hide();
         await loadModules();
@@ -259,13 +349,14 @@ async function handleEditLesson(event) {
     event.preventDefault();
     
     try {
-        const lessonId = document.getElementById('editLessonId').value;
-        const moduleId = document.getElementById('editLessonModuleId').value;
-        const title = document.getElementById('editLessonTitle').value;
-        const description = document.getElementById('editLessonDescription').value;
-        const contentType = document.getElementById('editContentType').value;
-        const duration = document.getElementById('editLessonDuration').value;
-        const contentFile = document.getElementById('editContentFile').files[0];
+        const form = event.target;
+        const lessonId = form.querySelector('#editLessonId').value;
+        const moduleId = form.querySelector('#editLessonModuleId').value;
+        const title = form.querySelector('#editLessonTitle').value;
+        const description = form.querySelector('#editLessonDescription').value;
+        const contentType = form.querySelector('#editContentType').value;
+        const duration = form.querySelector('#editLessonDuration').value;
+        const contentFile = form.querySelector('#editContentFile').files[0];
 
         const formData = new FormData();
         formData.append('title', title);
@@ -302,7 +393,7 @@ async function handleEditLesson(event) {
 }
 
 // Função para exibir alertas
-function showAlert(message, type) {
+function showAlert(message, type = 'info') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
     alertDiv.style.zIndex = '9999';
@@ -312,6 +403,7 @@ function showAlert(message, type) {
     `;
     document.body.appendChild(alertDiv);
 
+    // Remover o alerta após 5 segundos
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
@@ -448,51 +540,49 @@ async function deleteLesson(lessonId, moduleId) {
 }
 
 // Função para criar nova aula
-async function createLesson(moduleId) {
+function createLesson(moduleId) {
+    const modal = document.getElementById('newLessonModal');
     const form = document.getElementById('newLessonForm');
-    const contentType = document.getElementById('contentType').value;
+    const contentTypeSelect = document.getElementById('contentType');
+    const contentUrlDiv = document.getElementById('contentUrlDiv');
+    const contentFileDiv = document.getElementById('contentFileDiv');
 
-    form.onsubmit = async (e) => {
-        e.preventDefault();
+    // Limpar listeners anteriores
+    const newForm = form.cloneNode(true);
+    form.parentNode.replaceChild(newForm, form);
+    
+    // Resetar o formulário
+    newForm.reset();
+    
+    // Configurar o ID do módulo
+    document.getElementById('moduleId').value = moduleId;
 
-        try {
-            const formData = new FormData();
-            formData.append('title', document.getElementById('lessonTitle').value);
-            formData.append('description', document.getElementById('lessonDescription').value);
-            formData.append('content_type', contentType);
-            formData.append('duration', document.getElementById('lessonDuration').value);
-
-            if (contentType === 'video' || contentType === 'texto' || contentType === 'quiz') {
-                formData.append('content_url', document.getElementById('contentUrl').value);
-            } else {
-                const fileInput = document.getElementById('contentFile');
-                if (fileInput.files.length > 0) {
-                    formData.append('content', fileInput.files[0]);
-                } else {
-                    showAlert('Por favor, selecione um arquivo', 'danger');
-                    return;
-                }
-            }
-
-            const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: formData
-            });
-
-            if (!response.ok) throw new Error('Erro ao criar aula');
-
-            await loadModules();
-            bootstrap.Modal.getInstance(document.getElementById('newLessonModal')).hide();
-            e.target.reset();
-            showAlert('Aula criada com sucesso', 'success');
-        } catch (error) {
-            console.error('Erro ao criar aula:', error);
-            showAlert(error.message, 'danger');
+    // Configurar a exibição dos campos baseado no tipo de conteúdo
+    function updateContentFields() {
+        const contentType = contentTypeSelect.value;
+        if (contentType === 'video') {
+            contentUrlDiv.style.display = 'block';
+            contentFileDiv.style.display = 'none';
+            document.getElementById('contentFile').value = '';
+        } else {
+            contentUrlDiv.style.display = 'none';
+            contentFileDiv.style.display = 'block';
+            document.getElementById('contentUrl').value = '';
         }
-    };
+    }
+
+    // Atualizar campos quando o tipo de conteúdo mudar
+    contentTypeSelect.addEventListener('change', updateContentFields);
+    
+    // Configurar estado inicial dos campos
+    updateContentFields();
+
+    // Configurar o evento de submit do formulário
+    newForm.addEventListener('submit', handleNewLesson);
+
+    // Abrir o modal
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
 }
 
 async function handleEditModule(e) {
@@ -763,22 +853,29 @@ function initializeSortable() {
     });
 }
 
-// Função para mostrar alertas
-function showAlert(message, type = 'info') {
-    const alertContainer = document.getElementById('alertContainer');
-    if (!alertContainer) return;
+function initializeFormHandlers() {
+    // Formulário de nova aula
+    const newLessonForm = document.getElementById('newLessonForm');
+    if (newLessonForm) {
+        newLessonForm.addEventListener('submit', handleNewLesson);
+        console.log('Event listener adicionado ao formulário de nova aula');
+    } else {
+        console.error('Formulário de nova aula não encontrado');
+    }
 
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show`;
-    alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    alertContainer.appendChild(alert);
-
-    // Remover o alerta após 5 segundos
-    setTimeout(() => {
-        alert.remove();
-    }, 5000);
+    // Select de tipo de conteúdo
+    const contentTypeSelect = document.getElementById('contentType');
+    if (contentTypeSelect) {
+        contentTypeSelect.addEventListener('change', function() {
+            updateFileInput(this.value, false);
+        });
+        console.log('Event listener adicionado ao select de tipo de conteúdo');
+    }
 }
+
+// Inicializar quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFormHandlers();
+    loadCourseData();
+    loadModules();
+});
