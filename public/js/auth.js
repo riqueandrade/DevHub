@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // URI de redirecionamento fixa para desenvolvimento
             const redirectUri = window.location.hostname === 'localhost' 
                 ? 'http://localhost:3000/api/auth/google/callback'
-                : 'https://devhub-app.onrender.com/auth/google/callback';
+                : 'https://devhub-4gmd.onrender.com/auth/google/callback';
             
             const scope = encodeURIComponent('email profile');
             const responseType = 'code';
