@@ -5,26 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autenticando... - DevHub</title>
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        .loading-container {
+            text-align: center;
+            padding: 2rem;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
 <body>
+    <div class="loading-container">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <h4 class="mb-3">Autenticando...</h4>
+        <p class="text-muted">Por favor, aguarde enquanto processamos seu login.</p>
+    </div>
+
     <script>
-        // Limpar localStorage antes de processar novos dados
-        localStorage.clear();
+        // Função para mostrar mensagem de erro e redirecionar
+        function handleError(message, code) {
+            console.error(message);
+            window.location.replace(`/auth.html?error=${code}`);
+        }
 
-        // Obter parâmetros da URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const userStr = urlParams.get('user');
-
-        if (token && userStr) {
+        // Função principal de autenticação
+        async function handleAuthentication() {
             try {
+                // Limpar localStorage antes de processar novos dados
+                localStorage.clear();
+
+                // Obter parâmetros da URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+                const userStr = urlParams.get('user');
+
+                if (!token || !userStr) {
+                    throw new Error('Dados de autenticação ausentes');
+                }
+
                 // Decodificar e validar dados do usuário
                 const user = JSON.parse(decodeURIComponent(userStr));
                 
                 // Verificar se os dados do usuário são válidos
                 if (!user || !user.name || !user.email || !user.id) {
-                    console.error('Dados do usuário inválidos:', user);
-                    window.location.replace('/auth.html?error=invalid_user_data');
                     throw new Error('Dados do usuário inválidos');
                 }
 
@@ -32,15 +68,36 @@
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
                 
+                // Verificar se o token é válido
+                const response = await fetch('/api/auth/verify', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Token inválido');
+                }
+
                 // Redirecionar para o dashboard
                 window.location.replace('/dashboard.html');
             } catch (error) {
-                console.error('Erro ao processar dados:', error);
-                window.location.replace('/auth.html?error=missing_data');
+                console.error('Erro durante autenticação:', error);
+                
+                if (error.message === 'Dados de autenticação ausentes') {
+                    handleError('Dados de autenticação ausentes', 'missing_data');
+                } else if (error.message === 'Dados do usuário inválidos') {
+                    handleError('Dados do usuário inválidos', 'invalid_user_data');
+                } else if (error.message === 'Token inválido') {
+                    handleError('Token inválido', 'auth_failed');
+                } else {
+                    handleError('Erro durante autenticação', 'auth_failed');
+                }
             }
-        } else {
-            window.location.replace('/auth.html?error=auth_failed');
         }
+
+        // Iniciar processo de autenticação
+        handleAuthentication();
     </script>
 </body>
 </html> 

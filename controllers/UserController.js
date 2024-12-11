@@ -245,7 +245,7 @@ class UserController {
                     email,
                     google_id,
                     avatar_url: localAvatarUrl || '/images/default-avatar.png',
-                    type: 'user'
+                    role: 'aluno'
                 });
             } else {
                 // Usuário existente - verificar se precisa atualizar o avatar
@@ -277,8 +277,10 @@ class UserController {
                 avatar_url: user.avatar_url
             };
 
-            // Redirecionar para página intermediária
-            res.redirect(`/auth-callback.html?token=${token}&user=${encodeURIComponent(JSON.stringify(userData))}`);
+            // Redirecionar para página intermediária com os dados
+            const redirectUrl = `/auth-callback.html?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(userData))}`;
+            res.redirect(redirectUrl);
+
         } catch (error) {
             console.error('Erro no callback do Google:', error);
             res.redirect('/auth.html?error=google_auth_failed');
