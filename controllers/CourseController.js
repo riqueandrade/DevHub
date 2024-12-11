@@ -250,11 +250,21 @@ exports.getRecommended = async (req, res) => {
                 as: 'instructor',
                 attributes: ['id', 'name', 'avatar_url']
             }],
-            limit: 5,
-            order: sequelize.literal('RAND()')
+            limit: 6 // Limitar a 6 cursos recomendados
         });
 
-        res.json(courses);
+        // Formatar os dados no mesmo padrão dos outros endpoints
+        const formattedCourses = courses.map(course => ({
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            thumbnail: course.thumbnail,
+            instructor: course.instructor,
+            level: course.level,
+            duration: course.duration
+        }));
+
+        res.json(formattedCourses);
     } catch (error) {
         console.error('Erro ao buscar cursos recomendados:', error);
         res.status(500).json({ error: 'Erro ao buscar cursos recomendados' });
