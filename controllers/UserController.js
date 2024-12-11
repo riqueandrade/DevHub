@@ -201,12 +201,17 @@ class UserController {
 
     async googleCallback(req, res) {
         try {
+            console.log('Google Callback - Início');
+            console.log('Query params:', req.query);
+            console.log('URL completa:', req.protocol + '://' + req.get('host') + req.originalUrl);
+
             const { code } = req.query;
             if (!code) {
                 console.error('Código de autorização não fornecido');
                 return res.redirect('/auth.html?error=google_auth_failed');
             }
 
+            console.log('Obtendo tokens do Google...');
             // Obter tokens do Google
             const { tokens } = await googleClient.getToken(code);
             if (!tokens || !tokens.id_token) {
@@ -214,6 +219,7 @@ class UserController {
                 return res.redirect('/auth.html?error=google_auth_failed');
             }
 
+            console.log('Verificando ID token...');
             const ticket = await googleClient.verifyIdToken({
                 idToken: tokens.id_token,
                 audience: process.env.GOOGLE_CLIENT_ID
@@ -224,6 +230,12 @@ class UserController {
                 console.error('Payload do token não encontrado');
                 return res.redirect('/auth.html?error=google_auth_failed');
             }
+
+            console.log('Dados do usuário recebidos:', { 
+                name: payload.name, 
+                email: payload.email,
+                google_id: payload.sub
+            });
 
             const { name, email, sub: google_id, picture: avatar_url } = payload;
             if (!email) {
@@ -236,6 +248,7 @@ class UserController {
             let localAvatarUrl = null;
 
             if (!user) {
+                console.log('Criando novo usuário...');
                 // Novo usuário - baixar avatar
                 localAvatarUrl = await this.downloadAndSaveAvatar(avatar_url);
                 
@@ -248,6 +261,7 @@ class UserController {
                     role: 'aluno'
                 });
             } else {
+                console.log('Atualizando usuário existente...');
                 // Usuário existente - verificar se precisa atualizar o avatar
                 const shouldUpdateAvatar = !user.avatar_url || user.avatar_url === '/images/default-avatar.png';
                 
@@ -277,12 +291,18 @@ class UserController {
                 avatar_url: user.avatar_url
             };
 
+            console.log('Redirecionando para auth-callback.html com dados:', {
+                token: token.substring(0, 10) + '...',
+                userData
+            });
+
             // Redirecionar para página intermediária com os dados
             const redirectUrl = `/auth-callback.html?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(userData))}`;
             res.redirect(redirectUrl);
 
         } catch (error) {
-            console.error('Erro no callback do Google:', error);
+            console.error('Erro detalhado no callback do Google:', error);
+            console.error('Stack trace:', error.stack);
             res.redirect('/auth.html?error=google_auth_failed');
         }
     }
