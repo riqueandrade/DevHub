@@ -218,75 +218,70 @@ exports.downloadCertificate = async (req, res) => {
            .text(`Concluído em: ${new Date(enrollment.updated_at).toLocaleDateString('pt-BR')}`, 0, infoY + 25, { align: 'center' });
 
         // Assinaturas
-        const signatureY = doc.page.height - 150;
+        const signatureY = doc.page.height - 180;
         const signatureWidth = 200;
-        const gap = 50;
+        const gap = 150;
 
-        // Assinatura do instrutor
+        // Linha da assinatura do instrutor com ornamento
+        const signLineY = signatureY + 40;
+        
+        // Nome do instrutor (acima da linha)
         doc.font('Helvetica-Bold')
            .fontSize(14)
            .opacity(1)
            .fillColor('white')
-           .text(enrollment.course.instructor.name, doc.page.width / 2 - signatureWidth - gap, signatureY + 60, { 
+           .text(enrollment.course.instructor.name, doc.page.width / 2 - signatureWidth - gap, signatureY, { 
                width: signatureWidth,
                align: 'center'
            });
 
-        doc.font('Helvetica')
-           .fontSize(12)
-           .opacity(0.8)
-           .text('Instrutor', doc.page.width / 2 - signatureWidth - gap, signatureY + 80, { 
-               width: signatureWidth,
-               align: 'center'
-           });
-
-        // Linha da assinatura do instrutor com ornamento
-        const signLineY = signatureY + 50;
+        // Linha e ornamento do instrutor
         doc.save();
         doc.opacity(0.2);
-        
         doc.moveTo(doc.page.width/2 - signatureWidth - gap, signLineY)
            .lineTo(doc.page.width/2 - gap, signLineY)
            .lineWidth(1)
            .stroke();
-
-        // Detalhe central da linha
         doc.circle(doc.page.width/2 - signatureWidth/2 - gap, signLineY, 4).fill();
-
         doc.restore();
 
-        // Assinatura da plataforma
+        // Título do instrutor (abaixo da linha)
+        doc.font('Helvetica')
+           .fontSize(12)
+           .opacity(0.8)
+           .text('Instrutor', doc.page.width / 2 - signatureWidth - gap, signLineY + 15, { 
+               width: signatureWidth,
+               align: 'center'
+           });
+
+        // Nome da plataforma
         doc.font('Helvetica-Bold')
            .fontSize(14)
            .opacity(1)
            .fillColor('white')
-           .text('DevHub', doc.page.width / 2 + gap, signatureY + 60, { 
+           .text('DevHub', doc.page.width / 2 + gap, signatureY, { 
                width: signatureWidth,
                align: 'center'
            });
 
-        doc.font('Helvetica')
-           .fontSize(12)
-           .opacity(0.8)
-           .text('Plataforma', doc.page.width / 2 + gap, signatureY + 80, { 
-               width: signatureWidth,
-               align: 'center'
-           });
-
-        // Linha da assinatura da plataforma com ornamento
+        // Linha e ornamento da plataforma
         doc.save();
         doc.opacity(0.2);
-        
         doc.moveTo(doc.page.width/2 + gap, signLineY)
            .lineTo(doc.page.width/2 + signatureWidth + gap, signLineY)
            .lineWidth(1)
            .stroke();
-
-        // Detalhe central da linha
         doc.circle(doc.page.width/2 + signatureWidth/2 + gap, signLineY, 4).fill();
-
         doc.restore();
 
+        // Título da plataforma (abaixo da linha)
+        doc.font('Helvetica')
+           .fontSize(12)
+           .opacity(0.8)
+           .text('Plataforma', doc.page.width / 2 + gap, signLineY + 15, { 
+               width: signatureWidth,
+               align: 'center'
+           })
         // Código do certificado com ornamento
         doc.save();
         doc.opacity(0.8);
