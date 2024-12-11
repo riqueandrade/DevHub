@@ -25,6 +25,7 @@ class UserController {
         const uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
+            console.log('Diretório de avatares criado:', uploadDir);
         }
 
         // Vincular métodos ao contexto this
@@ -37,13 +38,21 @@ class UserController {
         try {
             if (!avatarUrl) return null;
 
+            // Garantir que o diretório existe
+            const uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+                console.log('Diretório de avatares criado:', uploadDir);
+            }
+
             const response = await axios.get(avatarUrl, { responseType: 'arraybuffer' });
             const buffer = Buffer.from(response.data, 'binary');
             
             const filename = `${uuidv4()}.jpg`;
-            const filepath = path.join(__dirname, '..', 'public', 'uploads', 'avatars', filename);
+            const filepath = path.join(uploadDir, filename);
             
             fs.writeFileSync(filepath, buffer);
+            console.log('Avatar salvo com sucesso:', filepath);
             
             return `/uploads/avatars/${filename}`;
         } catch (error) {
@@ -222,22 +231,30 @@ class UserController {
                 return res.redirect('/auth.html?error=google_auth_failed');
             }
 
-            // Baixar e salvar o avatar
-            const localAvatarUrl = await this.downloadAndSaveAvatar(avatar_url);
-
-            // Buscar ou criar usuário
+            // Buscar usuário existente
             let user = await User.findOne({ where: { email } });
+            let localAvatarUrl = null;
 
             if (!user) {
+                // Novo usuário - baixar avatar
+                localAvatarUrl = await this.downloadAndSaveAvatar(avatar_url);
+                
                 // Criar novo usuário
                 user = await User.create({
                     name,
                     email,
                     google_id,
-                    avatar_url: localAvatarUrl,
+                    avatar_url: localAvatarUrl || '/images/default-avatar.png',
                     type: 'user'
                 });
             } else {
+                // Usuário existente - verificar se precisa atualizar o avatar
+                const shouldUpdateAvatar = !user.avatar_url || user.avatar_url === '/images/default-avatar.png';
+                
+                if (shouldUpdateAvatar) {
+                    localAvatarUrl = await this.downloadAndSaveAvatar(avatar_url);
+                }
+
                 // Atualizar dados do usuário
                 await user.update({
                     google_id,
@@ -608,7 +625,7 @@ class UserController {
             });
 
             if (!certificate) {
-                return res.status(404).json({ error: 'Certificado não encontrado' });
+                return res.status(404).json({ error: 'Certificado n��o encontrado' });
             }
 
             // Buscar informações da matrícula

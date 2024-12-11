@@ -278,8 +278,9 @@ async function handleNewLesson(event) {
         const description = document.getElementById('lessonDescription').value.trim();
         const contentType = document.getElementById('contentType').value;
         const duration = document.getElementById('lessonDuration').value;
+        const contentFile = document.getElementById('contentFile').files[0];
         
-        // Validar campos vazios ou inválidos
+        // Validar campos
         if (!title) {
             throw new Error('O título é obrigatório');
         }
@@ -289,24 +290,32 @@ async function handleNewLesson(event) {
         if (!contentType) {
             throw new Error('O tipo de conteúdo é obrigatório');
         }
+        
+        // Validar tipo de conteúdo
+        const allowedTypes = ['video', 'texto', 'quiz', 'slides', 'documento', 'pdf'];
+        if (!allowedTypes.includes(contentType)) {
+            throw new Error('Tipo de conteúdo inválido');
+        }
+
         if (!duration || duration < 1) {
             throw new Error('A duração deve ser maior que zero');
         }
-
-        // Validar arquivo
-        const contentFile = document.getElementById('contentFile').files[0];
         if (!contentFile) {
             throw new Error('Por favor, selecione um arquivo');
         }
 
-        // Criar FormData com dados sanitizados
-        const formData = new FormData();
-        formData.append('module_id', moduleId);
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('content_type', contentType);
-        formData.append('duration', duration);
-        formData.append('content_file', contentFile);
+        // Validar tipo de arquivo
+        const allowedMimeTypes = {
+            'pdf': ['application/pdf'],
+            'slides': ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+            'documento': ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+            'video': ['video/mp4', 'video/webm', 'video/ogg'],
+            'texto': ['text/plain']
+        };
+
+        if (allowedMimeTypes[contentType] && !allowedMimeTypes[contentType].includes(contentFile.type)) {
+            throw new Error(`Tipo de arquivo inválido para ${contentType}`);
+        }
 
         console.log('Dados do formulário:', {
             moduleId,
@@ -314,8 +323,20 @@ async function handleNewLesson(event) {
             description,
             contentType,
             duration,
-            fileName: contentFile.name
+            fileName: contentFile.name,
+            fileType: contentFile.type,
+            fileSize: contentFile.size
         });
+
+        // Criar FormData
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('content_type', contentType);
+        formData.append('duration', duration);
+        formData.append('content_file', contentFile);
+
+        console.log('Enviando requisição para:', `/api/courses/${courseId}/modules/${moduleId}/lessons`);
 
         const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons`, {
             method: 'POST',
@@ -325,13 +346,13 @@ async function handleNewLesson(event) {
             body: formData
         });
 
+        const responseData = await response.json();
+
         if (!response.ok) {
-            const responseData = await response.json();
             console.error('Erro na resposta:', responseData);
             throw new Error(responseData.error || 'Erro ao criar aula');
         }
 
-        const responseData = await response.json();
         console.log('Aula criada com sucesso:', responseData);
 
         // Fechar modal e atualizar lista

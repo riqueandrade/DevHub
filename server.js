@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const fileUpload = require('express-fileupload');
 const sequelize = require('./config/database');
 const models = require('./models');
 
@@ -21,17 +20,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload({
-    createParentPath: true,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB max-file-size
-    },
-    abortOnLimit: true
-}));
 
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Rota protegida para certificados
 app.use('/certificates', authMiddleware, express.static(path.join(__dirname, 'certificates')));
