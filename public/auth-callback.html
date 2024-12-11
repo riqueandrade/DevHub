@@ -61,7 +61,8 @@
                 .then(user => {
                     console.log('Dados do usuário:', {
                         ...user,
-                        onboarding_completed: user.onboarding_completed
+                        onboarding_completed: user.onboarding_completed,
+                        isNewUser
                     });
 
                     // Salvar dados no localStorage
@@ -69,9 +70,8 @@
                     localStorage.setItem('user', JSON.stringify(user));
 
                     // Redirecionar baseado no tipo de usuário
-                    const redirectUrl = isNewUser || !user.onboarding_completed
-                        ? '/onboarding.html'
-                        : '/dashboard.html';
+                    // Apenas redireciona para onboarding se for um usuário novo
+                    const redirectUrl = isNewUser ? '/onboarding.html' : '/dashboard.html';
 
                     console.log('Redirecionando para:', redirectUrl);
                     window.location.href = redirectUrl;

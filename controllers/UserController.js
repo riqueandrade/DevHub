@@ -228,6 +228,11 @@ class UserController {
                     avatar_url: payload.picture,
                     onboarding_completed: false // Novo usuário precisa fazer onboarding
                 });
+            } else {
+                // Usuário existente - garantir que onboarding_completed está definido
+                if (user.onboarding_completed === null) {
+                    await user.update({ onboarding_completed: true });
+                }
             }
 
             const token = jwt.sign(
@@ -236,9 +241,14 @@ class UserController {
                 { expiresIn: '24h' }
             );
 
-            // Redirecionar com flag isNewUser
+            // Redirecionar com flag isNewUser apenas para novos usuários
             const redirectUrl = `/auth-callback.html?token=${token}&isNewUser=${isNewUser}`;
-            console.log('Redirecionando para:', redirectUrl, 'isNewUser:', isNewUser);
+            console.log('Redirecionando para:', redirectUrl, {
+                isNewUser,
+                userId: user.id,
+                onboarding_completed: user.onboarding_completed
+            });
+            
             res.redirect(redirectUrl);
         } catch (error) {
             console.error('Erro no callback do Google:', error);
