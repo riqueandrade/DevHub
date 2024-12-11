@@ -6,6 +6,9 @@ const authMiddleware = require('../middlewares/auth');
 // Middleware de autenticação para todas as rotas
 router.use(authMiddleware);
 
+// Rota de onboarding
+router.post('/onboarding', UserController.saveOnboarding);
+
 // Rotas do perfil
 router.get('/me', UserController.getProfile);
 router.put('/profile', UserController.updateProfile);

@@ -207,108 +207,41 @@ class UserController {
 
     async googleCallback(req, res) {
         try {
-            console.log('Google Callback - Início');
-            console.log('Query params:', req.query);
-            console.log('URL completa:', req.protocol + '://' + req.get('host') + req.originalUrl);
-
             const { code } = req.query;
-            if (!code) {
-                console.error('Código de autorização não fornecido');
-                return res.redirect('/auth.html?error=google_auth_failed');
-            }
-
-            console.log('Obtendo tokens do Google...');
-            // Obter tokens do Google
             const { tokens } = await googleClient.getToken(code);
-            if (!tokens || !tokens.id_token) {
-                console.error('Tokens não recebidos do Google');
-                return res.redirect('/auth.html?error=google_auth_failed');
-            }
-
-            console.log('Verificando ID token...');
             const ticket = await googleClient.verifyIdToken({
                 idToken: tokens.id_token,
                 audience: process.env.GOOGLE_CLIENT_ID
             });
 
             const payload = ticket.getPayload();
-            if (!payload) {
-                console.error('Payload do token não encontrado');
-                return res.redirect('/auth.html?error=google_auth_failed');
-            }
-
-            console.log('Dados do usuário recebidos:', { 
-                name: payload.name, 
-                email: payload.email,
-                google_id: payload.sub
-            });
-
-            const { name, email, sub: google_id, picture: avatar_url } = payload;
-            if (!email) {
-                console.error('Email não fornecido pelo Google');
-                return res.redirect('/auth.html?error=google_auth_failed');
-            }
-
-            // Buscar usuário existente
-            let user = await User.findOne({ where: { email } });
-            let localAvatarUrl = null;
+            let user = await User.findOne({ where: { google_id: payload.sub } });
+            let isNewUser = false;
 
             if (!user) {
-                console.log('Criando novo usuário...');
-                // Novo usuário - baixar avatar
-                localAvatarUrl = await this.downloadAndSaveAvatar(avatar_url);
-                
-                // Criar novo usuário
+                // Novo usuário
+                isNewUser = true;
                 user = await User.create({
-                    name,
-                    email,
-                    google_id,
-                    avatar_url: localAvatarUrl || '/images/default-avatar.png',
-                    role: 'aluno'
-                });
-            } else {
-                console.log('Atualizando usuário existente...');
-                // Usuário existente - verificar se precisa atualizar o avatar
-                const shouldUpdateAvatar = !user.avatar_url || user.avatar_url === '/images/default-avatar.png';
-                
-                if (shouldUpdateAvatar) {
-                    localAvatarUrl = await this.downloadAndSaveAvatar(avatar_url);
-                }
-
-                // Atualizar dados do usuário
-                await user.update({
-                    google_id,
-                    avatar_url: localAvatarUrl || user.avatar_url,
-                    name: name || user.name
+                    name: payload.name,
+                    email: payload.email,
+                    google_id: payload.sub,
+                    avatar_url: payload.picture,
+                    onboarding_completed: false // Novo usuário precisa fazer onboarding
                 });
             }
 
-            // Gerar token JWT
-            const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-                expiresIn: '1d'
-            });
+            const token = jwt.sign(
+                { id: user.id, email: user.email, role: user.role },
+                process.env.JWT_SECRET,
+                { expiresIn: '24h' }
+            );
 
-            // Preparar dados do usuário
-            const userData = {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                avatar_url: user.avatar_url
-            };
-
-            console.log('Redirecionando para auth-callback.html com dados:', {
-                token: token.substring(0, 10) + '...',
-                userData
-            });
-
-            // Redirecionar para página intermediária com os dados
-            const redirectUrl = `/auth-callback.html?token=${encodeURIComponent(token)}&user=${encodeURIComponent(JSON.stringify(userData))}`;
+            // Redirecionar com flag isNewUser
+            const redirectUrl = `/auth-callback.html?token=${token}&isNewUser=${isNewUser}`;
+            console.log('Redirecionando para:', redirectUrl, 'isNewUser:', isNewUser);
             res.redirect(redirectUrl);
-
         } catch (error) {
-            console.error('Erro detalhado no callback do Google:', error);
-            console.error('Stack trace:', error.stack);
+            console.error('Erro no callback do Google:', error);
             res.redirect('/auth.html?error=google_auth_failed');
         }
     }
@@ -993,6 +926,65 @@ class UserController {
         } catch (error) {
             console.error('Erro ao atualizar privacidade:', error);
             res.status(500).json({ error: 'Erro ao atualizar configurações de privacidade' });
+        }
+    }
+
+    // Salvar dados do onboarding
+    async saveOnboarding(req, res) {
+        try {
+            const userId = req.user.id;
+            const { role, name, bio, interests, notifications } = req.body;
+
+            console.log('Salvando dados do onboarding:', {
+                userId,
+                role,
+                name,
+                bio,
+                interests,
+                notifications
+            });
+
+            // Validar role
+            if (!['aluno', 'instrutor'].includes(role)) {
+                return res.status(400).json({ error: 'Tipo de conta inválido' });
+            }
+
+            // Atualizar usuário
+            const user = await User.findByPk(userId);
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
+
+            await user.update({
+                role,
+                name,
+                bio,
+                email_notifications: notifications.email,
+                course_updates: notifications.courseUpdates,
+                promotional_emails: notifications.promotional,
+                onboarding_completed: true
+            });
+
+            // Registrar interesses (se necessário, criar tabela de interesses)
+            // TODO: Implementar lógica de interesses quando necessário
+
+            // Registrar atividade
+            await Activity.create({
+                user_id: userId,
+                type: 'profile_update',
+                description: 'Completou o perfil inicial'
+            });
+
+            // Retornar usuário atualizado
+            const updatedUser = await User.findByPk(userId, {
+                attributes: { exclude: ['password'] }
+            });
+
+            console.log('Onboarding concluído com sucesso:', updatedUser);
+            res.json(updatedUser);
+        } catch (error) {
+            console.error('Erro ao salvar dados do onboarding:', error);
+            res.status(500).json({ error: 'Erro ao salvar dados do onboarding' });
         }
     }
 }

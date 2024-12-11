@@ -229,4 +229,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     });
+
+    // Função para processar o login
+    const processLogin = (data) => {
+        console.log('Processando login:', {
+            token: data.token ? data.token.substring(0, 10) + '...' : null,
+            user: {
+                ...data.user,
+                onboarding_completed: data.user.onboarding_completed
+            }
+        });
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Verificar se o usuário precisa completar o onboarding
+        if (!data.user.onboarding_completed) {
+            console.log('Redirecionando para onboarding');
+            window.location.href = '/onboarding.html';
+        } else {
+            console.log('Redirecionando para dashboard');
+            window.location.href = '/dashboard.html';
+        }
+    };
 });

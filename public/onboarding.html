@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao DevHub - Complete seu Perfil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/onboarding.css" rel="stylesheet">
+</head>
+<body>
+    <div class="onboarding-container">
+        <div class="onboarding-content">
+            <!-- Indicador de Progresso -->
+            <div class="progress-steps mb-4">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Tipo de Conta</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Informações Básicas</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Preferências</div>
+                </div>
+            </div>
+
+            <!-- Formulários -->
+            <div class="onboarding-forms">
+                <!-- Etapa 1: Tipo de Conta -->
+                <form id="accountTypeForm" class="active">
+                    <h2 class="text-white">Bem-vindo ao DevHub!</h2>
+                    <p class="text-white mb-4">Como você planeja usar a plataforma?</p>
+
+                    <div class="account-types">
+                        <div class="account-type-option" data-role="aluno">
+                            <i class="bi bi-mortarboard"></i>
+                            <h3>Aluno</h3>
+                            <p>Quero aprender e me desenvolver</p>
+                        </div>
+                        <div class="account-type-option" data-role="instrutor">
+                            <i class="bi bi-person-workspace"></i>
+                            <h3>Instrutor</h3>
+                            <p>Quero compartilhar conhecimento</p>
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-primary next-step" disabled>Continuar</button>
+                    </div>
+                </form>
+
+                <!-- Etapa 2: Informações Básicas -->
+                <form id="basicInfoForm" class="hidden">
+                    <h2 class="text-white">Informações Básicas</h2>
+                    <p class="text-white mb-4">Conte-nos um pouco sobre você</p>
+
+                    <div class="avatar-upload mb-4">
+                        <div class="avatar-preview">
+                            <img src="/images/default-avatar.png" id="avatarPreview" alt="Seu avatar">
+                        </div>
+                        <div class="avatar-edit">
+                            <input type="file" id="avatarInput" accept="image/*">
+                            <label for="avatarInput" class="btn btn-outline-primary">
+                                <i class="bi bi-camera"></i> Alterar Foto
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bio" class="form-label">Biografia</label>
+                        <textarea class="form-control" id="bio" rows="3" 
+                                placeholder="Conte um pouco sobre sua experiência e objetivos..." style="color: white;"></textarea>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-outline-secondary prev-step">Voltar</button>
+                        <button type="button" class="btn btn-primary next-step">Continuar</button>
+                    </div>
+                </form>
+
+                <!-- Etapa 3: Preferências -->
+                <form id="preferencesForm" class="hidden">
+                    <h2 class="text-white">Suas Preferências</h2>
+                    <p class="text-white mb-4">Personalize sua experiência</p>
+
+                    <div class="mb-4">
+                        <h5>Áreas de Interesse</h5>
+                        <div class="interests-grid" id="interestsGrid">
+                            <!-- Preenchido via JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Configurações de Notificação</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                            <label class="form-check-label" for="emailNotifications">
+                                Receber notificações por e-mail
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="courseUpdates" checked>
+                            <label class="form-check-label" for="courseUpdates">
+                                Atualizações dos cursos
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="promotionalEmails">
+                            <label class="form-check-label" for="promotionalEmails">
+                                E-mails promocionais
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-outline-secondary prev-step">Voltar</button>
+                        <button type="submit" class="btn btn-primary">Concluir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/onboarding.js"></script>
+</body>
+</html> 

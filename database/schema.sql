@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS users (
     profile_visibility BOOLEAN DEFAULT TRUE,
     show_progress BOOLEAN DEFAULT TRUE,
     show_certificates BOOLEAN DEFAULT TRUE,
+    -- Onboarding
+    onboarding_completed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
