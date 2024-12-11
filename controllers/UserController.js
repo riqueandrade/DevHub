@@ -17,7 +17,10 @@ const axios = require('axios');
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const redirectUri = isDevelopment
     ? 'http://localhost:3000/api/auth/google/callback'
-    : 'https://devhub-4gmd.onrender.com/auth/google/callback';
+    : 'https://devhub-4gmd.onrender.com/api/auth/google/callback';
+
+console.log('Ambiente:', isDevelopment ? 'desenvolvimento' : 'produção');
+console.log('Redirect URI configurado:', redirectUri);
 
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
