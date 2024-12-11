@@ -16,7 +16,7 @@ const axios = require('axios');
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri: 'http://localhost:3000/api/auth/google/callback'
+    redirectUri: process.env.GOOGLE_REDIRECT_URI
 });
 
 class UserController {
@@ -625,7 +625,7 @@ class UserController {
             });
 
             if (!certificate) {
-                return res.status(404).json({ error: 'Certificado n��o encontrado' });
+                return res.status(404).json({ error: 'Certificado não encontrado' });
             }
 
             // Buscar informações da matrícula
