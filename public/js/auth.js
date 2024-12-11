@@ -1,22 +1,26 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Verificar se há erro na URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get('error');
-    if (error) {
-        let errorMessage = 'Erro durante a autenticação';
-        switch (error) {
-            case 'google_auth_failed':
-                errorMessage = 'Falha na autenticação com o Google';
-                break;
-            case 'auth_failed':
-                errorMessage = 'Erro ao processar autenticação';
-                break;
-            case 'missing_data':
-                errorMessage = 'Dados de autenticação incompletos';
-                break;
+    // Limpar localStorage ao entrar na página de autenticação
+    localStorage.clear();
+
+    // Função para mostrar mensagens
+    const showMessage = (message, type = 'danger') => {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.insertBefore(alertDiv, loginForm.firstChild);
         }
-        showMessage(errorMessage);
-    }
+        
+        setTimeout(() => {
+            alertDiv.classList.add('fade-out');
+            setTimeout(() => alertDiv.remove(), 300);
+        }, 5000);
+    };
 
     // Verificar se usuário já está autenticado
     const token = localStorage.getItem('token');
@@ -30,17 +34,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             if (response.ok) {
-                window.location.href = '/dashboard.html';
+                window.location.replace('/dashboard.html');
                 return;
             } else {
                 // Se o token não for válido, limpar o localStorage
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                localStorage.clear();
             }
         } catch (error) {
             console.error('Erro ao verificar token:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            localStorage.clear();
         }
     }
 
@@ -64,24 +66,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
-    
-    // Função para mostrar mensagens
-    const showMessage = (message, type = 'danger') => {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        const activeForm = document.querySelector('.tab-content.active form');
-        activeForm.insertBefore(alertDiv, activeForm.firstChild);
-        
-        setTimeout(() => {
-            alertDiv.classList.add('fade-out');
-            setTimeout(() => alertDiv.remove(), 300);
-        }, 5000);
-    };
+
+    // Verificar se há erro na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+        let errorMessage = 'Erro durante a autenticação';
+        switch (error) {
+            case 'google_auth_failed':
+                errorMessage = 'Falha na autenticação com o Google';
+                break;
+            case 'auth_failed':
+                errorMessage = 'Erro ao processar autenticação';
+                break;
+            case 'missing_data':
+                errorMessage = 'Dados de autenticação incompletos';
+                break;
+            case 'invalid_user_data':
+                errorMessage = 'Dados do usuário inválidos';
+                break;
+        }
+        showMessage(errorMessage);
+    }
 
     // Função para validar o formulário de registro
     const validateRegisterForm = () => {
@@ -185,14 +191,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch('/api/auth/google/config');
             const { clientId } = await response.json();
             
-            const redirectUri = window.location.origin + '/api/auth/google/callback';
-            const scope = 'email profile';
+            const redirectUri = encodeURIComponent(window.location.origin + '/api/auth/google/callback');
+            const scope = encodeURIComponent('email profile');
             const responseType = 'code';
+            const prompt = 'select_account';
             
-            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}&prompt=${prompt}`;
             
             window.location.href = authUrl;
         } catch (error) {
+            console.error('Erro ao iniciar login com Google:', error);
             showMessage('Erro ao iniciar login com Google');
         }
     };

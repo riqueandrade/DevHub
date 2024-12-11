@@ -21,21 +21,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadUserData() {
     try {
-        const response = await fetch('/api/user/me', {
+        // Carregar dados do perfil
+        const profileResponse = await fetch('/api/user/me', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
 
-        if (!response.ok) {
-            if (response.status === 401) {
+        if (!profileResponse.ok) {
+            if (profileResponse.status === 401) {
                 window.location.href = '/auth.html';
                 return;
             }
             throw new Error('Erro ao carregar dados do usuário');
         }
 
-        const userData = await response.json();
+        const userData = await profileResponse.json();
 
         // Preenche os campos do formulário de perfil
         document.getElementById('name').value = userData.name || '';
@@ -49,18 +50,32 @@ async function loadUserData() {
         userAvatar.src = userData.avatar_url || '/images/default-avatar.png';
         userName.textContent = userData.name;
 
-        // Carrega preferências do usuário (se existirem)
-        if (userData.preferences) {
-            document.getElementById('emailNotifications').checked = userData.preferences.email_notifications;
-            document.getElementById('courseUpdates').checked = userData.preferences.course_updates;
-            document.getElementById('promotionalEmails').checked = userData.preferences.promotional_emails;
-            document.getElementById('profileVisibility').checked = userData.preferences.profile_visibility;
-            document.getElementById('showProgress').checked = userData.preferences.show_progress;
-            document.getElementById('showCertificates').checked = userData.preferences.show_certificates;
+        // Carregar configurações
+        const settingsResponse = await fetch('/api/user/settings', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!settingsResponse.ok) {
+            throw new Error('Erro ao carregar configurações');
         }
+
+        const settings = await settingsResponse.json();
+
+        // Atualizar campos de notificações
+        document.getElementById('emailNotifications').checked = settings.notifications.email_notifications;
+        document.getElementById('courseUpdates').checked = settings.notifications.course_updates;
+        document.getElementById('promotionalEmails').checked = settings.notifications.promotional_emails;
+
+        // Atualizar campos de privacidade
+        document.getElementById('profileVisibility').checked = settings.privacy.profile_visibility;
+        document.getElementById('showProgress').checked = settings.privacy.show_progress;
+        document.getElementById('showCertificates').checked = settings.privacy.show_certificates;
+
     } catch (error) {
-        console.error('Erro ao carregar dados do usuário:', error);
-        showAlert('Erro ao carregar dados do usuário', 'danger');
+        console.error('Erro ao carregar dados:', error);
+        showAlert('Erro ao carregar dados', 'danger');
     }
 }
 
@@ -144,7 +159,7 @@ function setupFormListeners() {
         };
 
         try {
-            const response = await fetch('/api/user/notifications', {
+            const response = await fetch('/api/user/settings/notifications', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,7 +189,7 @@ function setupFormListeners() {
         };
 
         try {
-            const response = await fetch('/api/user/privacy', {
+            const response = await fetch('/api/user/settings/privacy', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

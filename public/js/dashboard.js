@@ -3,7 +3,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const verifyToken = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/auth.html';
+            console.error('Token não encontrado');
+            localStorage.clear();
+            window.location.replace('/auth.html');
             return false;
         }
 
@@ -21,9 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return true;
         } catch (error) {
             console.error('Erro na verificação do token:', error);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/auth.html';
+            localStorage.clear();
+            window.location.replace('/auth.html');
             return false;
         }
     };
@@ -34,22 +35,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Carregar dados do usuário
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user) {
-        // Atualizar elementos da interface com dados do usuário
-        const userNameElement = document.getElementById('userName');
-        const welcomeUserNameElement = document.getElementById('welcomeUserName');
-        if (userNameElement) userNameElement.textContent = user.name;
-        if (welcomeUserNameElement) welcomeUserNameElement.textContent = user.name;
-
-        const userAvatarElement = document.getElementById('userAvatar');
-        if (userAvatarElement) {
-            if (user.avatar_url) {
-                userAvatarElement.src = user.avatar_url;
-            } else {
-                userAvatarElement.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2563eb&color=fff`;
-            }
+    try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            console.error('Dados do usuário não encontrados');
+            localStorage.clear();
+            window.location.replace('/auth.html');
+            return;
         }
+
+        const user = JSON.parse(userStr);
+        if (!user || !user.name) {
+            console.error('Dados do usuário inválidos');
+            localStorage.clear();
+            window.location.replace('/auth.html');
+            return;
+        }
+
+        // Atualizar elementos da interface com dados do usuário
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('welcomeUserName').textContent = user.name;
+        document.getElementById('userAvatar').src = user.avatar_url || '/images/default-avatar.png';
+
+        // Mostrar/ocultar link de gerenciamento de cursos
+        const adminInstructorMenu = document.querySelector('.admin-instructor-only');
+        if (user.role === 'admin' || user.role === 'instrutor') {
+            adminInstructorMenu.style.display = 'block';
+        }
+
+        // Atualizar o cache
+        localStorage.setItem('user', JSON.stringify(user));
+    } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error);
+        localStorage.clear();
+        window.location.replace('/auth.html');
+        return;
     }
 
     // Função para formatar duração

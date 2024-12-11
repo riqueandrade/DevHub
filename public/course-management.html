@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Cursos - DevHub</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/course-management.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard.html">
+                <img src="/images/favicon.svg" alt="Dev Hub Logo" class="brand-icon me-2">
+                Dev Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/courses.html">
+                            <i class="bi bi-collection-play"></i> Meus Cursos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog.html">
+                            <i class="bi bi-grid"></i> Catálogo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/course-management.html">
+                            <i class="bi bi-pencil-square"></i> Gerenciar Cursos
+                        </a>
+                    </li>
+                </ul>
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle user-button" type="button" data-bs-toggle="dropdown">
+                            <div class="d-flex align-items-center">
+                                <img src="" alt="Avatar" class="user-avatar" id="userAvatar">
+                                <span id="userName" class="ms-2">Carregando...</span>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/profile.html">
+                                    <i class="bi bi-person"></i> Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/settings.html">
+                                    <i class="bi bi-gear"></i> Configurações
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button class="dropdown-item text-danger" id="logoutButton">
+                                    <i class="bi bi-box-arrow-right"></i> Sair
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="course-management-content">
+        <div class="container">
+            <div class="content-header">
+                <h1>Gerenciamento de Cursos</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newCourseModal">
+                    <i class="bi bi-plus-lg"></i> Novo Curso
+                </button>
+            </div>
+
+            <!-- Tabs de navegação -->
+            <ul class="nav nav-tabs" id="coursesTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="draft-tab" data-bs-toggle="tab" data-bs-target="#draft" type="button">
+                        <i class="bi bi-file-earmark-text"></i> Rascunhos
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="published-tab" data-bs-toggle="tab" data-bs-target="#published" type="button">
+                        <i class="bi bi-globe"></i> Publicados
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived" type="button">
+                        <i class="bi bi-archive"></i> Arquivados
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Conteúdo das tabs -->
+            <div class="tab-content" id="coursesTabContent">
+                <!-- Rascunhos -->
+                <div class="tab-pane fade show active" id="draft" role="tabpanel">
+                    <div class="row" id="draftCourses">
+                        <!-- Cursos em rascunho serão inseridos aqui -->
+                    </div>
+                </div>
+
+                <!-- Publicados -->
+                <div class="tab-pane fade" id="published" role="tabpanel">
+                    <div class="row" id="publishedCourses">
+                        <!-- Cursos publicados serão inseridos aqui -->
+                    </div>
+                </div>
+
+                <!-- Arquivados -->
+                <div class="tab-pane fade" id="archived" role="tabpanel">
+                    <div class="row" id="archivedCourses">
+                        <!-- Cursos arquivados serão inseridos aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Novo Curso -->
+    <div class="modal fade" id="newCourseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Curso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newCourseForm">
+                        <div class="mb-3">
+                            <label for="courseTitle" class="form-label">Título do Curso</label>
+                            <input type="text" class="form-control" id="courseTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="courseDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="courseDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="courseCategory" class="form-label">Categoria</label>
+                                <select class="form-select" id="courseCategory" required>
+                                    <!-- Categorias serão carregadas via JavaScript -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="courseLevel" class="form-label">Nível</label>
+                                <select class="form-select" id="courseLevel" required>
+                                    <option value="iniciante">Iniciante</option>
+                                    <option value="intermediario">Intermediário</option>
+                                    <option value="avancado">Avançado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="courseDuration" class="form-label">Duração (minutos)</label>
+                                <input type="number" class="form-control" id="courseDuration" min="1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="coursePrice" class="form-label">Preço (R$)</label>
+                                <input type="number" class="form-control" id="coursePrice" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="courseThumbnail" class="form-label">Thumbnail</label>
+                            <input type="file" class="form-control" id="courseThumbnail" accept="image/*">
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Criar Curso</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div class="modal fade" id="editCourseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Curso</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCourseForm">
+                        <input type="hidden" id="editCourseId">
+                        <div class="mb-3">
+                            <label for="editCourseTitle" class="form-label">Título do Curso</label>
+                            <input type="text" class="form-control" id="editCourseTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCourseDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="editCourseDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editCourseCategory" class="form-label">Categoria</label>
+                                <select class="form-select" id="editCourseCategory" required>
+                                    <!-- Categorias serão carregadas via JavaScript -->
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editCourseLevel" class="form-label">Nível</label>
+                                <select class="form-select" id="editCourseLevel" required>
+                                    <option value="iniciante">Iniciante</option>
+                                    <option value="intermediario">Intermediário</option>
+                                    <option value="avancado">Avançado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editCourseDuration" class="form-label">Duração (minutos)</label>
+                                <input type="number" class="form-control" id="editCourseDuration" min="1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editCoursePrice" class="form-label">Preço (R$)</label>
+                                <input type="number" class="form-control" id="editCoursePrice" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCourseThumbnail" class="form-label">Nova Thumbnail</label>
+                            <input type="file" class="form-control" id="editCourseThumbnail" accept="image/*">
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" onclick="saveCourseEdit()">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth-common.js"></script>
+    <script src="/js/course-management.js"></script>
+</body>
+
+</html>

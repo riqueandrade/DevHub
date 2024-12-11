@@ -31,6 +31,7 @@ app.use(fileUpload({
 
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rota protegida para certificados
 app.use('/certificates', authMiddleware, express.static(path.join(__dirname, 'certificates')));

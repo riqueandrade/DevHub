@@ -8,6 +8,9 @@
 </head>
 <body>
     <script>
+        // Limpar localStorage antes de processar novos dados
+        localStorage.clear();
+
         // Obter parâmetros da URL
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
@@ -15,19 +18,28 @@
 
         if (token && userStr) {
             try {
-                // Decodificar e salvar dados do usuário
+                // Decodificar e validar dados do usuário
                 const user = JSON.parse(decodeURIComponent(userStr));
+                
+                // Verificar se os dados do usuário são válidos
+                if (!user || !user.name || !user.email || !user.id) {
+                    console.error('Dados do usuário inválidos:', user);
+                    window.location.replace('/auth.html?error=invalid_user_data');
+                    throw new Error('Dados do usuário inválidos');
+                }
+
+                // Salvar dados no localStorage
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
                 
                 // Redirecionar para o dashboard
-                window.location.href = '/dashboard.html';
+                window.location.replace('/dashboard.html');
             } catch (error) {
                 console.error('Erro ao processar dados:', error);
-                window.location.href = '/auth.html?error=missing_data';
+                window.location.replace('/auth.html?error=missing_data');
             }
         } else {
-            window.location.href = '/auth.html?error=auth_failed';
+            window.location.replace('/auth.html?error=auth_failed');
         }
     </script>
 </body>

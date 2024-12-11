@@ -11,6 +11,7 @@ const PDFDocument = require('pdfkit');
 const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 const Enrollment = require('../models/Enrollment');
+const axios = require('axios');
 
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -19,6 +20,38 @@ const googleClient = new OAuth2Client({
 });
 
 class UserController {
+    constructor() {
+        // Criar diretório de uploads se não existir
+        const uploadDir = path.join(__dirname, '..', 'uploads', 'avatars');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // Vincular métodos ao contexto this
+        this.googleCallback = this.googleCallback.bind(this);
+        this.downloadAndSaveAvatar = this.downloadAndSaveAvatar.bind(this);
+    }
+
+    // Função para baixar e salvar avatar
+    async downloadAndSaveAvatar(avatarUrl) {
+        try {
+            if (!avatarUrl) return null;
+
+            const response = await axios.get(avatarUrl, { responseType: 'arraybuffer' });
+            const buffer = Buffer.from(response.data, 'binary');
+            
+            const filename = `${uuidv4()}.jpg`;
+            const filepath = path.join(__dirname, '..', 'uploads', 'avatars', filename);
+            
+            fs.writeFileSync(filepath, buffer);
+            
+            return `/uploads/avatars/${filename}`;
+        } catch (error) {
+            console.error('Erro ao baixar avatar:', error);
+            return null;
+        }
+    }
+
     async register(req, res) {
         try {
             const { name, email, password } = req.body;
@@ -160,15 +193,37 @@ class UserController {
     async googleCallback(req, res) {
         try {
             const { code } = req.query;
+            if (!code) {
+                console.error('Código de autorização não fornecido');
+                return res.redirect('/auth.html?error=google_auth_failed');
+            }
 
             // Obter tokens do Google
             const { tokens } = await googleClient.getToken(code);
+            if (!tokens || !tokens.id_token) {
+                console.error('Tokens não recebidos do Google');
+                return res.redirect('/auth.html?error=google_auth_failed');
+            }
+
             const ticket = await googleClient.verifyIdToken({
                 idToken: tokens.id_token,
                 audience: process.env.GOOGLE_CLIENT_ID
             });
 
-            const { name, email, sub: google_id, picture: avatar_url } = ticket.getPayload();
+            const payload = ticket.getPayload();
+            if (!payload) {
+                console.error('Payload do token não encontrado');
+                return res.redirect('/auth.html?error=google_auth_failed');
+            }
+
+            const { name, email, sub: google_id, picture: avatar_url } = payload;
+            if (!email) {
+                console.error('Email não fornecido pelo Google');
+                return res.redirect('/auth.html?error=google_auth_failed');
+            }
+
+            // Baixar e salvar o avatar
+            const localAvatarUrl = await this.downloadAndSaveAvatar(avatar_url);
 
             // Buscar ou criar usuário
             let user = await User.findOne({ where: { email } });
@@ -179,14 +234,14 @@ class UserController {
                     name,
                     email,
                     google_id,
-                    avatar_url,
+                    avatar_url: localAvatarUrl,
                     type: 'user'
                 });
             } else {
                 // Atualizar dados do usuário
                 await user.update({
                     google_id,
-                    avatar_url,
+                    avatar_url: localAvatarUrl || user.avatar_url,
                     name: name || user.name
                 });
             }
@@ -202,7 +257,7 @@ class UserController {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                avatar_url: avatar_url
+                avatar_url: user.avatar_url
             };
 
             // Redirecionar para página intermediária
