@@ -1319,3 +1319,22 @@ exports.completeLesson = async (req, res) => {
         res.status(500).json({ error: 'Erro ao marcar aula como concluída' });
     }
 };
+
+// Obter todas as matrículas do usuário
+exports.getEnrollments = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const enrollments = await Enrollment.findAll({
+            where: {
+                user_id: userId
+            },
+            attributes: ['id', 'course_id', 'status', 'progress']
+        });
+
+        res.json(enrollments);
+    } catch (error) {
+        console.error('Erro ao buscar matrículas:', error);
+        res.status(500).json({ error: 'Erro ao buscar matrículas' });
+    }
+};

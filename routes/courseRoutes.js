@@ -15,6 +15,7 @@ router.post('/', checkRole(['admin', 'instrutor']), CourseController.create);
 router.get('/in-progress', CourseController.getInProgress);
 router.get('/completed', CourseController.getCompleted);
 router.get('/recommended', CourseController.getRecommended);
+router.get('/enrollments', CourseController.getEnrollments);
 router.post('/enroll', CourseController.enroll);
 
 // Rotas com parâmetros

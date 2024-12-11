@@ -83,16 +83,34 @@ const loadCourses = async () => {
             price: state.filters.price.join(',')
         });
 
-        const response = await fetch(`/api/catalog/courses?${queryParams}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        // Buscar cursos e matrículas do usuário
+        const [coursesResponse, enrollmentsResponse] = await Promise.all([
+            fetch(`/api/catalog/courses?${queryParams}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            }),
+            fetch('/api/courses/enrollments', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            })
+        ]);
 
-        if (!response.ok) throw new Error('Erro ao carregar cursos');
+        if (!coursesResponse.ok) throw new Error('Erro ao carregar cursos');
+        if (!enrollmentsResponse.ok) throw new Error('Erro ao carregar matrículas');
 
-        const data = await response.json();
-        state.courses = data.courses;
+        const data = await coursesResponse.json();
+        const enrollments = await enrollmentsResponse.json();
+
+        // Criar um Set com os IDs dos cursos matriculados
+        const enrolledCourseIds = new Set(enrollments.map(e => e.course_id));
+
+        // Adicionar informação de matrícula aos cursos
+        state.courses = data.courses.map(course => ({
+            ...course,
+            isEnrolled: enrolledCourseIds.has(course.id)
+        }));
         state.pagination.total = data.total;
 
         renderCourses();
@@ -154,6 +172,20 @@ const renderCourses = () => {
         const duration = formatDuration(course.duration);
         const price = typeof course.price === 'number' ? course.price : 0;
 
+        // Determinar o botão correto baseado no status de matrícula
+        let actionButton;
+        if (course.isEnrolled) {
+            actionButton = `
+                <a href="/course.html?id=${course.id}" class="btn btn-primary w-100">
+                    <i class="bi bi-play-circle"></i> Continuar Curso
+                </a>`;
+        } else {
+            actionButton = `
+                <button class="btn btn-primary w-100" onclick="enrollCourse(${course.id})">
+                    ${price > 0 ? `<i class="bi bi-cart"></i> Comprar por R$ ${price.toFixed(2)}` : '<i class="bi bi-play-circle"></i> Começar Agora'}
+                </button>`;
+        }
+
         return `
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="course-card">
@@ -178,9 +210,7 @@ const renderCourses = () => {
                         </div>
                     </div>
                     <div class="course-footer">
-                        <button class="btn btn-primary w-100" onclick="enrollCourse(${course.id})">
-                            ${price > 0 ? `Comprar por R$ ${price.toFixed(2)}` : 'Começar Agora'}
-                        </button>
+                        ${actionButton}
                     </div>
                 </div>
             </div>
@@ -276,6 +306,19 @@ const showError = (message) => {
 // Matricular em um curso
 const enrollCourse = async (courseId) => {
     try {
+        // Buscar informações do curso
+        const course = state.courses.find(c => c.id === courseId);
+        if (!course) {
+            throw new Error('Curso não encontrado');
+        }
+
+        // Se o curso for pago, redirecionar para a página de pagamento
+        if (course.price > 0) {
+            window.location.href = `/payment.html?courseId=${courseId}`;
+            return;
+        }
+
+        // Se for gratuito, fazer a matrícula direta
         const response = await fetch('/api/courses/enroll', {
             method: 'POST',
             headers: {
@@ -287,6 +330,10 @@ const enrollCourse = async (courseId) => {
 
         if (!response.ok) {
             const error = await response.json();
+            if (response.status === 400 && error.error === 'Você já está matriculado neste curso') {
+                window.location.href = '/course.html?id=' + courseId;
+                return;
+            }
             throw new Error(error.error || 'Erro ao matricular no curso');
         }
 
