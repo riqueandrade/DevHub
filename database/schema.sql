@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Tabela de categorias de cursos
 CREATE TABLE IF NOT EXISTS categories (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     icon VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -73,7 +73,8 @@ CREATE TABLE IF NOT EXISTS courses (
     level course_level,
     status course_status DEFAULT 'rascunho',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(title, instructor_id)
 );
 
 -- Tabela de módulos dos cursos
@@ -84,7 +85,8 @@ CREATE TABLE IF NOT EXISTS modules (
     description TEXT,
     order_number INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(course_id, order_number)
 );
 
 -- Tabela de aulas
@@ -98,7 +100,8 @@ CREATE TABLE IF NOT EXISTS lessons (
     duration INTEGER,
     order_number INTEGER NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(module_id, order_number)
 );
 
 -- Tabela de matrículas
@@ -109,7 +112,8 @@ CREATE TABLE IF NOT EXISTS enrollments (
     status enrollment_status DEFAULT 'pendente',
     progress INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, course_id)
 );
 
 -- Tabela de progresso das aulas
@@ -121,7 +125,8 @@ CREATE TABLE IF NOT EXISTS lesson_progress (
     start_date TIMESTAMP,
     completion_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(enrollment_id, lesson_id)
 );
 
 -- Tabela de avaliações dos cursos
@@ -132,7 +137,8 @@ CREATE TABLE IF NOT EXISTS course_ratings (
     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, course_id)
 );
 
 -- Tabela de atividades dos usuários
@@ -153,7 +159,8 @@ CREATE TABLE IF NOT EXISTS certificates (
     preview_url VARCHAR(255) NOT NULL,
     pdf_url VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, course_id)
 );
 
 -- Função para atualizar o updated_at automaticamente
@@ -210,3 +217,118 @@ CREATE TRIGGER update_certificates_updated_at
     BEFORE UPDATE ON certificates
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Dados iniciais
+
+-- Inserir usuário admin padrão
+INSERT INTO users (name, email, role, status, password)
+VALUES (
+    'Administrador',
+    'admin@devhub.com',
+    'admin',
+    'ativo',
+    '$2b$10$K.0HwpsoPDGaB/atFBmmXOGTw4ceeg33.WrxJx/FeC9.gOMxlrkla' -- senha: admin123
+) ON CONFLICT (email) DO UPDATE SET
+    name = EXCLUDED.name,
+    role = EXCLUDED.role,
+    status = EXCLUDED.status;
+
+-- Inserir categorias iniciais
+INSERT INTO categories (name, description, icon) VALUES
+    ('Desenvolvimento Web', 'Cursos de desenvolvimento web frontend e backend', 'bi-globe'),
+    ('Mobile', 'Desenvolvimento de aplicativos móveis', 'bi-phone'),
+    ('DevOps', 'Práticas de integração entre desenvolvimento e operações', 'bi-gear'),
+    ('Banco de Dados', 'Modelagem e administração de bancos de dados', 'bi-database'),
+    ('Cloud Computing', 'Computação em nuvem e serviços', 'bi-cloud'),
+    ('Segurança', 'Segurança da informação e cibersegurança', 'bi-shield'),
+    ('Inteligência Artificial', 'Machine Learning e IA', 'bi-robot'),
+    ('Data Science', 'Ciência de dados e análise', 'bi-graph-up'),
+    ('UI/UX Design', 'Design de interfaces e experiência do usuário', 'bi-palette'),
+    ('Jogos', 'Desenvolvimento de jogos', 'bi-controller')
+ON CONFLICT (name) DO UPDATE SET
+    description = EXCLUDED.description,
+    icon = EXCLUDED.icon;
+
+-- Inserir instrutor de exemplo
+INSERT INTO users (name, email, role, status, bio, password)
+VALUES (
+    'João Silva',
+    'instrutor@devhub.com',
+    'instrutor',
+    'ativo',
+    'Instrutor especialista em desenvolvimento web com mais de 10 anos de experiência.',
+    '$2b$10$K.0HwpsoPDGaB/atFBmmXOGTw4ceeg33.WrxJx/FeC9.gOMxlrkla' -- senha: admin123
+) ON CONFLICT (email) DO UPDATE SET
+    name = EXCLUDED.name,
+    role = EXCLUDED.role,
+    status = EXCLUDED.status,
+    bio = EXCLUDED.bio;
+
+-- Inserir curso de exemplo
+DO $$
+DECLARE
+    v_category_id INTEGER;
+    v_instructor_id INTEGER;
+    v_course_id INTEGER;
+    v_module_id INTEGER;
+BEGIN
+    -- Obter IDs necessários
+    SELECT id INTO v_category_id FROM categories WHERE name = 'Desenvolvimento Web' LIMIT 1;
+    SELECT id INTO v_instructor_id FROM users WHERE email = 'instrutor@devhub.com' LIMIT 1;
+
+    -- Inserir curso
+    INSERT INTO courses (
+        title,
+        description,
+        category_id,
+        instructor_id,
+        thumbnail,
+        duration,
+        level,
+        status
+    ) VALUES (
+        'Introdução ao Desenvolvimento Web',
+        'Aprenda os fundamentos do desenvolvimento web, incluindo HTML, CSS e JavaScript.',
+        v_category_id,
+        v_instructor_id,
+        '/images/courses/web-dev-intro.jpg',
+        1200, -- 20 horas
+        'iniciante',
+        'publicado'
+    ) ON CONFLICT (title, instructor_id) DO UPDATE SET
+        description = EXCLUDED.description,
+        category_id = EXCLUDED.category_id,
+        thumbnail = EXCLUDED.thumbnail,
+        duration = EXCLUDED.duration,
+        level = EXCLUDED.level,
+        status = EXCLUDED.status
+    RETURNING id INTO v_course_id;
+
+    -- Inserir módulo
+    INSERT INTO modules (
+        course_id,
+        title,
+        description,
+        order_number
+    ) VALUES (
+        v_course_id,
+        'Fundamentos de HTML',
+        'Aprenda a estruturar páginas web com HTML5',
+        1
+    ) ON CONFLICT (course_id, order_number) DO UPDATE SET
+        title = EXCLUDED.title,
+        description = EXCLUDED.description
+    RETURNING id INTO v_module_id;
+
+    -- Inserir aulas
+    INSERT INTO lessons (module_id, title, description, content_type, duration, order_number) VALUES
+        (v_module_id, 'Introdução ao HTML', 'O que é HTML e sua importância', 'video', 15, 1),
+        (v_module_id, 'Estrutura Básica', 'Estrutura básica de um documento HTML', 'video', 20, 2),
+        (v_module_id, 'Tags Principais', 'Principais tags HTML e seus usos', 'video', 25, 3)
+    ON CONFLICT (module_id, order_number) DO UPDATE SET
+        title = EXCLUDED.title,
+        description = EXCLUDED.description,
+        content_type = EXCLUDED.content_type,
+        duration = EXCLUDED.duration;
+
+END $$;

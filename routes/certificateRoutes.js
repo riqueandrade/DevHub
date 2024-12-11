@@ -6,6 +6,9 @@ const authMiddleware = require('../middlewares/auth');
 // Middleware de autenticação para todas as rotas
 router.use(authMiddleware);
 
+// Rota para listar certificados
+router.get('/', CertificateController.listCertificates);
+
 // Rotas de certificados
 router.get('/:id', CertificateController.getCertificate);
 router.get('/:id/download', CertificateController.downloadCertificate);

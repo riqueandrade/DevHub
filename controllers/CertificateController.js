@@ -367,4 +367,70 @@ exports.verifyCertificate = async (req, res) => {
         console.error('Erro ao verificar certificado:', error);
         res.status(500).json({ error: 'Erro ao verificar certificado' });
     }
+};
+
+// Listar certificados
+exports.listCertificates = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 9;
+        const offset = (page - 1) * limit;
+        const search = req.query.search || '';
+        const sort = req.query.sort || 'date_desc';
+
+        // Configurar ordenação
+        let order = [['updated_at', 'DESC']];
+        if (sort === 'date_asc') order = [['updated_at', 'ASC']];
+        else if (sort === 'name_asc') order = [[{ model: Course, as: 'course' }, 'title', 'ASC']];
+        else if (sort === 'name_desc') order = [[{ model: Course, as: 'course' }, 'title', 'DESC']];
+
+        // Buscar matrículas concluídas
+        const { count, rows: enrollments } = await Enrollment.findAndCountAll({
+            where: {
+                user_id: userId,
+                status: 'concluido'
+            },
+            include: [{
+                model: Course,
+                as: 'course',
+                where: search ? {
+                    title: {
+                        [Op.iLike]: `%${search}%`
+                    }
+                } : {},
+                include: [{
+                    model: User,
+                    as: 'instructor',
+                    attributes: ['id', 'name', 'avatar_url']
+                }]
+            }],
+            order,
+            limit,
+            offset
+        });
+
+        // Formatar certificados
+        const certificates = enrollments.map(enrollment => ({
+            id: enrollment.id,
+            course_id: enrollment.course_id,
+            course_name: enrollment.course.title,
+            instructor_name: enrollment.course.instructor.name,
+            completion_date: enrollment.updated_at,
+            code: `${enrollment.course_id}-${userId}-${Date.now()}`
+        }));
+
+        res.json({
+            certificates,
+            pagination: {
+                total: count,
+                pages: Math.ceil(count / limit),
+                current_page: page,
+                per_page: limit
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao listar certificados:', error);
+        res.status(500).json({ error: 'Erro ao listar certificados' });
+    }
 }; 

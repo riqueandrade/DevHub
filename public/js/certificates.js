@@ -74,7 +74,10 @@ const loadCertificates = async () => {
 
         const data = await response.json();
         state.certificates = data.certificates;
-        state.pagination.total = data.total;
+        state.pagination = {
+            ...state.pagination,
+            ...data.pagination
+        };
 
         renderCertificates();
         renderPagination();
@@ -104,23 +107,23 @@ const renderCertificates = () => {
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="certificate-card">
                 <div class="certificate-preview">
-                    <img src="${certificate.preview_url || '/images/certificate-placeholder.png'}" 
-                         alt="Certificado ${certificate.course.title}">
+                    <img src="/images/certificate-placeholder.png" 
+                         alt="Certificado ${certificate.course_name}">
                 </div>
                 <div class="certificate-body">
-                    <h3 class="certificate-title">${certificate.course.title}</h3>
+                    <h3 class="certificate-title">${certificate.course_name}</h3>
                     <div class="certificate-meta">
                         <span>
                             <i class="bi bi-calendar"></i>
-                            ${formatDate(certificate.created_at)}
+                            ${formatDate(certificate.completion_date)}
                         </span>
                         <span>
                             <i class="bi bi-person"></i>
-                            ${certificate.course.instructor.name}
+                            ${certificate.instructor_name}
                         </span>
                     </div>
                     <div class="certificate-actions">
-                        <button class="btn btn-primary w-100" onclick="viewCertificate(${certificate.id})">
+                        <button class="btn btn-primary w-100" onclick="viewCertificate(${certificate.course_id})">
                             <i class="bi bi-eye"></i> Visualizar
                         </button>
                     </div>
