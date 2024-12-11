@@ -11,12 +11,14 @@ router.use(authMiddleware);
 router.get('/in-progress', CourseController.getInProgress);
 router.get('/completed', CourseController.getCompleted);
 router.get('/recommended', CourseController.getRecommended);
+router.get('/:id', authMiddleware, CourseController.getCourse);
 router.post('/enroll', CourseController.enroll);
 
 // Rotas de gerenciamento (requerem role de admin ou instrutor)
 router.get('/manage', checkRole(['admin', 'instrutor']), CourseController.getManaged);
 router.post('/', checkRole(['admin', 'instrutor']), CourseController.create);
 router.put('/:id', checkRole(['admin', 'instrutor']), CourseController.update);
+router.post('/:id/thumbnail', checkRole(['admin', 'instrutor']), CourseController.uploadThumbnail);
 router.put('/:id/publish', checkRole(['admin', 'instrutor']), CourseController.publish);
 router.put('/:id/archive', checkRole(['admin', 'instrutor']), CourseController.archive);
 router.delete('/:id', checkRole(['admin', 'instrutor']), CourseController.delete);

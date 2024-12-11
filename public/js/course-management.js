@@ -65,11 +65,15 @@ async function loadCategories() {
         if (!response.ok) throw new Error('Erro ao carregar categorias');
 
         const categories = await response.json();
-        const select = document.getElementById('courseCategory');
-        
-        select.innerHTML = categories.map(category => 
+        const options = categories.map(category => 
             `<option value="${category.id}">${category.name}</option>`
         ).join('');
+
+        // Atualizar select do formulário de novo curso
+        document.getElementById('courseCategory').innerHTML = options;
+        
+        // Atualizar select do formulário de edição
+        document.getElementById('editCourseCategory').innerHTML = options;
     } catch (error) {
         console.error('Erro ao carregar categorias:', error);
         showAlert('Erro ao carregar categorias', 'danger');
@@ -295,7 +299,10 @@ async function editCourse(courseId) {
             }
         });
 
-        if (!response.ok) throw new Error('Erro ao carregar dados do curso');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erro ao carregar dados do curso');
+        }
 
         const course = await response.json();
 
@@ -306,14 +313,14 @@ async function editCourse(courseId) {
         document.getElementById('editCourseCategory').value = course.category_id;
         document.getElementById('editCourseLevel').value = course.level;
         document.getElementById('editCourseDuration').value = course.duration;
-        document.getElementById('editCoursePrice').value = course.price;
+        document.getElementById('editCoursePrice').value = course.price || 0;
 
         // Mostrar o modal de edição
         const editModal = new bootstrap.Modal(document.getElementById('editCourseModal'));
         editModal.show();
     } catch (error) {
         console.error('Erro ao carregar curso para edição:', error);
-        showAlert('Erro ao carregar dados do curso', 'danger');
+        showAlert(error.message || 'Erro ao carregar dados do curso', 'danger');
     }
 }
 
@@ -415,19 +422,53 @@ async function saveCourseEdit() {
         // Upload de nova thumbnail se houver
         const thumbnailInput = document.getElementById('editCourseThumbnail');
         if (thumbnailInput.files && thumbnailInput.files[0]) {
-            const formData = new FormData();
-            formData.append('thumbnail', thumbnailInput.files[0]);
+            const file = thumbnailInput.files[0];
+            
+            // Validar tamanho do arquivo
+            if (file.size > 5 * 1024 * 1024) {
+                throw new Error('Arquivo muito grande. Máximo 5MB');
+            }
 
-            const uploadResponse = await fetch(`/api/courses/${courseId}/thumbnail`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: formData
+            // Validar tipo do arquivo
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                throw new Error('Apenas imagens são permitidas (jpg, jpeg, png, gif)');
+            }
+
+            // Criar FormData e adicionar o arquivo
+            const formData = new FormData();
+            formData.append('thumbnail', file);
+
+            console.log('Enviando thumbnail:', {
+                courseId,
+                fileName: file.name,
+                fileType: file.type,
+                fileSize: file.size
             });
 
-            if (!uploadResponse.ok) {
-                throw new Error('Erro ao fazer upload da thumbnail');
+            try {
+                const uploadResponse = await fetch(`/api/courses/${courseId}/thumbnail`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: formData
+                });
+
+                const uploadResult = await uploadResponse.json();
+
+                if (!uploadResponse.ok) {
+                    throw new Error(uploadResult.error || 'Erro ao fazer upload da thumbnail');
+                }
+
+                console.log('Upload realizado com sucesso:', uploadResult);
+
+                if (!uploadResult.thumbnail) {
+                    throw new Error('Caminho da thumbnail não retornado pelo servidor');
+                }
+            } catch (error) {
+                console.error('Erro no upload da thumbnail:', error);
+                throw error;
             }
         }
 
@@ -438,7 +479,7 @@ async function saveCourseEdit() {
         showAlert('Curso atualizado com sucesso', 'success');
     } catch (error) {
         console.error('Erro ao salvar edição:', error);
-        showAlert('Erro ao atualizar curso', 'danger');
+        showAlert(error.message || 'Erro ao atualizar curso', 'danger');
     }
 }
 

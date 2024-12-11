@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="course-meta">
                                 <span class="duration"><i class="bi bi-clock"></i> ${duration}</span>
                                 <span class="level"><i class="bi bi-bar-chart"></i> ${levelInfo.text}</span>
+                                ${!inProgress ? `<span class="price"><i class="bi bi-tag"></i> ${price > 0 ? `R$ ${price.toFixed(2)}` : 'Grátis'}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -127,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${inProgress ? `
                             <a href="/course/${course.id}" class="btn btn-primary w-100">Continuar</a>
                         ` : `
-                            <button class="btn btn-primary w-100" onclick="enrollCourse(${course.id})">
+                            <button class="btn btn-primary w-100" onclick="enrollCourse(${course.id}, ${price})">
                                 ${price > 0 ? `Comprar por R$ ${price.toFixed(2)}` : 'Começar Agora'}
                             </button>
                         `}
@@ -244,6 +245,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('user');
         window.location.href = '/auth.html';
     });
+
+    // Função para matricular em um curso
+    window.enrollCourse = async function(courseId, price) {
+        try {
+            // Se o curso for pago, redirecionar para a página de pagamento
+            if (price > 0) {
+                window.location.href = `/payment.html?courseId=${courseId}&price=${price}`;
+                return;
+            }
+
+            // Se for gratuito, fazer a matrícula direta
+            const response = await fetch('/api/courses/enroll', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ courseId })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao se matricular no curso');
+            }
+
+            // Mostrar mensagem de sucesso
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            alertDiv.innerHTML = `
+                ${data.message || 'Matrícula realizada com sucesso!'}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            // Remover alerta após 5 segundos
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+
+            // Recarregar os cursos
+            await loadInProgressCourses();
+            await loadRecommendedCourses();
+            await loadStats();
+        } catch (error) {
+            console.error('Erro ao matricular no curso:', error);
+            
+            // Mostrar mensagem de erro
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
+            alertDiv.innerHTML = `
+                ${error.message || 'Erro ao se matricular no curso. Tente novamente.'}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+
+            // Remover alerta após 5 segundos
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    };
 
     // Carregar dados iniciais
     loadInProgressCourses();

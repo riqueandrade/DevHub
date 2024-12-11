@@ -1,0 +1,342 @@
+/* Variáveis */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #10b981;
+    --dark-color: #1e293b;
+    --light-color: #f8fafc;
+    --accent-color: #7c3aed;
+    --white-color: #ffffff;
+}
+
+/* Estilos Gerais */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--dark-color), #0f172a);
+    color: var(--light-color);
+    min-height: 100vh;
+    padding-top: 76px;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.nav-link {
+    color: var(--light-color) !important;
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.8;
+}
+
+.nav-link:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.nav-link i {
+    font-size: 1.2rem;
+}
+
+/* Menu do Usuário */
+.user-menu {
+    margin-left: 1rem;
+}
+
+.user-button {
+    color: var(--light-color) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.user-button:hover, 
+.user-button:focus {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.user-button:after {
+    margin-left: auto;
+}
+
+.user-button .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-button #userName {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Conteúdo Principal */
+.payment-content {
+    padding: 2rem 0;
+}
+
+/* Card de Pagamento */
+.payment-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.payment-card .card-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+}
+
+.payment-card .card-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--white-color);
+}
+
+.payment-card .card-body {
+    padding: 2rem;
+}
+
+/* Detalhes do Curso */
+.course-details {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.course-details h3 {
+    color: var(--white-color);
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.course-info {
+    margin-top: 1rem;
+    color: var(--white-color);
+}
+
+.course-info p {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.course-info img {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.course-info h4 {
+    color: var(--white-color);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.course-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.course-meta span {
+    color: var(--white-color);
+}
+
+/* Métodos de Pagamento */
+.payment-methods {
+    margin-bottom: 2rem;
+}
+
+.payment-methods .form-check {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-methods .form-check:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.payment-methods .form-check-input:checked + .form-check-label {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.payment-methods .form-check-label {
+    color: var(--white-color);
+}
+
+/* Campos do Formulário */
+.form-label {
+    color: var(--white-color);
+    font-weight: 500;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--white-color);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: none;
+    color: var(--white-color);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-select {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--white-color);
+}
+
+.form-select:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-color);
+    box-shadow: none;
+    color: var(--white-color);
+}
+
+.form-select option {
+    background-color: var(--dark-color);
+    color: var(--white-color);
+}
+
+/* Campo do PIX */
+.pix-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    color: var(--white-color);
+}
+
+.pix-qr-code {
+    max-width: 200px;
+    margin: 0 auto;
+    padding: 1rem;
+    background: var(--white-color);
+    border-radius: 12px;
+}
+
+.pix-code {
+    font-family: monospace;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin: 1rem 0;
+    color: var(--white-color);
+}
+
+/* Resumo da Compra */
+.purchase-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    color: var(--white-color);
+}
+
+.purchase-summary h4 {
+    color: var(--white-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.purchase-summary span {
+    color: var(--white-color);
+}
+
+.purchase-summary .total {
+    font-size: 1.3rem;
+    color: var(--white-color);
+}
+
+/* Botão de Finalizar */
+#finishPurchaseBtn {
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    border: none;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    color: var(--white-color);
+}
+
+#finishPurchaseBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .payment-card .card-body {
+        padding: 1rem;
+    }
+
+    .course-info {
+        flex-direction: column;
+    }
+
+    .course-info img {
+        width: 100%;
+        height: 200px;
+        margin-bottom: 1rem;
+    }
+} 

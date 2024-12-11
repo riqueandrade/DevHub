@@ -12,55 +12,48 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
+    destination: (req, file, cb) => {
         cb(null, uploadDir);
     },
-    filename: function(req, file, cb) {
+    filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${uniqueSuffix}${ext}`);
     }
 });
 
-const fileFilter = function(req, file, cb) {
-    // Se não houver arquivo, aceita
-    if (!file) {
-        cb(null, true);
-        return;
-    }
-
+const fileFilter = (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|gif/;
-    const ext = path.extname(file.originalname).toLowerCase();
-    const mimetype = file.mimetype;
-
-    if (allowedTypes.test(ext) && allowedTypes.test(mimetype)) {
+    const mimetype = file.mimetype.split('/')[1];
+    
+    if (allowedTypes.test(mimetype)) {
         cb(null, true);
     } else {
         cb(new Error('Apenas imagens são permitidas (jpg, jpeg, png, gif)'));
     }
 };
 
-const upload = multer({
+const uploadMiddleware = multer({
     storage: storage,
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB
     },
     fileFilter: fileFilter
-}).single('thumbnail');
+});
 
 // Função auxiliar para calcular progresso
 async function calculateProgress(enrollmentId) {
     const total = await LessonProgress.count({
         where: { enrollment_id: enrollmentId }
     });
-    
+
     const completed = await LessonProgress.count({
-        where: { 
+        where: {
             enrollment_id: enrollmentId,
             status: 'concluido'
         }
     });
-    
+
     return total > 0 ? Math.round((completed / total) * 100) : 0;
 }
 
@@ -68,7 +61,7 @@ async function calculateProgress(enrollmentId) {
 exports.getInProgress = async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         const enrollments = await Enrollment.findAll({
             where: {
                 user_id: userId,
@@ -112,7 +105,7 @@ exports.getInProgress = async (req, res) => {
 exports.getCompleted = async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         const enrollments = await Enrollment.findAll({
             where: {
                 user_id: userId,
@@ -151,7 +144,7 @@ exports.getCompleted = async (req, res) => {
 exports.getRecommended = async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         // Buscar cursos que o usuário ainda não está matriculado
         const courses = await Course.findAll({
             where: {
@@ -220,7 +213,7 @@ exports.enroll = async (req, res) => {
             }]
         });
 
-        await Promise.all(lessons.map(lesson => 
+        await Promise.all(lessons.map(lesson =>
             LessonProgress.create({
                 enrollment_id: enrollment.id,
                 lesson_id: lesson.id,
@@ -292,7 +285,7 @@ exports.create = async (req, res) => {
 
         // Se houver arquivo para upload, processa
         if (req.files && req.files.thumbnail) {
-            upload(req, res, async (err) => {
+            uploadMiddleware.single('thumbnail')(req, res, async (err) => {
                 if (err) {
                     console.error('Upload error:', err);
                     return;
@@ -380,34 +373,70 @@ exports.uploadThumbnail = async (req, res) => {
             return res.status(403).json({ error: 'Sem permissão para editar este curso' });
         }
 
-        // Processar upload
-        upload(req, res, async function(err) {
-            if (err) {
-                console.error('Erro no upload:', err);
-                return res.status(400).json({ error: err.message });
-            }
+        // Verificar se há arquivo
+        if (!req.files || !req.files.thumbnail) {
+            return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+        }
 
-            if (!req.file) {
-                return res.status(400).json({ error: 'Nenhum arquivo enviado' });
-            }
+        const file = req.files.thumbnail;
 
-            // Remover thumbnail antiga se existir
-            if (course.thumbnail) {
-                const oldPath = path.join(uploadDir, path.basename(course.thumbnail));
-                if (fs.existsSync(oldPath)) {
+        // Validar tipo do arquivo
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return res.status(400).json({ error: 'Apenas imagens são permitidas (jpg, jpeg, png, gif)' });
+        }
+
+        // Validar tamanho (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            return res.status(400).json({ error: 'Arquivo muito grande. Máximo 5MB' });
+        }
+
+        // Gerar nome único para o arquivo
+        const ext = path.extname(file.name);
+        const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+        const uploadPath = path.join(__dirname, '..', 'public', 'uploads', 'thumbnails', fileName);
+
+        // Remover thumbnail antiga se existir
+        if (course.thumbnail) {
+            const oldPath = path.join(__dirname, '..', 'public', course.thumbnail);
+            if (fs.existsSync(oldPath)) {
+                try {
                     fs.unlinkSync(oldPath);
+                } catch (error) {
+                    console.error('Erro ao remover thumbnail antiga:', error);
                 }
             }
+        }
 
-            // Atualizar caminho da thumbnail
-            const thumbnailPath = `/uploads/thumbnails/${req.file.filename}`;
-            await course.update({ thumbnail: thumbnailPath });
+        // Mover o arquivo
+        await file.mv(uploadPath);
 
-            res.json({ message: 'Thumbnail atualizada com sucesso', thumbnail: thumbnailPath });
+        // Atualizar caminho no banco de dados
+        const thumbnailPath = `/uploads/thumbnails/${fileName}`;
+        await course.update({ thumbnail: thumbnailPath });
+
+        // Forçar refresh dos dados
+        await course.reload();
+
+        console.log('Thumbnail atualizada com sucesso:', {
+            courseId,
+            oldThumbnail: course.thumbnail,
+            newThumbnail: thumbnailPath,
+            file: {
+                name: file.name,
+                size: file.size,
+                mimetype: file.mimetype
+            }
+        });
+
+        res.json({
+            message: 'Thumbnail atualizada com sucesso',
+            thumbnail: thumbnailPath,
+            course: course
         });
     } catch (error) {
         console.error('Erro ao fazer upload da thumbnail:', error);
-        res.status(500).json({ error: 'Erro ao fazer upload da thumbnail' });
+        res.status(500).json({ error: error.message || 'Erro ao fazer upload da thumbnail' });
     }
 };
 
@@ -488,5 +517,55 @@ exports.delete = async (req, res) => {
     } catch (error) {
         console.error('Erro ao excluir curso:', error);
         res.status(500).json({ error: 'Erro ao excluir curso' });
+    }
+};
+
+// Obter curso específico
+exports.getCourse = async (req, res) => {
+    try {
+        const courseId = req.params.id;
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        // Buscar o curso com dados do instrutor e categoria
+        const course = await Course.findOne({
+            where: { id: courseId },
+            include: [
+                {
+                    model: User,
+                    as: 'instructor',
+                    attributes: ['id', 'name', 'avatar_url']
+                }
+            ]
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar se o usuário já está matriculado
+        const enrollment = await Enrollment.findOne({
+            where: {
+                user_id: userId,
+                course_id: courseId
+            }
+        });
+
+        // Permitir acesso se:
+        // 1. O usuário é admin
+        // 2. O usuário é o instrutor do curso
+        // 3. O usuário está matriculado no curso
+        // 4. O curso está publicado (para permitir compra)
+        if (!isAdmin && 
+            course.instructor_id !== userId && 
+            !enrollment && 
+            course.status !== 'publicado') {
+            return res.status(403).json({ error: 'Sem permissão para acessar este curso' });
+        }
+
+        res.json(course);
+    } catch (error) {
+        console.error('Erro ao buscar curso:', error);
+        res.status(500).json({ error: 'Erro ao buscar curso' });
     }
 }; 
