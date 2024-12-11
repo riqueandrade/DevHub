@@ -191,6 +191,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch('/api/auth/google/config');
             const { clientId, redirectUri } = await response.json();
             
+            // Log temporário para debug
+            console.log('=== Configurações do Google OAuth (Frontend) ===');
+            console.log('Redirect URI recebido:', redirectUri);
+            console.log('============================================');
+            
             const scope = encodeURIComponent('email profile');
             const responseType = 'code';
             const prompt = 'select_account';

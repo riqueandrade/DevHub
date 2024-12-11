@@ -13,6 +13,12 @@ const { Op } = require('sequelize');
 const Enrollment = require('../models/Enrollment');
 const axios = require('axios');
 
+// Log temporário para debug
+console.log('=== Configurações do Google OAuth ===');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('GOOGLE_REDIRECT_URI:', process.env.GOOGLE_REDIRECT_URI);
+console.log('====================================');
+
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
