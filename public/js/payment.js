@@ -140,21 +140,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Handler do método de pagamento
         const paymentMethodInputs = document.querySelectorAll('input[name="paymentMethod"]');
+        const creditCardFields = document.getElementById('creditCardFields');
+        const pixField = document.getElementById('pixField');
+        const cardInputs = creditCardFields.querySelectorAll('input, select');
+
         paymentMethodInputs.forEach(input => {
             input.addEventListener('change', (e) => {
-                const creditCardFields = document.getElementById('creditCardFields');
-                const pixField = document.getElementById('pixField');
-
                 if (e.target.value === 'credit') {
                     creditCardFields.style.display = 'block';
                     pixField.style.display = 'none';
+                    // Habilita os campos do cartão
+                    cardInputs.forEach(input => {
+                        input.required = true;
+                    });
                 } else {
                     creditCardFields.style.display = 'none';
                     pixField.style.display = 'block';
+                    // Desabilita os campos do cartão
+                    cardInputs.forEach(input => {
+                        input.required = false;
+                    });
                     generatePixCode(courseId, price);
                 }
             });
         });
+
+        // Dispara o evento change no método de pagamento inicial
+        document.querySelector('input[name="paymentMethod"]:checked').dispatchEvent(new Event('change'));
 
         // Handler do formulário de pagamento
         document.getElementById('paymentForm').addEventListener('submit', async (e) => {
@@ -258,7 +270,7 @@ async function enrollInCourse(courseId) {
 
         // Redirecionar após 2 segundos
         setTimeout(() => {
-            window.location.href = `/course/${courseId}`;
+            window.location.href = `/course.html?id=${courseId}`;
         }, 2000);
     } catch (error) {
         throw new Error('Erro ao matricular no curso: ' + error.message);

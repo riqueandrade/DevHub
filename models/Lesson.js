@@ -24,11 +24,12 @@ const Lesson = sequelize.define('Lesson', {
         type: DataTypes.TEXT
     },
     content_type: {
-        type: DataTypes.ENUM('video', 'texto', 'quiz'),
+        type: DataTypes.ENUM('video', 'texto', 'quiz', 'slides', 'documento', 'pdf'),
         allowNull: false
     },
     content_url: {
-        type: DataTypes.STRING(255)
+        type: DataTypes.TEXT,
+        allowNull: false
     },
     duration: {
         type: DataTypes.INTEGER,

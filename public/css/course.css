@@ -1,0 +1,248 @@
+/* Variáveis */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #10b981;
+    --dark-color: #1e293b;
+    --light-color: #f8fafc;
+    --accent-color: #7c3aed;
+    --white-color: #ffffff;
+}
+
+/* Estilos Gerais */
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--dark-color), #0f172a);
+    color: var(--light-color);
+    min-height: 100vh;
+    padding-top: 76px;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(30, 41, 59, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.nav-link {
+    color: var(--light-color) !important;
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.8;
+}
+
+.nav-link:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+}
+
+.nav-link i {
+    font-size: 1.2rem;
+}
+
+/* Menu do Usuário */
+.user-menu {
+    margin-left: 1rem;
+}
+
+.user-button {
+    color: var(--light-color) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.user-button:hover, 
+.user-button:focus {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.user-button:after {
+    margin-left: auto;
+}
+
+.user-button .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-button #userName {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Conteúdo do Curso */
+.course-content {
+    padding: 2rem 0;
+}
+
+/* Sidebar do Curso */
+.course-sidebar {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: sticky;
+    top: 92px;
+}
+
+.course-info h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.progress {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+}
+
+.progress-bar {
+    background: var(--primary-color);
+    border-radius: 100px;
+}
+
+.course-meta {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.course-meta .separator {
+    margin: 0 0.5rem;
+}
+
+/* Lista de Módulos */
+.module-list {
+    margin-top: 1.5rem;
+}
+
+.module-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.module-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.module-item.active {
+    background: rgba(37, 99, 235, 0.2);
+    border-color: var(--primary-color);
+}
+
+.module-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.lesson-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.lesson-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.lesson-item.active {
+    background: var(--primary-color);
+    color: var(--white-color);
+}
+
+.lesson-item.completed {
+    color: var(--secondary-color);
+}
+
+.lesson-item i {
+    font-size: 1.1rem;
+}
+
+/* Área de Conteúdo */
+.content-area {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    min-height: calc(100vh - 140px);
+}
+
+/* Navegação entre Aulas */
+.lesson-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lesson-navigation button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.lesson-navigation button:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.lesson-navigation button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Placeholders */
+.placeholder {
+    background: rgba(255, 255, 255, 0.1);
+} 

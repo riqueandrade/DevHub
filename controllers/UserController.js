@@ -22,7 +22,7 @@ const googleClient = new OAuth2Client({
 class UserController {
     constructor() {
         // Criar diretório de uploads se não existir
-        const uploadDir = path.join(__dirname, '..', 'uploads', 'avatars');
+        const uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -41,7 +41,7 @@ class UserController {
             const buffer = Buffer.from(response.data, 'binary');
             
             const filename = `${uuidv4()}.jpg`;
-            const filepath = path.join(__dirname, '..', 'uploads', 'avatars', filename);
+            const filepath = path.join(__dirname, '..', 'public', 'uploads', 'avatars', filename);
             
             fs.writeFileSync(filepath, buffer);
             
@@ -411,7 +411,7 @@ class UserController {
             }
 
             // Criar diretório de uploads se não existir
-            const uploadDir = path.join(__dirname, '..', 'uploads', 'avatars');
+            const uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'avatars');
             if (!fs.existsSync(uploadDir)) {
                 fs.mkdirSync(uploadDir, { recursive: true });
             }

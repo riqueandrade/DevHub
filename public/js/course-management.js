@@ -144,22 +144,29 @@ function renderCourses(containerId, courses) {
                 </div>
                 <div class="course-footer">
                     <div class="action-buttons">
-                        <button class="btn btn-sm btn-primary btn-icon" onclick="editCourse(${course.id})">
-                            <i class="bi bi-pencil"></i> Editar
-                        </button>
-                        ${course.status === 'rascunho' ? `
-                            <button class="btn btn-sm btn-success btn-icon" onclick="publishCourse(${course.id})">
-                                <i class="bi bi-cloud-upload"></i> Publicar
+                        <div class="action-group">
+                            <button class="btn btn-sm btn-info btn-icon" onclick="manageCourseContent(${course.id})">
+                                <i class="bi bi-collection"></i> Conteúdo
                             </button>
-                        ` : ''}
-                        ${course.status === 'publicado' ? `
-                            <button class="btn btn-sm btn-warning btn-icon" onclick="archiveCourse(${course.id})">
-                                <i class="bi bi-archive"></i> Arquivar
+                            <button class="btn btn-sm btn-primary btn-icon" onclick="editCourse(${course.id})">
+                                <i class="bi bi-pencil"></i> Editar
                             </button>
-                        ` : ''}
-                        <button class="btn btn-sm btn-danger btn-icon" onclick="deleteCourse(${course.id})">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        </div>
+                        <div class="action-group">
+                            ${course.status === 'rascunho' ? `
+                                <button class="btn btn-sm btn-success btn-icon" onclick="publishCourse(${course.id})">
+                                    <i class="bi bi-cloud-upload"></i> Publicar
+                                </button>
+                            ` : ''}
+                            ${course.status === 'publicado' ? `
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="archiveCourse(${course.id})">
+                                    <i class="bi bi-archive"></i> Arquivar
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-sm btn-danger btn-icon" onclick="deleteCourse(${course.id})">
+                                <i class="bi bi-trash"></i> Excluir
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -498,4 +505,9 @@ function showAlert(message, type = 'success') {
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);
+}
+
+// Função para gerenciar conteúdo do curso
+function manageCourseContent(courseId) {
+    window.location.href = `/course-content.html?id=${courseId}`;
 } 

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Conteúdo - DevHub</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/course-content.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard.html">
+                <img src="/images/favicon.svg" alt="Dev Hub Logo" class="brand-icon me-2">
+                Dev Hub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/courses.html">
+                            <i class="bi bi-collection-play"></i> Meus Cursos
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/catalog.html">
+                            <i class="bi bi-grid"></i> Catálogo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/course-management.html">
+                            <i class="bi bi-pencil-square"></i> Gerenciar Cursos
+                        </a>
+                    </li>
+                </ul>
+                <div class="user-menu">
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle user-button" type="button" data-bs-toggle="dropdown">
+                            <div class="d-flex align-items-center">
+                                <img src="" alt="Avatar" class="user-avatar" id="userAvatar">
+                                <span id="userName" class="ms-2">Carregando...</span>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/profile.html">
+                                    <i class="bi bi-person"></i> Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/settings.html">
+                                    <i class="bi bi-gear"></i> Configurações
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button class="dropdown-item text-danger" id="logoutButton">
+                                    <i class="bi bi-box-arrow-right"></i> Sair
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="course-content-management">
+        <div class="container">
+            <div class="content-header">
+                <div>
+                    <h1 id="courseTitle">Carregando...</h1>
+                    <p id="courseDescription" class="text-muted">Carregando...</p>
+                </div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newModuleModal">
+                    <i class="bi bi-plus-lg"></i> Novo Módulo
+                </button>
+            </div>
+
+            <div class="modules-container" id="modulesList">
+                <!-- Módulos serão carregados aqui -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Novo Módulo -->
+    <div class="modal fade" id="newModuleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Módulo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newModuleForm">
+                        <div class="mb-3">
+                            <label for="moduleTitle" class="form-label">Título do Módulo</label>
+                            <input type="text" class="form-control" id="moduleTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="moduleDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="moduleDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Criar Módulo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Nova Aula -->
+    <div class="modal fade" id="newLessonModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nova Aula</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newLessonForm">
+                        <input type="hidden" id="moduleId">
+                        <div class="mb-3">
+                            <label for="lessonTitle" class="form-label">Título da Aula</label>
+                            <input type="text" class="form-control" id="lessonTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lessonDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="lessonDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="contentType" class="form-label">Tipo de Conteúdo</label>
+                            <select class="form-select" id="contentType" required>
+                                <option value="pdf">PDF</option>
+                                <option value="slides">Slides (PowerPoint)</option>
+                                <option value="documento">Documento (Word/Excel)</option>
+                                <option value="video">Vídeo</option>
+                                <option value="texto">Texto</option>
+                                <option value="quiz">Quiz</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="contentFileGroup">
+                            <label for="contentFile" class="form-label">Arquivo</label>
+                            <input type="file" class="form-control" id="contentFile" required>
+                            <small class="text-muted">Selecione um arquivo (máx. 50MB)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lessonDuration" class="form-label">Duração (minutos)</label>
+                            <input type="number" class="form-control" id="lessonDuration" min="1" required>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Criar Aula</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Módulo -->
+    <div class="modal fade" id="editModuleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Módulo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editModuleForm">
+                        <input type="hidden" id="editModuleId">
+                        <div class="mb-3">
+                            <label for="editModuleTitle" class="form-label">Título do Módulo</label>
+                            <input type="text" class="form-control" id="editModuleTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editModuleDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="editModuleDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Aula -->
+    <div class="modal fade" id="editLessonModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Aula</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editLessonForm">
+                        <input type="hidden" id="editLessonId">
+                        <input type="hidden" id="editLessonModuleId">
+                        <div class="mb-3">
+                            <label for="editLessonTitle" class="form-label">Título da Aula</label>
+                            <input type="text" class="form-control" id="editLessonTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editLessonDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="editLessonDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editContentType" class="form-label">Tipo de Conteúdo</label>
+                            <select class="form-select" id="editContentType" required>
+                                <option value="pdf">PDF</option>
+                                <option value="slides">Slides (PowerPoint)</option>
+                                <option value="documento">Documento (Word/Excel)</option>
+                                <option value="video">Vídeo</option>
+                                <option value="texto">Texto</option>
+                                <option value="quiz">Quiz</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="editContentFileGroup">
+                            <label for="editContentFile" class="form-label">Arquivo</label>
+                            <input type="file" class="form-control" id="editContentFile" required>
+                            <small class="text-muted">Selecione um arquivo (máx. 50MB)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editLessonDuration" class="form-label">Duração (minutos)</label>
+                            <input type="number" class="form-control" id="editLessonDuration" min="1" required>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="/js/course-content.js"></script>
+</body>
+
+</html> 

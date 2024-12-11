@@ -49,16 +49,17 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/certificates', certificateRoutes);
 
-// Rotas de Cursos
-app.get('/api/courses/in-progress', CourseController.getInProgress);
-app.get('/api/courses/recommended', CourseController.getRecommended);
-
 // Rotas de Estatísticas
 app.get('/api/user/stats', StatsController.getUserStats);
 
 // Rota de verificação de saúde da API
 app.get('/api/health', (req, res) => {
     res.json({ message: "API está funcionando!" });
+});
+
+// Rota específica para a página do curso
+app.get('/course/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'course.html'));
 });
 
 // Redirecionar todas as outras rotas para o index.html
