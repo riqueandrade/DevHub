@@ -187,19 +187,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Função para lidar com o login do Google
     window.handleGoogleLogin = async () => {
         try {
-            console.log('Hostname:', window.location.hostname);
-            
             // Buscar configurações do Google do backend
             const response = await fetch('/api/auth/google/config');
-            const { clientId } = await response.json();
-            console.log('Client ID:', clientId);
-            
-            // URI de redirecionamento fixa para desenvolvimento
-            const redirectUri = window.location.hostname === 'localhost' 
-                ? 'http://localhost:3000/api/auth/google/callback'
-                : 'https://devhub-4gmd.onrender.com/api/auth/google/callback';
-            
-            console.log('Redirect URI:', redirectUri);
+            const { clientId, redirectUri } = await response.json();
             
             const scope = encodeURIComponent('email profile');
             const responseType = 'code';
@@ -207,7 +197,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${scope}&prompt=${prompt}`;
             
-            console.log('URL completa:', authUrl);
             window.location.href = authUrl;
         } catch (error) {
             console.error('Erro ao iniciar login com Google:', error);
