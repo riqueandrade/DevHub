@@ -412,3 +412,120 @@ body {
         font-size: 0.9rem;
     }
 } 
+
+/* Modais */
+.modal-content {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+}
+
+.modal-title {
+    color: var(--white-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+}
+
+.modal .form-label {
+    color: var(--white-color);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.modal .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--white-color);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.modal .form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+.modal .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.modal .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.modal .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.modal .btn-primary {
+    background: var(--primary-color);
+    border: none;
+}
+
+.modal .btn-primary:hover {
+    background: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.modal .btn-outline-secondary {
+    color: var(--white-color);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    min-width: 250px;
+    z-index: 1060;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-weight: 500;
+}
+
+.toast .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Responsividade dos Modais */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 1rem;
+    }
+
+    .modal .btn {
+        padding: 0.5rem 1rem;
+    }
+} 
