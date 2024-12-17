@@ -504,9 +504,20 @@ exports.archive = async (req, res) => {
 
 // Excluir curso
 exports.delete = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    
     try {
         const courseId = req.params.id;
-        const course = await Course.findByPk(courseId);
+        const course = await Course.findByPk(courseId, {
+            include: [{
+                model: Module,
+                as: 'modules',
+                include: [{
+                    model: Lesson,
+                    as: 'lessons'
+                }]
+            }]
+        });
 
         if (!course) {
             return res.status(404).json({ error: 'Curso não encontrado' });
@@ -525,10 +536,48 @@ exports.delete = async (req, res) => {
             }
         }
 
-        await course.destroy();
+        // Excluir todas as matrículas e progresso das aulas
+        await Enrollment.destroy({
+            where: { course_id: courseId },
+            transaction
+        });
+
+        // Para cada módulo
+        for (const module of course.modules) {
+            // Para cada aula do módulo
+            for (const lesson of module.lessons) {
+                // Excluir progresso das aulas
+                await LessonProgress.destroy({
+                    where: { lesson_id: lesson.id },
+                    transaction
+                });
+
+                // Remover arquivo da aula se existir
+                if (lesson.content_url && lesson.content_url.startsWith('/uploads/')) {
+                    const filePath = path.join(__dirname, '..', 'public', lesson.content_url);
+                    if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+
+                // Excluir a aula
+                await lesson.destroy({ transaction });
+            }
+
+            // Excluir o módulo
+            await module.destroy({ transaction });
+        }
+
+        // Finalmente, excluir o curso
+        await course.destroy({ transaction });
+
+        // Commit da transação
+        await transaction.commit();
 
         res.json({ message: 'Curso excluído com sucesso' });
     } catch (error) {
+        // Rollback em caso de erro
+        await transaction.rollback();
         console.error('Erro ao excluir curso:', error);
         res.status(500).json({ error: 'Erro ao excluir curso' });
     }
@@ -1086,7 +1135,7 @@ exports.reorderLessons = async (req, res) => {
         });
 
         if (!module) {
-            return res.status(404).json({ error: 'Módulo não encontrado' });
+            return res.status(404).json({ error: 'M��dulo não encontrado' });
         }
 
         // Atualizar ordem das aulas
