@@ -261,7 +261,8 @@ exports.getRecommended = async (req, res) => {
             thumbnail: course.thumbnail,
             instructor: course.instructor,
             level: course.level,
-            duration: course.duration
+            duration: course.duration,
+            price: course.price
         }));
 
         res.json(formattedCourses);

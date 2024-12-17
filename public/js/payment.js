@@ -89,8 +89,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         const courseId = urlParams.get('courseId');
         const price = parseFloat(urlParams.get('price'));
 
-        if (!courseId || !price) {
-            window.location.replace('/dashboard.html');
+        console.log('Preço recebido:', urlParams.get('price'));
+        console.log('Preço parseado:', price);
+
+        if (!courseId) {
+            showAlert('ID do curso não fornecido', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Dados do curso incompletos. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                </div>
+            `;
+            return;
+        }
+
+        if (!urlParams.get('price') || isNaN(price)) {
+            showAlert('Preço do curso não fornecido ou inválido', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Preço do curso inválido ou não fornecido. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                </div>
+            `;
+            return;
+        }
+
+        if (price <= 0) {
+            showAlert('Este curso é gratuito', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Este curso é gratuito. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                </div>
+            `;
             return;
         }
 
@@ -102,10 +133,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!courseResponse.ok) {
-            throw new Error('Erro ao carregar dados do curso');
+            const error = await courseResponse.json();
+            showAlert(error.message || 'Erro ao carregar dados do curso', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Não foi possível carregar os dados do curso. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                    <button class="btn btn-link" onclick="window.location.reload()">Tentar novamente</button>
+                </div>
+            `;
+            return;
         }
 
         const course = await courseResponse.json();
+
+        // Verificar se o curso existe e tem preço
+        if (!course) {
+            showAlert('Curso não encontrado', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Curso não encontrado. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                </div>
+            `;
+            return;
+        }
+
+        // Verificar se o preço corresponde
+        const coursePrice = parseFloat(course.price);
+        if (isNaN(coursePrice) || Math.abs(coursePrice - price) > 0.01) {
+            showAlert('Preço do curso inválido', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Preço do curso inválido. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                </div>
+            `;
+            return;
+        }
 
         // Preencher detalhes do curso
         document.getElementById('courseInfo').innerHTML = `
@@ -198,6 +263,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error('Erro:', error);
         showAlert('Erro ao carregar dados. Tente novamente mais tarde.', 'danger');
+        document.getElementById('courseInfo').innerHTML = `
+            <div class="alert alert-danger">
+                Não foi possível carregar os dados do curso. 
+                <button class="btn btn-link" onclick="window.location.reload()">Tentar novamente</button>
+            </div>
+        `;
     }
 });
 
@@ -270,7 +341,7 @@ async function enrollInCourse(courseId) {
 
         // Redirecionar após 2 segundos
         setTimeout(() => {
-            window.location.href = `/course.html?id=${courseId}`;
+            window.location.href = `/course/${courseId}`;
         }, 2000);
     } catch (error) {
         throw new Error('Erro ao matricular no curso: ' + error.message);

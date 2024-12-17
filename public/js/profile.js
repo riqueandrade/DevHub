@@ -16,13 +16,7 @@ const activitiesList = document.getElementById('activitiesList');
 // Configuração inicial
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Carregar dados do localStorage primeiro
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (userData) {
-            updateProfileUI(userData);
-        }
-
-        // Depois carregar dados atualizados do servidor
+        // Carregar dados atualizados do servidor primeiro
         await loadUserProfile();
         await loadUserStats();
         await loadAchievements();
@@ -47,6 +41,8 @@ async function loadUserProfile() {
         if (!response.ok) throw new Error('Erro ao carregar perfil');
 
         const user = await response.json();
+        // Atualizar localStorage com dados mais recentes
+        localStorage.setItem('user', JSON.stringify(user));
         updateProfileUI(user);
     } catch (error) {
         console.error('Erro ao carregar perfil:', error);

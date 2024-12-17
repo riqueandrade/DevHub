@@ -91,11 +91,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Função para criar card de curso
     const createCourseCard = (course, inProgress = false) => {
+        console.log('Dados completos do curso:', course);
+
         const levelInfo = formatLevel(course.level);
         const duration = formatDuration(course.duration);
         const progress = course.progress || 0;
         const remainingTime = course.remainingTime ? formatDuration(course.remainingTime) : '--';
-        const price = typeof course.price === 'number' ? course.price : 0;
+        
+        // Validação mais rigorosa do preço
+        let price = 0;
+        if (typeof course.price === 'number') {
+            price = course.price;
+        } else if (typeof course.price === 'string' && course.price.trim() !== '') {
+            price = parseFloat(course.price);
+            if (isNaN(price)) price = 0;
+        }
+
+        console.log('Curso:', course.title);
+        console.log('Preço original:', course.price, typeof course.price);
+        console.log('Preço processado:', price, typeof price);
 
         return `
             <div class="col-md-6 col-lg-4 mb-4">
@@ -150,6 +164,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) throw new Error('Erro ao carregar cursos');
 
             const courses = await response.json();
+            console.log('Cursos em andamento recebidos:', courses);
+
             const cursosAndamentoElement = document.getElementById('cursosAndamento');
 
             if (courses.length === 0) {
@@ -190,6 +206,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) throw new Error('Erro ao carregar recomendações');
 
             const courses = await response.json();
+            console.log('Cursos recomendados recebidos:', courses);
+
             const cursosRecomendadosElement = document.getElementById('cursosRecomendados');
 
             if (courses.length === 0) {
@@ -249,9 +267,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Função para matricular em um curso
     window.enrollCourse = async function(courseId, price) {
         try {
+            console.log('Matrícula - ID do curso:', courseId);
+            console.log('Matrícula - Preço:', price);
+
+            // Garantir que o preço é um número
+            const coursePrice = parseFloat(price);
+            
             // Se o curso for pago, redirecionar para a página de pagamento
-            if (price > 0) {
-                window.location.href = `/payment.html?courseId=${courseId}&price=${price}`;
+            if (!isNaN(coursePrice) && coursePrice > 0) {
+                window.location.replace(`/payment.html?courseId=${courseId}&price=${coursePrice.toFixed(2)}`);
                 return;
             }
 
