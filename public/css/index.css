@@ -5,6 +5,8 @@
     --light-color: #f8fafc;
     --accent-color: #7c3aed;
     --white-color: #ffffff;
+    --text-color: #e2e8f0;
+    --text-muted: #94a3b8;
 }
 
 body {
@@ -46,9 +48,10 @@ body {
 }
 
 .nav-link {
-    color: var(--light-color) !important;
+    color: var(--white-color) !important;
     margin: 0 0.5rem;
     transition: color 0.3s;
+    font-weight: 500;
 }
 
 .nav-link:hover {
@@ -259,10 +262,10 @@ body {
 }
 
 .feature-card p {
-    color: rgba(248, 250, 252, 0.8);
-    font-size: 0.95rem;
-    margin-bottom: 0;
-    max-width: 280px;
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
 }
 
 /* Tech Stack Section */
@@ -836,5 +839,16 @@ a {
     .container {
         padding-left: 1.25rem;
         padding-right: 1.25rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .parallax-effect {
+        display: none !important;
     }
 } 

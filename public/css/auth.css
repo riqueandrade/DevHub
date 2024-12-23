@@ -5,6 +5,9 @@
     --light-color: #f8fafc;
     --accent-color: #7c3aed;
     --white-color: #ffffff;
+    --error-color: #ef4444;
+    --success-color: #22c55e;
+    --warning-color: #f59e0b;
 }
 
 body {
@@ -371,4 +374,167 @@ body {
 .show-password:focus {
     outline: none;
     box-shadow: none;
+}
+
+/* Password Strength Meter */
+.password-strength {
+    margin-top: 0.5rem;
+}
+
+.strength-meter {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.strength-meter-fill {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-meter-fill[data-strength="0"] {
+    width: 0;
+    background-color: transparent;
+}
+
+.strength-meter-fill[data-strength="1"] {
+    width: 25%;
+    background-color: var(--error-color);
+}
+
+.strength-meter-fill[data-strength="2"] {
+    width: 50%;
+    background-color: var(--warning-color);
+}
+
+.strength-meter-fill[data-strength="3"] {
+    width: 75%;
+    background-color: var(--secondary-color);
+}
+
+.strength-meter-fill[data-strength="4"] {
+    width: 100%;
+    background-color: var(--success-color);
+}
+
+.password-requirements {
+    margin: 0.5rem 0;
+    font-size: 0.85rem;
+}
+
+.password-requirements li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--light-color);
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+}
+
+.password-requirements li i {
+    font-size: 1rem;
+}
+
+.password-requirements li.valid {
+    color: var(--success-color);
+}
+
+.password-requirements li.valid i {
+    color: var(--success-color);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* Form Validation Styles */
+.form-control.is-invalid {
+    border-color: var(--error-color);
+    background-image: none;
+}
+
+.form-control.is-valid {
+    border-color: var(--success-color);
+    background-image: none;
+}
+
+.invalid-feedback {
+    color: var(--error-color);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Button Loading State */
+.btn .spinner-border {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* ReCAPTCHA Customization */
+.g-recaptcha {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+}
+
+/* Focus Styles for Accessibility */
+:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
+}
+
+/* Animation for Form Shake on Error */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* High Contrast Mode Support */
+@media (forced-colors: active) {
+    .btn-primary,
+    .btn-google {
+        border: 2px solid ButtonText;
+    }
+    
+    .input-group {
+        border: 1px solid ButtonText;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

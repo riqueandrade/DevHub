@@ -1,129 +1,212 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Faça login ou registre-se no Dev Hub para acessar cursos de programação">
     <title>Dev Hub - Login/Registro</title>
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="css/auth.css">
+    <script src="https://www.google.com/recaptcha/api.js?render=6LcMLaQqAAAAAA74GSdlgf5WawpLWoxFbgevu6ZO"></script>
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-lg fixed-top">
+    <nav class="navbar navbar-expand-lg fixed-top" role="navigation" aria-label="Navegação principal">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="/images/favicon.svg" alt="Dev Hub Logo" class="brand-icon me-2">
+            <a class="navbar-brand d-flex align-items-center" href="/" aria-label="Ir para página inicial">
+                <img src="/images/favicon.svg" alt="Dev Hub Logo" class="brand-icon me-2" width="32" height="32">
                 Dev Hub
             </a>
         </div>
     </nav>
 
-    <div class="auth-container">
+    <main class="auth-container" role="main">
         <div class="auth-box">
-            <div class="auth-header">
-                <h2>Bem-vindo ao Dev Hub</h2>
+            <div class="auth-header" role="banner">
+                <h1 class="h2">Bem-vindo ao Dev Hub</h1>
                 <p class="subtitle">Sua jornada de aprendizado começa aqui</p>
             </div>
 
-            <div class="auth-tabs">
-                <button class="tab-btn active" data-tab="login">
-                    <i class="bi bi-box-arrow-in-right"></i> Login
+            <div class="auth-tabs" role="tablist" aria-label="Opções de autenticação">
+                <button class="tab-btn active" data-tab="login" role="tab" aria-selected="true" aria-controls="login">
+                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Login
                 </button>
-                <button class="tab-btn" data-tab="register">
-                    <i class="bi bi-person-plus"></i> Registro
+                <button class="tab-btn" data-tab="register" role="tab" aria-selected="false" aria-controls="register">
+                    <i class="bi bi-person-plus" aria-hidden="true"></i> Registro
                 </button>
             </div>
 
             <div class="auth-content">
                 <!-- Login Form -->
-                <div class="tab-content active" id="login">
-                    <form id="loginForm">
+                <div class="tab-content active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                    <form id="loginForm" novalidate>
                         <div class="form-group">
+                            <label for="loginEmail" class="visually-hidden">Email</label>
                             <div class="input-group">
-                                <span class="input-group-text">
+                                <span class="input-group-text" aria-hidden="true">
                                     <i class="bi bi-envelope"></i>
                                 </span>
-                                <input type="email" class="form-control" id="loginEmail" placeholder="Seu email" required>
+                                <input type="email" class="form-control" id="loginEmail" 
+                                    placeholder="Seu email" required
+                                    aria-required="true"
+                                    aria-describedby="loginEmailHelp">
                             </div>
+                            <div id="loginEmailHelp" class="form-text visually-hidden">Digite seu email de acesso</div>
                         </div>
                         <div class="form-group">
+                            <label for="loginPassword" class="visually-hidden">Senha</label>
                             <div class="input-group">
-                                <span class="input-group-text">
+                                <span class="input-group-text" aria-hidden="true">
                                     <i class="bi bi-lock"></i>
                                 </span>
-                                <input type="password" class="form-control" id="loginPassword" placeholder="Sua senha" required>
-                                <button type="button" class="input-group-text show-password" title="Mostrar senha">
-                                    <i class="bi bi-eye"></i>
+                                <input type="password" class="form-control" id="loginPassword" 
+                                    placeholder="Sua senha" required
+                                    aria-required="true"
+                                    aria-describedby="loginPasswordHelp">
+                                <button type="button" class="input-group-text show-password" 
+                                    aria-label="Alternar visibilidade da senha">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
+                            <div id="loginPasswordHelp" class="form-text visually-hidden">Digite sua senha</div>
                         </div>
                         <div class="form-group text-end mb-3">
-                            <a href="#" class="forgot-password">Esqueceu a senha?</a>
+                            <a href="/reset-password.html" class="forgot-password">Esqueceu a senha?</a>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-box-arrow-in-right"></i> Entrar
+                        <button type="submit" class="btn btn-primary w-100 g-recaptcha" 
+                            id="loginButton" 
+                            data-sitekey="6LcMLaQqAAAAAA74GSdlgf5WawpLWoxFbgevu6ZO" 
+                            data-callback='onLoginSubmit' 
+                            data-action='login'>
+                            <span class="button-text">
+                                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Entrar
+                            </span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         </button>
                         <div class="divider">
                             <span>ou</span>
                         </div>
                         <button type="button" class="btn btn-google w-100" onclick="handleGoogleLogin()">
-                            <i class="bi bi-google"></i> Entrar com Google
+                            <i class="bi bi-google" aria-hidden="true"></i> Entrar com Google
                         </button>
                     </form>
                 </div>
 
                 <!-- Register Form -->
-                <div class="tab-content" id="register">
-                    <form id="registerForm">
+                <div class="tab-content" id="register" role="tabpanel" aria-labelledby="register-tab">
+                    <form id="registerForm" novalidate>
                         <div class="form-group">
+                            <label for="registerName" class="visually-hidden">Nome</label>
                             <div class="input-group">
-                                <span class="input-group-text">
+                                <span class="input-group-text" aria-hidden="true">
                                     <i class="bi bi-person"></i>
                                 </span>
-                                <input type="text" class="form-control" id="registerName" placeholder="Seu nome" required>
+                                <input type="text" class="form-control" id="registerName" 
+                                    placeholder="Seu nome" required
+                                    aria-required="true"
+                                    aria-describedby="registerNameHelp"
+                                    minlength="3">
                             </div>
+                            <div id="registerNameHelp" class="form-text visually-hidden">Digite seu nome completo</div>
                         </div>
                         <div class="form-group">
+                            <label for="registerEmail" class="visually-hidden">Email</label>
                             <div class="input-group">
-                                <span class="input-group-text">
+                                <span class="input-group-text" aria-hidden="true">
                                     <i class="bi bi-envelope"></i>
                                 </span>
-                                <input type="email" class="form-control" id="registerEmail" placeholder="Seu email" required>
+                                <input type="email" class="form-control" id="registerEmail" 
+                                    placeholder="Seu email" required
+                                    aria-required="true"
+                                    aria-describedby="registerEmailHelp">
                             </div>
+                            <div id="registerEmailHelp" class="form-text visually-hidden">Digite um email válido</div>
                         </div>
                         <div class="form-group">
+                            <label for="registerPassword" class="visually-hidden">Senha</label>
                             <div class="input-group">
-                                <span class="input-group-text">
+                                <span class="input-group-text" aria-hidden="true">
                                     <i class="bi bi-lock"></i>
                                 </span>
-                                <input type="password" class="form-control" id="registerPassword" placeholder="Sua senha" required>
-                                <button type="button" class="input-group-text show-password" title="Mostrar senha">
-                                    <i class="bi bi-eye"></i>
+                                <input type="password" class="form-control" id="registerPassword" 
+                                    placeholder="Sua senha" required
+                                    aria-required="true"
+                                    aria-describedby="passwordStrength"
+                                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$">
+                                <button type="button" class="input-group-text show-password" 
+                                    aria-label="Alternar visibilidade da senha">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
+                            </div>
+                            <div id="passwordStrength" class="password-strength mt-2" role="alert" aria-live="polite">
+                                <div class="strength-meter">
+                                    <div class="strength-meter-fill" data-strength="0"></div>
+                                </div>
+                                <ul class="password-requirements list-unstyled small mt-2">
+                                    <li data-requirement="length">
+                                        <i class="bi bi-x-circle text-danger"></i> Mínimo de 8 caracteres
+                                    </li>
+                                    <li data-requirement="lowercase">
+                                        <i class="bi bi-x-circle text-danger"></i> Uma letra minúscula
+                                    </li>
+                                    <li data-requirement="uppercase">
+                                        <i class="bi bi-x-circle text-danger"></i> Uma letra maiúscula
+                                    </li>
+                                    <li data-requirement="number">
+                                        <i class="bi bi-x-circle text-danger"></i> Um número
+                                    </li>
+                                    <li data-requirement="special">
+                                        <i class="bi bi-x-circle text-danger"></i> Um caractere especial
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                         <div class="form-group">
+                            <label for="confirmPassword" class="visually-hidden">Confirmar Senha</label>
                             <div class="input-group">
-                                <span class="input-group-text">
+                                <span class="input-group-text" aria-hidden="true">
                                     <i class="bi bi-lock-fill"></i>
                                 </span>
-                                <input type="password" class="form-control" id="confirmPassword" placeholder="Confirme sua senha" required>
-                                <button type="button" class="input-group-text show-password" title="Mostrar senha">
-                                    <i class="bi bi-eye"></i>
+                                <input type="password" class="form-control" id="confirmPassword" 
+                                    placeholder="Confirme sua senha" required
+                                    aria-required="true"
+                                    aria-describedby="confirmPasswordHelp">
+                                <button type="button" class="input-group-text show-password" 
+                                    aria-label="Alternar visibilidade da senha">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
                                 </button>
                             </div>
+                            <div id="confirmPasswordHelp" class="form-text visually-hidden">Repita sua senha</div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-person-plus"></i> Criar Conta
+                        <button type="submit" class="btn btn-primary w-100 g-recaptcha" 
+                            id="registerButton" 
+                            data-sitekey="6LcMLaQqAAAAAA74GSdlgf5WawpLWoxFbgevu6ZO" 
+                            data-callback='onRegisterSubmit' 
+                            data-action='register'>
+                            <span class="button-text">
+                                <i class="bi bi-person-plus" aria-hidden="true"></i> Criar Conta
+                            </span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
                         </button>
                     </form>
                 </div>
             </div>
 
             <div class="auth-footer">
-                <p>Ao se registrar, você concorda com nossos <a href="/legal/terms.html">Termos de Uso</a> e <a href="/legal/privacy.html">Política de Privacidade</a></p>
+                <p>Ao se registrar, você concorda com nossos 
+                    <a href="/legal/terms.html">Termos de Uso</a> e 
+                    <a href="/legal/privacy.html">Política de Privacidade</a>
+                </p>
             </div>
+        </div>
+    </main>
+
+    <div id="loadingOverlay" class="loading-overlay d-none">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Carregando...</span>
         </div>
     </div>
 
@@ -131,4 +214,5 @@
     <script src="https://accounts.google.com/gsi/client" async></script>
     <script src="js/auth.js"></script>
 </body>
-</html> 
+
+</html>

@@ -1,22 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Animação de entrada dos elementos
+    // Animação de entrada dos elementos com IntersectionObserver
     const animateElements = () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
         const elements = document.querySelectorAll('.hero h1, .hero-text, .hero-stats, .cta-button, .code-window, .feature-card, .tech-card, .course-card, .testimonial-card');
-        elements.forEach((element, index) => {
+        elements.forEach(element => {
             element.style.opacity = '0';
             element.style.transform = 'translateY(20px)';
             element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            
-            setTimeout(() => {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-            }, 100 * index);
+            observer.observe(element);
         });
     };
 
-    // Efeito de digitação no código
+    // Efeito de digitação otimizado
     const typeCode = () => {
         const codeElement = document.querySelector('.code-content code');
+        if (!codeElement) return;
+        
         const codeText = codeElement.textContent;
         codeElement.textContent = '';
         
@@ -31,98 +39,89 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 50);
     };
 
-    // Efeito parallax suave no hero
+    // Parallax effect com throttle
     const parallaxEffect = () => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        
+        let ticking = false;
         document.addEventListener('mousemove', (e) => {
-            const hero = document.querySelector('.hero');
-            const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
-            const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
-            
-            hero.style.backgroundPosition = `${moveX}px ${moveY}px`;
-        });
-    };
-
-    // Navbar scroll effect
-    const handleNavbarScroll = () => {
-        const navbar = document.querySelector('.navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const hero = document.querySelector('.hero');
+                    if (hero) {
+                        const moveX = (e.clientX - window.innerWidth / 2) * 0.01;
+                        const moveY = (e.clientY - window.innerHeight / 2) * 0.01;
+                        hero.style.backgroundPosition = `${moveX}px ${moveY}px`;
+                    }
+                    ticking = false;
+                });
+                ticking = true;
             }
         });
     };
 
-    // Smooth scroll para links internos
-    const smoothScroll = () => {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
+    // Navbar scroll com throttle
+    const handleNavbarScroll = () => {
+        let ticking = false;
+        const navbar = document.querySelector('.navbar');
+        
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (window.scrollY > 100) {
+                        navbar.classList.add('scrolled');
+                    } else {
+                        navbar.classList.remove('scrolled');
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
         });
     };
 
-    // Hover effect nos cards de tecnologia
-    const techCardsEffect = () => {
-        const cards = document.querySelectorAll('.tech-card');
-        cards.forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-10px) scale(1.02)';
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0) scale(1)';
-            });
-        });
-    };
-
-    // Animação de números
-    const animateNumbers = () => {
-        const stats = document.querySelectorAll('.stat span');
-        stats.forEach(stat => {
-            const finalNumber = parseInt(stat.textContent);
-            let currentNumber = 0;
-            const increment = finalNumber / 50;
-            const interval = setInterval(() => {
-                if (currentNumber < finalNumber) {
-                    currentNumber += increment;
-                    stat.textContent = Math.ceil(currentNumber) + (stat.textContent.includes('+') ? '+' : '');
-                } else {
-                    clearInterval(interval);
-                }
-            }, 30);
-        });
-    };
-
-    // Newsletter form
+    // Newsletter form com validação e feedback
     const handleNewsletterForm = () => {
         const form = document.querySelector('.newsletter-form');
         if (form) {
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const input = form.querySelector('input');
-                if (input.value) {
-                    alert('Obrigado por se inscrever! Em breve você receberá nossas novidades.');
-                    input.value = '';
+                const button = form.querySelector('button');
+                
+                if (input.value && input.checkValidity()) {
+                    button.disabled = true;
+                    button.textContent = 'Enviando...';
+                    
+                    try {
+                        // Simular envio (substituir por chamada real à API)
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        alert('Obrigado por se inscrever! Em breve você receberá nossas novidades.');
+                        input.value = '';
+                    } catch (error) {
+                        alert('Erro ao se inscrever. Por favor, tente novamente.');
+                    } finally {
+                        button.disabled = false;
+                        button.textContent = 'Inscrever-se';
+                    }
                 }
             });
         }
     };
 
-    // Inicializar todas as funcionalidades
-    animateElements();
-    setTimeout(typeCode, 1000);
-    parallaxEffect();
-    handleNavbarScroll();
-    smoothScroll();
-    techCardsEffect();
-    setTimeout(animateNumbers, 500);
-    handleNewsletterForm();
+    // Inicializar funcionalidades
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    function init() {
+        animateElements();
+        setTimeout(typeCode, 1000);
+        parallaxEffect();
+        handleNavbarScroll();
+        handleNewsletterForm();
+    }
 }); 
