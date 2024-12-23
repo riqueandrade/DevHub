@@ -31,6 +31,7 @@ exports.getInProgress = async (req, res) => {
             include: [{
                 model: Course,
                 as: 'course',
+                attributes: ['id', 'title', 'description', 'thumbnail', 'level', 'duration'],
                 include: [{
                     model: User,
                     as: 'instructor',
@@ -118,6 +119,7 @@ exports.getRecommended = async (req, res) => {
                 },
                 status: 'publicado'
             },
+            attributes: ['id', 'title', 'description', 'thumbnail', 'level', 'duration', 'price'],
             include: [{
                 model: User,
                 as: 'instructor',

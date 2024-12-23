@@ -54,8 +54,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Atualizar elementos da interface com dados do usuário
         document.getElementById('userName').textContent = user.name;
-        document.getElementById('welcomeUserName').textContent = user.name;
-        document.getElementById('userAvatar').src = user.avatar_url || '/images/default-avatar.png';
+        document.getElementById('welcomeUserName').textContent = user.name.split(' ')[0];
+        
+        const userAvatar = document.getElementById('userAvatar');
+        userAvatar.src = user.avatar_url || '/images/default-avatar.svg';
+        userAvatar.alt = `Avatar de ${user.name}`;
 
         // Mostrar/ocultar link de gerenciamento de cursos
         const adminInstructorMenu = document.querySelector('.admin-instructor-only');
@@ -91,14 +94,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Função para criar card de curso
     const createCourseCard = (course, inProgress = false) => {
-        console.log('Dados completos do curso:', course);
-
         const levelInfo = formatLevel(course.level);
         const duration = formatDuration(course.duration);
         const progress = course.progress || 0;
         const remainingTime = course.remainingTime ? formatDuration(course.remainingTime) : '--';
         
-        // Validação mais rigorosa do preço
+        // Validação do preço
         let price = 0;
         if (typeof course.price === 'number') {
             price = course.price;
@@ -107,23 +108,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (isNaN(price)) price = 0;
         }
 
-        console.log('Curso:', course.title);
-        console.log('Preço original:', course.price, typeof course.price);
-        console.log('Preço processado:', price, typeof price);
-
         return `
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="course-card">
+                <article class="course-card" role="article">
                     <div class="course-header">
-                        <img src="${course.thumbnail || '/images/course-placeholder.png'}" alt="${course.title}" class="course-thumbnail">
+                        <img src="${course.thumbnail || '/images/course-placeholder.png'}" 
+                             alt="${course.title}" 
+                             class="course-thumbnail"
+                             loading="lazy">
                         <span class="course-level badge ${levelInfo.class}">${levelInfo.text}</span>
                     </div>
                     <div class="course-body">
                         <h3 class="course-title">${course.title}</h3>
                         <div class="course-info">
                             ${inProgress ? `
-                                <div class="progress mb-3">
-                                    <div class="progress-bar" role="progressbar" style="width: ${progress}%">
+                                <div class="progress" role="progressbar" aria-valuenow="${progress}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar" style="width: ${progress}%">
                                         ${progress}% concluído
                                     </div>
                                 </div>
@@ -132,21 +133,78 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <p class="course-description">${course.description}</p>
                             `}
                             <div class="course-meta">
-                                <span class="duration"><i class="bi bi-clock"></i> ${duration}</span>
-                                <span class="level"><i class="bi bi-bar-chart"></i> ${levelInfo.text}</span>
-                                ${!inProgress ? `<span class="price"><i class="bi bi-tag"></i> ${price > 0 ? `R$ ${price.toFixed(2)}` : 'Grátis'}</span>` : ''}
+                                <span class="duration" title="Duração do curso">
+                                    <i class="bi bi-clock" aria-hidden="true"></i> ${duration}
+                                </span>
+                                <span class="level" title="Nível do curso">
+                                    <i class="bi bi-bar-chart" aria-hidden="true"></i> ${levelInfo.text}
+                                </span>
+                                ${!inProgress ? `
+                                    <span class="price" title="Preço do curso">
+                                        <i class="bi bi-tag" aria-hidden="true"></i> 
+                                        ${price > 0 ? `R$ ${price.toFixed(2)}` : 'Grátis'}
+                                    </span>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
                     <div class="course-footer">
                         ${inProgress ? `
-                            <a href="/course/${course.id}" class="btn btn-primary w-100">Continuar</a>
+                            <a href="/course/${course.id}" class="btn btn-primary w-100">
+                                Continuar
+                            </a>
                         ` : `
-                            <button class="btn btn-primary w-100" onclick="enrollCourse(${course.id}, ${price})">
+                            <button class="btn btn-primary w-100" 
+                                    onclick="enrollCourse(${course.id}, ${price})"
+                                    aria-label="${price > 0 ? `Comprar curso por R$ ${price.toFixed(2)}` : 'Começar curso gratuitamente'}">
                                 ${price > 0 ? `Comprar por R$ ${price.toFixed(2)}` : 'Começar Agora'}
                             </button>
                         `}
                     </div>
+                </article>
+            </div>
+        `;
+    };
+
+    // Função para mostrar mensagem de carregamento
+    const showLoadingMessage = (element, message) => {
+        element.innerHTML = `
+            <div class="col-12">
+                <div class="placeholder-message" role="status" aria-live="polite">
+                    <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                    <p>${message}</p>
+                </div>
+            </div>
+        `;
+    };
+
+    // Função para mostrar mensagem de erro
+    const showErrorMessage = (element, message) => {
+        element.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                    <p>${message}</p>
+                    <button class="btn btn-outline-danger mt-3" onclick="window.location.reload()">
+                        Tentar Novamente
+                    </button>
+                </div>
+            </div>
+        `;
+    };
+
+    // Função para mostrar mensagem vazia
+    const showEmptyMessage = (element, message, action = null) => {
+        element.innerHTML = `
+            <div class="col-12">
+                <div class="placeholder-message" role="status">
+                    <i class="bi bi-inbox" aria-hidden="true"></i>
+                    <p>${message}</p>
+                    ${action ? `
+                        <a href="${action.url}" class="btn btn-primary mt-3">
+                            ${action.text}
+                        </a>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -154,6 +212,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Carregar cursos em andamento
     const loadInProgressCourses = async () => {
+        const cursosAndamentoElement = document.getElementById('cursosAndamento');
+        showLoadingMessage(cursosAndamentoElement, 'Carregando seus cursos em andamento...');
+
         try {
             const response = await fetch('/api/courses/in-progress', {
                 headers: {
@@ -164,38 +225,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) throw new Error('Erro ao carregar cursos');
 
             const courses = await response.json();
-            console.log('Cursos em andamento recebidos:', courses);
-
-            const cursosAndamentoElement = document.getElementById('cursosAndamento');
 
             if (courses.length === 0) {
-                cursosAndamentoElement.innerHTML = `
-                    <div class="col-12">
-                        <div class="placeholder-message">
-                            <i class="bi bi-play-circle"></i>
-                            <p>Você ainda não começou nenhum curso</p>
-                            <a href="#catalogo" class="btn btn-primary">Explorar Cursos</a>
-                        </div>
-                    </div>
-                `;
+                showEmptyMessage(cursosAndamentoElement, 'Você ainda não começou nenhum curso', {
+                    url: '/catalog.html',
+                    text: 'Explorar Cursos'
+                });
                 return;
             }
 
             cursosAndamentoElement.innerHTML = courses.map(course => createCourseCard(course, true)).join('');
         } catch (error) {
             console.error('Erro ao carregar cursos em andamento:', error);
-            document.getElementById('cursosAndamento').innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger">
-                        Erro ao carregar cursos em andamento. Tente novamente mais tarde.
-                    </div>
-                </div>
-            `;
+            showErrorMessage(cursosAndamentoElement, 'Erro ao carregar cursos em andamento. Tente novamente mais tarde.');
         }
     };
 
     // Carregar cursos recomendados
     const loadRecommendedCourses = async () => {
+        const cursosRecomendadosElement = document.getElementById('cursosRecomendados');
+        showLoadingMessage(cursosRecomendadosElement, 'Carregando recomendações personalizadas...');
+
         try {
             const response = await fetch('/api/courses/recommended', {
                 headers: {
@@ -206,36 +256,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok) throw new Error('Erro ao carregar recomendações');
 
             const courses = await response.json();
-            console.log('Cursos recomendados recebidos:', courses);
-
-            const cursosRecomendadosElement = document.getElementById('cursosRecomendados');
 
             if (courses.length === 0) {
-                cursosRecomendadosElement.innerHTML = `
-                    <div class="col-12">
-                        <div class="placeholder-message">
-                            <i class="bi bi-lightning"></i>
-                            <p>Nenhum curso recomendado no momento</p>
-                        </div>
-                    </div>
-                `;
+                showEmptyMessage(cursosRecomendadosElement, 'Nenhum curso recomendado no momento');
                 return;
             }
 
             cursosRecomendadosElement.innerHTML = courses.map(course => createCourseCard(course)).join('');
         } catch (error) {
             console.error('Erro ao carregar cursos recomendados:', error);
-            document.getElementById('cursosRecomendados').innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger">
-                        Erro ao carregar recomendações. Tente novamente mais tarde.
-                    </div>
-                </div>
-            `;
+            showErrorMessage(cursosRecomendadosElement, 'Erro ao carregar recomendações. Tente novamente mais tarde.');
         }
     };
 
-    // Carregar estatísticas
+    // Carregar estatísticas com animação
     const loadStats = async () => {
         try {
             const response = await fetch('/api/user/stats', {
@@ -248,95 +282,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const stats = await response.json();
             
-            document.getElementById('totalCursos').textContent = stats.coursesInProgress || 0;
-            document.getElementById('horasEstudo').textContent = `${stats.studyHours || 0}h`;
-            document.getElementById('certificados').textContent = stats.certificates || 0;
-            document.getElementById('sequencia').textContent = stats.streak || 0;
+            // Função para animar número
+            const animateNumber = (element, end, duration = 1000, prefix = '', suffix = '') => {
+                const start = 0;
+                const startTime = performance.now();
+                
+                const updateNumber = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    const value = Math.floor(start + (end - start) * progress);
+                    element.textContent = `${prefix}${value}${suffix}`;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateNumber);
+                    }
+                };
+                
+                requestAnimationFrame(updateNumber);
+            };
+
+            // Animar estatísticas
+            animateNumber(document.getElementById('totalCursos'), stats.coursesInProgress || 0);
+            animateNumber(document.getElementById('horasEstudo'), stats.studyHours || 0, 1500, '', 'h');
+            animateNumber(document.getElementById('certificados'), stats.certificates || 0);
+            animateNumber(document.getElementById('sequencia'), stats.streak || 0);
+
         } catch (error) {
             console.error('Erro ao carregar estatísticas:', error);
-        }
-    };
-
-    // Handler do logout
-    document.getElementById('logoutButton').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/auth.html';
-    });
-
-    // Função para matricular em um curso
-    window.enrollCourse = async function(courseId, price) {
-        try {
-            console.log('Matrícula - ID do curso:', courseId);
-            console.log('Matrícula - Preço:', price);
-
-            // Garantir que o preço é um número
-            const coursePrice = parseFloat(price);
-            
-            // Se o curso for pago, redirecionar para a página de pagamento
-            if (!isNaN(coursePrice) && coursePrice > 0) {
-                window.location.replace(`/payment.html?courseId=${courseId}&price=${coursePrice.toFixed(2)}`);
-                return;
-            }
-
-            // Se for gratuito, fazer a matrícula direta
-            const response = await fetch('/api/courses/enroll', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ courseId })
+            const statElements = ['totalCursos', 'horasEstudo', 'certificados', 'sequencia'];
+            statElements.forEach(id => {
+                document.getElementById(id).textContent = '--';
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Erro ao se matricular no curso');
-            }
-
-            // Mostrar mensagem de sucesso
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
-            alertDiv.innerHTML = `
-                ${data.message || 'Matrícula realizada com sucesso!'}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(alertDiv);
-
-            // Remover alerta após 5 segundos
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
-
-            // Recarregar os cursos
-            await loadInProgressCourses();
-            await loadRecommendedCourses();
-            await loadStats();
-        } catch (error) {
-            console.error('Erro ao matricular no curso:', error);
-            
-            // Mostrar mensagem de erro
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
-            alertDiv.innerHTML = `
-                ${error.message || 'Erro ao se matricular no curso. Tente novamente.'}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(alertDiv);
-
-            // Remover alerta após 5 segundos
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
         }
     };
 
     // Carregar dados iniciais
-    loadInProgressCourses();
-    loadRecommendedCourses();
-    loadStats();
+    await Promise.all([
+        loadInProgressCourses(),
+        loadRecommendedCourses(),
+        loadStats()
+    ]);
 
-    // Verificar token periodicamente
-    setInterval(verifyToken, 5 * 60 * 1000);
+    // Configurar logout
+    document.getElementById('logoutButton').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.replace('/auth.html');
+    });
 }); 

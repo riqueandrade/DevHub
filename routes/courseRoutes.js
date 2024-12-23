@@ -11,6 +11,11 @@ const EnrollmentController = require('../controllers/EnrollmentController');
 // Middleware de autenticação para todas as rotas
 router.use(authMiddleware);
 
+// Rotas de matrícula e progresso (devem vir antes das rotas com :courseId)
+router.get('/in-progress', EnrollmentController.getInProgress);
+router.get('/completed', EnrollmentController.getCompleted);
+router.get('/recommended', EnrollmentController.getRecommended);
+
 // Rotas de gerenciamento de cursos
 router.post('/', CourseManagementController.createCourse);
 router.get('/instructor', CourseManagementController.getInstructorCourses);
@@ -37,9 +42,6 @@ router.post('/lessons/:lessonId/video', LessonController.uploadVideo);
 router.put('/modules/:moduleId/lessons/reorder', LessonController.reorderLessons);
 
 // Rotas de matrícula e progresso
-router.get('/in-progress', EnrollmentController.getInProgress);
-router.get('/completed', EnrollmentController.getCompleted);
-router.get('/recommended', EnrollmentController.getRecommended);
 router.post('/:courseId/enroll', EnrollmentController.enrollInCourse);
 router.put('/enrollments/:enrollmentId/lessons/:lessonId/progress', EnrollmentController.updateLessonProgress);
 

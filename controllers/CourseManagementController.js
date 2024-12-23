@@ -159,7 +159,7 @@ exports.getCourseById = async (req, res) => {
                 include: [{
                     model: Lesson,
                     as: 'lessons',
-                    attributes: ['id', 'title', 'description', 'duration', 'video_url', 'order']
+                    attributes: ['id', 'title', 'description', 'duration', 'content_url', 'content_type', 'order_number']
                 }]
             }, {
                 model: User,
@@ -167,8 +167,8 @@ exports.getCourseById = async (req, res) => {
                 attributes: ['id', 'name', 'avatar_url', 'bio']
             }],
             order: [
-                [{ model: Module, as: 'modules' }, 'order', 'ASC'],
-                [{ model: Module, as: 'modules' }, { model: Lesson, as: 'lessons' }, 'order', 'ASC']
+                [{ model: Module, as: 'modules' }, 'order_number', 'ASC'],
+                [{ model: Module, as: 'modules' }, { model: Lesson, as: 'lessons' }, 'order_number', 'ASC']
             ]
         });
 
