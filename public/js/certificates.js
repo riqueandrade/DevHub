@@ -64,7 +64,7 @@ const loadCertificates = async () => {
             search: state.filters.search
         });
 
-        const response = await fetch(`/api/certificates?${queryParams}`, {
+        const response = await fetch(`/api/user/certificates?${queryParams}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -108,23 +108,19 @@ const renderCertificates = () => {
             <div class="certificate-card">
                 <div class="certificate-preview">
                     <img src="/images/certificate-placeholder.png" 
-                         alt="Certificado ${certificate.course_name}">
+                         alt="Certificado ${certificate.course_title}">
                 </div>
                 <div class="certificate-body">
-                    <h3 class="certificate-title">${certificate.course_name}</h3>
+                    <h3 class="certificate-title">${certificate.course_title}</h3>
                     <div class="certificate-meta">
                         <span>
                             <i class="bi bi-calendar"></i>
-                            ${formatDate(certificate.completion_date)}
-                        </span>
-                        <span>
-                            <i class="bi bi-person"></i>
-                            ${certificate.instructor_name}
+                            ${formatDate(certificate.issued_at)}
                         </span>
                     </div>
                     <div class="certificate-actions">
-                        <button class="btn btn-primary w-100" onclick="viewCertificate(${certificate.course_id})">
-                            <i class="bi bi-eye"></i> Visualizar
+                        <button class="btn btn-primary w-100" onclick="downloadCertificate('${certificate.id}')">
+                            <i class="bi bi-download"></i> Baixar PDF
                         </button>
                     </div>
                 </div>
@@ -200,32 +196,13 @@ const renderPagination = () => {
     });
 };
 
-// Visualizar certificado
-const viewCertificate = async (certificateId) => {
+// Baixar certificado
+const downloadCertificate = async (certificateId) => {
     try {
-        const response = await fetch(`/api/certificates/${certificateId}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-
-        if (!response.ok) throw new Error('Erro ao carregar certificado');
-
-        const certificate = await response.json();
-        
-        // Atualizar modal
-        document.getElementById('certificatePreview').src = certificate.preview_url;
-        
-        // Configurar botão de download
-        const downloadButton = document.getElementById('downloadButton');
-        downloadButton.onclick = () => window.open(certificate.pdf_url, '_blank');
-
-        // Abrir modal
-        const modal = new bootstrap.Modal(document.getElementById('certificateModal'));
-        modal.show();
+        window.open(`/api/user/certificates/${certificateId}/download`, '_blank');
     } catch (error) {
-        console.error('Erro ao visualizar certificado:', error);
-        showError('Erro ao visualizar certificado');
+        console.error('Erro ao baixar certificado:', error);
+        showError('Erro ao baixar certificado');
     }
 };
 
@@ -253,8 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
     searchButton.addEventListener('click', handleSearch);
 
     // Ordenação
-    document.getElementById('sortSelect').addEventListener('change', (e) => {
-        state.filters.sort = e.target.value;
+    const sortSelect = document.getElementById('sortSelect');
+    sortSelect.addEventListener('change', () => {
+        state.filters.sort = sortSelect.value;
         state.pagination.page = 1;
         loadCertificates();
     });

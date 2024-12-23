@@ -8,11 +8,11 @@ const sequelize = require('./config/database');
 // Importar controladores
 const AuthController = require('./controllers/auth/AuthController');
 const StatsController = require('./controllers/stats/StatsController');
+const CertificateController = require('./controllers/certificates/CertificateController');
 const authMiddleware = require('./middlewares/auth');
 const userRoutes = require('./routes/userRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const catalogRoutes = require('./routes/catalogRoutes');
-const certificateRoutes = require('./routes/certificateRoutes');
 
 const app = express();
  
@@ -43,7 +43,10 @@ app.get('/api/auth/google/config', AuthController.getGoogleConfig);
 app.use('/api/user', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/catalog', catalogRoutes);
-app.use('/api/certificates', certificateRoutes);
+
+// Rotas de certificados
+app.get('/api/user/certificates', CertificateController.getCertificates);
+app.get('/api/user/certificates/:id/download', CertificateController.downloadCertificate);
 
 // Rotas de Estatísticas
 app.get('/api/user/stats', StatsController.getStats);

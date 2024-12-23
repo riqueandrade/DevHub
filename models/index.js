@@ -42,7 +42,7 @@ LessonProgress.belongsTo(Enrollment, { foreignKey: 'enrollment_id', as: 'enrollm
 LessonProgress.belongsTo(Lesson, { foreignKey: 'lesson_id', as: 'lesson' });
 
 // Associações Certificate
-Certificate.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+Certificate.belongsTo(User, { foreignKey: 'user_id', as: 'student' });
 Certificate.belongsTo(Course, { foreignKey: 'course_id', as: 'course' });
 
 module.exports = {

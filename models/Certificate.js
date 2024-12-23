@@ -35,6 +35,11 @@ const Certificate = sequelize.define('Certificate', {
     pdf_url: {
         type: DataTypes.STRING(255),
         allowNull: false
+    },
+    issued_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
 }, {
     createdAt: 'created_at',
