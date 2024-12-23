@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Handler do formulário de login
-    window.onLoginSubmit = async (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const email = document.getElementById('loginEmail').value;
@@ -190,10 +190,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         } finally {
             toggleButtonLoading(button, false);
         }
-    };
+    });
 
     // Handler do formulário de registro
-    window.onRegisterSubmit = async (e) => {
+    registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const name = document.getElementById('registerName').value;
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } finally {
             toggleButtonLoading(button, false);
         }
-    };
+    });
 
     // Função para lidar com o login do Google
     window.handleGoogleLogin = async () => {

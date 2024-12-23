@@ -5,6 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Faça login ou registre-se no Dev Hub para acessar cursos de programação">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://accounts.google.com/gsi/ https://cdn.jsdelivr.net/npm/ 'unsafe-inline';
+        frame-src 'self' https://www.google.com/recaptcha/ https://accounts.google.com/;
+        style-src 'self' https://cdn.jsdelivr.net/npm/ 'unsafe-inline';
+        img-src 'self' data: https:;
+        connect-src 'self' https://www.google.com/recaptcha/;
+        font-src 'self' https://cdn.jsdelivr.net/npm/;
+    ">
     <title>Dev Hub - Login/Registro</title>
     <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -76,11 +85,7 @@
                         <div class="form-group text-end mb-3">
                             <a href="/reset-password.html" class="forgot-password">Esqueceu a senha?</a>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 g-recaptcha" 
-                            id="loginButton" 
-                            data-sitekey="6LcMLaQqAAAAAA74GSdlgf5WawpLWoxFbgevu6ZO" 
-                            data-callback='onLoginSubmit' 
-                            data-action='login'>
+                        <button type="submit" class="btn btn-primary w-100" id="loginButton">
                             <span class="button-text">
                                 <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Entrar
                             </span>
@@ -181,11 +186,7 @@
                             </div>
                             <div id="confirmPasswordHelp" class="form-text visually-hidden">Repita sua senha</div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 g-recaptcha" 
-                            id="registerButton" 
-                            data-sitekey="6LcMLaQqAAAAAA74GSdlgf5WawpLWoxFbgevu6ZO" 
-                            data-callback='onRegisterSubmit' 
-                            data-action='register'>
+                        <button type="submit" class="btn btn-primary w-100" id="registerButton">
                             <span class="button-text">
                                 <i class="bi bi-person-plus" aria-hidden="true"></i> Criar Conta
                             </span>
