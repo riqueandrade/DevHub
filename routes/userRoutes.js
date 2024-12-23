@@ -1,30 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const UserController = require('../controllers/UserController');
 const authMiddleware = require('../middlewares/auth');
 
-// Rotas públicas
-router.post('/register', UserController.register);
-router.post('/login', UserController.login);
-router.post('/forgot-password', UserController.forgotPassword);
-router.post('/reset-password', UserController.resetPassword);
-router.get('/verify', UserController.verifyToken);
-router.get('/google/config', UserController.getGoogleConfig);
-router.get('/google/callback', UserController.googleCallback);
+// Importar controladores
+const AuthController = require('../controllers/auth/AuthController');
+const ProfileController = require('../controllers/profile/ProfileController');
+const StatsController = require('../controllers/stats/StatsController');
+const CertificateController = require('../controllers/certificates/CertificateController');
+const SettingsController = require('../controllers/settings/SettingsController');
+
+// Rotas públicas de autenticação
+router.post('/register', AuthController.register);
+router.post('/login', AuthController.login);
+router.post('/forgot-password', AuthController.forgotPassword);
+router.post('/reset-password', AuthController.resetPassword);
+router.get('/verify', AuthController.verifyToken);
+router.get('/google/config', AuthController.getGoogleConfig);
+router.get('/google/callback', AuthController.googleCallback);
 
 // Rotas protegidas
 router.use(authMiddleware);
-router.get('/profile', UserController.getProfile);
-router.put('/profile', UserController.updateProfile);
-router.put('/password', UserController.updatePassword);
-router.get('/settings', UserController.getSettings);
-router.put('/settings/notifications', UserController.updateNotifications);
-router.put('/settings/privacy', UserController.updatePrivacy);
-router.get('/certificates', UserController.getCertificates);
-router.get('/certificates/:id/download', UserController.downloadCertificate);
-router.get('/stats', UserController.getStats);
-router.get('/activities', UserController.getActivities);
-router.get('/achievements', UserController.getAchievements);
-router.post('/onboarding', UserController.saveOnboarding);
+
+// Rotas de perfil
+router.get('/me', ProfileController.getMe);
+router.post('/avatar', ProfileController.uploadAvatar);
+router.get('/profile', ProfileController.getProfile);
+router.put('/profile', ProfileController.updateProfile);
+router.put('/password', ProfileController.updatePassword);
+router.post('/onboarding', ProfileController.saveOnboarding);
+
+// Rotas de configurações
+router.get('/settings', SettingsController.getSettings);
+router.put('/settings/notifications', SettingsController.updateNotifications);
+router.put('/settings/privacy', SettingsController.updatePrivacy);
+
+// Rotas de certificados
+router.get('/certificates', CertificateController.getCertificates);
+router.get('/certificates/:id/download', CertificateController.downloadCertificate);
+
+// Rotas de estatísticas e conquistas
+router.get('/stats', StatsController.getStats);
+router.get('/activities', StatsController.getActivities);
+router.get('/achievements', StatsController.getAchievements);
 
 module.exports = router; 

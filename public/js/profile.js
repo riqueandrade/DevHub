@@ -113,12 +113,12 @@ async function loadActivities() {
 // Atualizar UI do perfil
 function updateProfileUI(user) {
     // Atualizar avatar principal
-    profileAvatar.src = user.avatar_url || '/images/default-avatar.png';
+    profileAvatar.src = user.avatar_url || '/images/default-avatar.svg';
 
     // Atualizar avatar no dropdown
     const userAvatar = document.getElementById('userAvatar');
     if (userAvatar) {
-        userAvatar.src = user.avatar_url || '/images/default-avatar.png';
+        userAvatar.src = user.avatar_url || '/images/default-avatar.svg';
     }
 
     // Atualizar nome e email
@@ -270,7 +270,7 @@ async function handleAvatarUpload() {
 
         try {
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('avatar', file);
 
             // Log do FormData
             console.log('FormData entries:');

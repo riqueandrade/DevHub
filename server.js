@@ -2,12 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fileUpload = require('express-fileupload');
 const sequelize = require('./config/database');
-const models = require('./models');
 
-const UserController = require('./controllers/UserController');
-const CourseController = require('./controllers/CourseController');
-const StatsController = require('./controllers/StatsController');
+// Importar controladores
+const AuthController = require('./controllers/auth/AuthController');
+const StatsController = require('./controllers/stats/StatsController');
 const authMiddleware = require('./middlewares/auth');
 const userRoutes = require('./routes/userRoutes');
 const courseRoutes = require('./routes/courseRoutes');
@@ -20,6 +20,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+    abortOnLimit: true,
+    createParentPath: true
+}));
 
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
@@ -29,10 +34,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/certificates', authMiddleware, express.static(path.join(__dirname, 'certificates')));
 
 // Rotas de Autenticação
-app.post('/api/auth/register', UserController.register);
-app.post('/api/auth/login', UserController.login);
-app.get('/api/auth/verify', UserController.verifyToken);
-app.get('/api/auth/google/config', UserController.getGoogleConfig);
+app.post('/api/auth/register', AuthController.register);
+app.post('/api/auth/login', AuthController.login);
+app.get('/api/auth/verify', AuthController.verifyToken);
+app.get('/api/auth/google/config', AuthController.getGoogleConfig);
 
 // Rotas protegidas
 app.use('/api/user', userRoutes);
@@ -41,7 +46,7 @@ app.use('/api/catalog', catalogRoutes);
 app.use('/api/certificates', certificateRoutes);
 
 // Rotas de Estatísticas
-app.get('/api/user/stats', StatsController.getUserStats);
+app.get('/api/user/stats', StatsController.getStats);
 
 // Rota de verificação de saúde da API
 app.get('/api/health', (req, res) => {
@@ -59,8 +64,8 @@ app.get('/certificate/:id', (req, res) => {
 });
 
 // Rotas de callback do Google (antes do catch-all)
-app.get('/auth/google/callback', UserController.googleCallback);
-app.get('/api/auth/google/callback', UserController.googleCallback);
+app.get('/auth/google/callback', AuthController.googleCallback);
+app.get('/api/auth/google/callback', AuthController.googleCallback);
 
 // Redirecionar todas as outras rotas para o index.html
 app.get('*', (req, res) => {
