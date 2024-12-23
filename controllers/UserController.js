@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 const { Op } = require('sequelize');
 const Enrollment = require('../models/Enrollment');
 const axios = require('axios');
+const MailService = require('../config/mail');
 
 // Log temporário para debug
 console.log('=== Configurações do Google OAuth ===');
@@ -995,6 +996,104 @@ class UserController {
         } catch (error) {
             console.error('Erro ao salvar dados do onboarding:', error);
             res.status(500).json({ error: 'Erro ao salvar dados do onboarding' });
+        }
+    }
+
+    // Adicionar os novos métodos para recuperação de senha
+    async forgotPassword(req, res) {
+        try {
+            const { email } = req.body;
+            const user = await User.findOne({ where: { email } });
+
+            if (!user) {
+                return res.status(404).json({ error: 'Usuário não encontrado' });
+            }
+
+            // Gerar token de reset de senha
+            const resetToken = jwt.sign(
+                { id: user.id, type: 'password_reset' },
+                process.env.JWT_SECRET,
+                { expiresIn: '1h' }
+            );
+
+            // Salvar token no banco
+            await User.update(
+                { reset_token: resetToken },
+                { where: { id: user.id } }
+            );
+
+            // Enviar email
+            const emailSent = await MailService.sendPasswordResetEmail(email, resetToken);
+
+            if (!emailSent) {
+                return res.status(500).json({ error: 'Erro ao enviar email de recuperação' });
+            }
+
+            // Registrar atividade
+            await Activity.createActivity({
+                user_id: user.id,
+                type: 'password_reset_request',
+                description: 'Solicitação de recuperação de senha'
+            });
+
+            res.json({ message: 'Email de recuperação enviado com sucesso' });
+        } catch (error) {
+            console.error('Erro na recuperação de senha:', error);
+            res.status(500).json({ error: 'Erro ao processar recuperação de senha' });
+        }
+    }
+
+    async resetPassword(req, res) {
+        try {
+            const { token, newPassword } = req.body;
+
+            // Verificar token
+            let decoded;
+            try {
+                decoded = jwt.verify(token, process.env.JWT_SECRET);
+            } catch (error) {
+                return res.status(400).json({ error: 'Token inválido ou expirado' });
+            }
+
+            // Verificar se é um token de reset de senha
+            if (decoded.type !== 'password_reset') {
+                return res.status(400).json({ error: 'Token inválido' });
+            }
+
+            const user = await User.findOne({
+                where: {
+                    id: decoded.id,
+                    reset_token: token
+                }
+            });
+
+            if (!user) {
+                return res.status(404).json({ error: 'Token inválido ou já utilizado' });
+            }
+
+            // Hash da nova senha
+            const hashedPassword = await bcrypt.hash(newPassword, 8);
+
+            // Atualizar senha e limpar token
+            await User.update(
+                {
+                    password: hashedPassword,
+                    reset_token: null
+                },
+                { where: { id: user.id } }
+            );
+
+            // Registrar atividade
+            await Activity.createActivity({
+                user_id: user.id,
+                type: 'password_reset',
+                description: 'Senha redefinida com sucesso'
+            });
+
+            res.json({ message: 'Senha redefinida com sucesso' });
+        } catch (error) {
+            console.error('Erro ao redefinir senha:', error);
+            res.status(500).json({ error: 'Erro ao redefinir senha' });
         }
     }
 }

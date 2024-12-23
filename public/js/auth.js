@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const registerForm = document.getElementById('registerForm');
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+    const forgotPasswordLink = document.querySelector('.forgot-password');
     
     // Função para trocar as tabs
     const switchTab = (tabId) => {
@@ -252,4 +253,38 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = '/dashboard.html';
         }
     };
+
+    // Handler para o link de esqueci minha senha
+    forgotPasswordLink.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('loginEmail').value;
+        
+        if (!email) {
+            showMessage('Por favor, digite seu email');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/user/forgot-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erro ao processar solicitação');
+            }
+
+            showMessage('Email de recuperação enviado com sucesso!', 'success');
+
+        } catch (error) {
+            console.error('Erro:', error);
+            showMessage(error.message);
+        }
+    });
 });

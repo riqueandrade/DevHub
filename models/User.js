@@ -53,10 +53,6 @@ User.init({
         type: DataTypes.STRING,
         allowNull: true
     },
-    role: {
-        type: DataTypes.ENUM('aluno', 'instrutor', 'admin'),
-        defaultValue: 'aluno'
-    },
     google_id: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -64,18 +60,16 @@ User.init({
     },
     avatar_url: {
         type: DataTypes.STRING,
-        allowNull: true,
-        defaultValue: '/images/default-avatar.png'
-    },
-    bio: {
-        type: DataTypes.TEXT,
         allowNull: true
     },
-    status: {
-        type: DataTypes.ENUM('ativo', 'inativo'),
-        defaultValue: 'ativo'
+    role: {
+        type: DataTypes.ENUM('user', 'admin'),
+        defaultValue: 'user'
     },
-    // Configurações de notificações
+    reset_token: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     email_notifications: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -86,9 +80,8 @@ User.init({
     },
     promotional_emails: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false
+        defaultValue: true
     },
-    // Configurações de privacidade
     profile_visibility: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
@@ -100,17 +93,19 @@ User.init({
     show_certificates: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+    onboarding_completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 }, {
     sequelize,
     modelName: 'User',
     tableName: 'users',
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
     hooks: {
         beforeSave: async (user) => {
-            if (user.changed('password')) {
+            if (user.changed('password') && user.password) {
                 user.password = await bcrypt.hash(user.password, 8);
             }
         }
