@@ -17,7 +17,7 @@ User.hasMany(Certificate, { foreignKey: 'user_id', as: 'certificates' });
 // Associações Course
 Course.belongsTo(User, { foreignKey: 'instructor_id', as: 'instructor' });
 Course.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
-Course.hasMany(Module, { foreignKey: 'course_id', as: 'modules' });
+Course.hasMany(Module, { foreignKey: 'course_id', as: 'modules', onDelete: 'CASCADE' });
 Course.hasMany(Enrollment, { foreignKey: 'course_id', as: 'enrollments' });
 Course.hasMany(Certificate, { foreignKey: 'course_id', as: 'certificates' });
 
@@ -26,7 +26,7 @@ Category.hasMany(Course, { foreignKey: 'category_id', as: 'courses' });
 
 // Associações Module
 Module.belongsTo(Course, { foreignKey: 'course_id', as: 'course' });
-Module.hasMany(Lesson, { foreignKey: 'module_id', as: 'lessons' });
+Module.hasMany(Lesson, { foreignKey: 'module_id', as: 'lessons', onDelete: 'CASCADE' });
 
 // Associações Lesson
 Lesson.belongsTo(Module, { foreignKey: 'module_id', as: 'module' });

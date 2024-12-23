@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Course = require('./Course');
 
 const Module = sequelize.define('Module', {
     id: {
@@ -32,9 +31,5 @@ const Module = sequelize.define('Module', {
     updatedAt: false,
     tableName: 'modules'
 });
-
-// Associações
-Module.belongsTo(Course, { foreignKey: 'course_id' });
-Course.hasMany(Module, { foreignKey: 'course_id', onDelete: 'CASCADE' });
 
 module.exports = Module; 

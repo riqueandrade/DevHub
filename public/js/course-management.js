@@ -84,7 +84,7 @@ async function loadCategories() {
 async function loadCourses() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        const response = await fetch('/api/courses/manage', {
+        const response = await fetch('/api/courses/instructor', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }

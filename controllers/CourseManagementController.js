@@ -134,8 +134,8 @@ exports.getInstructorCourses = async (req, res) => {
             }],
             order: [
                 ['created_at', 'DESC'],
-                [{ model: Module, as: 'modules' }, 'order', 'ASC'],
-                [{ model: Module, as: 'modules' }, { model: Lesson, as: 'lessons' }, 'order', 'ASC']
+                [{ model: Module, as: 'modules' }, 'order_number', 'ASC'],
+                [{ model: Module, as: 'modules' }, { model: Lesson, as: 'lessons' }, 'order_number', 'ASC']
             ]
         });
 

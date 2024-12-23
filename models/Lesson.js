@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Module = require('./Module');
 
 const Lesson = sequelize.define('Lesson', {
     id: {
@@ -44,10 +43,6 @@ const Lesson = sequelize.define('Lesson', {
     updatedAt: false,
     tableName: 'lessons'
 });
-
-// Associações
-Lesson.belongsTo(Module, { foreignKey: 'module_id' });
-Module.hasMany(Lesson, { foreignKey: 'module_id', onDelete: 'CASCADE' });
 
 // Método estático para calcular a duração total de um módulo
 Lesson.getTotalDuration = async function(moduleId) {
