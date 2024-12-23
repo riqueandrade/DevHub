@@ -4,7 +4,7 @@ const { Module, Course, Lesson } = require('../models');
 exports.createModule = async (req, res) => {
     try {
         const { courseId } = req.params;
-        const { title, description, order } = req.body;
+        const { title, description, order_number } = req.body;
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
@@ -23,7 +23,7 @@ exports.createModule = async (req, res) => {
             course_id: courseId,
             title,
             description,
-            order: order || await getNextModuleOrder(courseId)
+            order_number: order_number || await getNextModuleOrder(courseId)
         });
 
         res.status(201).json({
@@ -40,7 +40,7 @@ exports.createModule = async (req, res) => {
 exports.updateModule = async (req, res) => {
     try {
         const { moduleId } = req.params;
-        const { title, description, order } = req.body;
+        const { title, description, order_number } = req.body;
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
@@ -65,7 +65,7 @@ exports.updateModule = async (req, res) => {
         await module.update({
             title: title || module.title,
             description: description || module.description,
-            order: order || module.order
+            order_number: order_number || module.order_number
         });
 
         res.json({
@@ -118,24 +118,38 @@ exports.deleteModule = async (req, res) => {
 exports.getModules = async (req, res) => {
     try {
         const { courseId } = req.params;
+        console.log('Buscando módulos para o curso:', courseId);
 
         const modules = await Module.findAll({
             where: { course_id: courseId },
             include: [{
                 model: Lesson,
                 as: 'lessons',
-                attributes: ['id', 'title', 'duration', 'order']
+                attributes: ['id', 'title', 'duration', 'order_number', 'content_type', 'content_url']
             }],
             order: [
-                ['order', 'ASC'],
-                [{ model: Lesson, as: 'lessons' }, 'order', 'ASC']
+                ['order_number', 'ASC'],
+                [{ model: Lesson, as: 'lessons' }, 'order_number', 'ASC']
             ]
         });
 
+        console.log('Módulos encontrados:', modules.length);
+        if (modules.length > 0) {
+            console.log('Primeiro módulo:', {
+                id: modules[0].id,
+                title: modules[0].title,
+                lessons: modules[0].lessons.map(l => ({
+                    id: l.id,
+                    title: l.title,
+                    content_type: l.content_type
+                }))
+            });
+        }
+
         res.json(modules);
     } catch (error) {
-        console.error('Erro ao listar módulos:', error);
-        res.status(500).json({ error: 'Erro ao listar módulos' });
+        console.error('Erro detalhado ao listar módulos:', error);
+        res.status(500).json({ error: 'Erro ao listar módulos', details: error.message });
     }
 };
 
@@ -143,7 +157,7 @@ exports.getModules = async (req, res) => {
 exports.reorderModules = async (req, res) => {
     try {
         const { courseId } = req.params;
-        const { moduleOrders } = req.body; // Array de { id, order }
+        const { moduleOrders } = req.body; // Array de { id, order_number }
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
@@ -158,8 +172,8 @@ exports.reorderModules = async (req, res) => {
         }
 
         // Atualizar ordem dos módulos
-        await Promise.all(moduleOrders.map(({ id, order }) => 
-            Module.update({ order }, { where: { id } })
+        await Promise.all(moduleOrders.map(({ id, order_number }) => 
+            Module.update({ order_number }, { where: { id } })
         ));
 
         res.json({
@@ -175,8 +189,8 @@ exports.reorderModules = async (req, res) => {
 async function getNextModuleOrder(courseId) {
     const lastModule = await Module.findOne({
         where: { course_id: courseId },
-        order: [['order', 'DESC']]
+        order: [['order_number', 'DESC']]
     });
 
-    return lastModule ? lastModule.order + 1 : 1;
+    return lastModule ? lastModule.order_number + 1 : 1;
 } 

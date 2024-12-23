@@ -37,7 +37,7 @@ const lessonUpload = multer({
 exports.createLesson = async (req, res) => {
     try {
         const { moduleId } = req.params;
-        const { title, description, duration, order } = req.body;
+        const { title, description, duration, order_number } = req.body;
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
@@ -63,7 +63,7 @@ exports.createLesson = async (req, res) => {
             title,
             description,
             duration,
-            order: order || await getNextLessonOrder(moduleId)
+            order_number: order_number || await getNextLessonOrder(moduleId)
         });
 
         res.status(201).json({
@@ -80,7 +80,7 @@ exports.createLesson = async (req, res) => {
 exports.updateLesson = async (req, res) => {
     try {
         const { lessonId } = req.params;
-        const { title, description, duration, order } = req.body;
+        const { title, description, duration, order_number } = req.body;
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
@@ -110,7 +110,7 @@ exports.updateLesson = async (req, res) => {
             title: title || lesson.title,
             description: description || lesson.description,
             duration: duration || lesson.duration,
-            order: order || lesson.order
+            order_number: order_number || lesson.order_number
         });
 
         res.json({
@@ -249,7 +249,7 @@ exports.deleteLesson = async (req, res) => {
 exports.reorderLessons = async (req, res) => {
     try {
         const { moduleId } = req.params;
-        const { lessonOrders } = req.body; // Array de { id, order }
+        const { lessonOrders } = req.body; // Array de { id, order_number }
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
@@ -270,8 +270,8 @@ exports.reorderLessons = async (req, res) => {
         }
 
         // Atualizar ordem das aulas
-        await Promise.all(lessonOrders.map(({ id, order }) => 
-            Lesson.update({ order }, { where: { id } })
+        await Promise.all(lessonOrders.map(({ id, order_number }) => 
+            Lesson.update({ order_number }, { where: { id } })
         ));
 
         res.json({
@@ -287,8 +287,8 @@ exports.reorderLessons = async (req, res) => {
 async function getNextLessonOrder(moduleId) {
     const lastLesson = await Lesson.findOne({
         where: { module_id: moduleId },
-        order: [['order', 'DESC']]
+        order: [['order_number', 'DESC']]
     });
 
-    return lastLesson ? lastLesson.order + 1 : 1;
+    return lastLesson ? lastLesson.order_number + 1 : 1;
 } 

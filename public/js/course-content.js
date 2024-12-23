@@ -715,13 +715,13 @@ function renderModules(modules) {
                     <li class="lesson-item" data-lesson-id="${lesson.id}">
                         <div class="lesson-info">
                             <div class="lesson-icon">
-                                ${getLessonIcon(lesson.content_type)}
+                                ${getLessonIcon(lesson.content_type || 'documento')}
                             </div>
                             <div class="lesson-details">
                                 <h4>${lesson.title}</h4>
                                 <div class="lesson-meta">
                                     <span><i class="bi bi-clock"></i> ${lesson.duration} min</span>
-                                    <span><i class="bi bi-${getLessonTypeIcon(lesson.content_type)}"></i> ${formatContentType(lesson.content_type)}</span>
+                                    <span><i class="bi bi-${getLessonTypeIcon(lesson.content_type || 'documento')}"></i> ${formatContentType(lesson.content_type || 'documento')}</span>
                                 </div>
                             </div>
                         </div>
@@ -775,7 +775,7 @@ function formatContentType(contentType) {
         'documento': 'Documento',
         'pdf': 'PDF'
     };
-    return types[contentType] || contentType;
+    return types[contentType] || 'Documento';
 }
 
 // Funções de manipulação de módulos
@@ -900,3 +900,129 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCourseData();
     loadModules();
 });
+
+// Reordenar módulos
+async function handleModuleReorder() {
+    try {
+        const modulesList = document.getElementById('modulesList');
+        const moduleOrder = Array.from(modulesList.children).map(module =>
+            ({
+                id: module.dataset.moduleId,
+                order_number: Array.from(modulesList.children).indexOf(module) + 1
+            })
+        );
+
+        const response = await fetch(`/api/courses/${courseId}/modules/reorder`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ moduleOrders: moduleOrder })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao reordenar módulos');
+        }
+
+        showAlert('Módulos reordenados com sucesso', 'success');
+    } catch (error) {
+        console.error('Erro ao reordenar módulos:', error);
+        showAlert('Erro ao reordenar módulos', 'danger');
+    }
+}
+
+// Reordenar aulas
+async function handleLessonReorder(moduleId) {
+    try {
+        const list = document.querySelector(`#module-${moduleId} .lesson-list`);
+        const lessonOrder = Array.from(list.children).map(lesson =>
+            ({
+                id: lesson.dataset.lessonId,
+                order_number: Array.from(list.children).indexOf(lesson) + 1
+            })
+        );
+
+        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons/reorder`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ lessonOrders: lessonOrder })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao reordenar aulas');
+        }
+
+        showAlert('Aulas reordenadas com sucesso', 'success');
+    } catch (error) {
+        console.error('Erro ao reordenar aulas:', error);
+        showAlert('Erro ao reordenar aulas', 'danger');
+    }
+}
+
+// Reordenar módulos após drag and drop
+async function handleModuleDrop(evt) {
+    evt.preventDefault();
+    const modulesList = document.getElementById('modulesList');
+    const moduleOrder = Array.from(modulesList.children).map(module =>
+        ({
+            id: module.dataset.moduleId,
+            order_number: Array.from(modulesList.children).indexOf(module) + 1
+        })
+    );
+
+    try {
+        const response = await fetch(`/api/courses/${courseId}/modules/reorder`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ moduleOrders: moduleOrder })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao reordenar módulos');
+        }
+
+        showAlert('Módulos reordenados com sucesso', 'success');
+    } catch (error) {
+        console.error('Erro ao reordenar módulos:', error);
+        showAlert('Erro ao reordenar módulos', 'danger');
+    }
+}
+
+// Reordenar aulas após drag and drop
+async function handleLessonDrop(evt, moduleId) {
+    evt.preventDefault();
+    const list = document.querySelector(`#module-${moduleId} .lesson-list`);
+    const lessonOrder = Array.from(list.children).map(lesson =>
+        ({
+            id: lesson.dataset.lessonId,
+            order_number: Array.from(list.children).indexOf(lesson) + 1
+        })
+    );
+
+    try {
+        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons/reorder`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ lessonOrders: lessonOrder })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao reordenar aulas');
+        }
+
+        showAlert('Aulas reordenadas com sucesso', 'success');
+    } catch (error) {
+        console.error('Erro ao reordenar aulas:', error);
+        showAlert('Erro ao reordenar aulas', 'danger');
+    }
+}

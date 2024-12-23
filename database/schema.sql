@@ -107,6 +107,7 @@ CREATE TABLE IF NOT EXISTS lessons (
     content_url TEXT,
     duration INTEGER,
     order_number INTEGER NOT NULL,
+    video_url TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(module_id, order_number)
