@@ -12,6 +12,7 @@ const EnrollmentController = require('../controllers/EnrollmentController');
 router.use(authMiddleware);
 
 // Rotas de matrícula e progresso (devem vir antes das rotas com :courseId)
+router.get('/enrollments', EnrollmentController.getAllEnrollments);
 router.get('/in-progress', EnrollmentController.getInProgress);
 router.get('/completed', EnrollmentController.getCompleted);
 router.get('/recommended', EnrollmentController.getRecommended);

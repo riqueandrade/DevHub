@@ -18,6 +18,27 @@ async function calculateProgress(enrollmentId) {
     return total > 0 ? Math.round((completed / total) * 100) : 0;
 }
 
+// Obter todas as matrículas do usuário
+exports.getAllEnrollments = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const enrollments = await Enrollment.findAll({
+            where: { user_id: userId },
+            include: [{
+                model: Course,
+                as: 'course',
+                attributes: ['id', 'title', 'description', 'thumbnail', 'level', 'duration']
+            }]
+        });
+
+        res.json(enrollments);
+    } catch (error) {
+        console.error('Erro ao buscar matrículas:', error);
+        res.status(500).json({ error: 'Erro ao buscar matrículas' });
+    }
+};
+
 // Obter cursos em andamento do usuário
 exports.getInProgress = async (req, res) => {
     try {
