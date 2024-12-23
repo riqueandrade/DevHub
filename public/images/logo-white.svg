@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Container do Logo -->
+    <g transform="translate(10, 10)">
+        <!-- Borda do quadrado -->
+        <rect x="2" y="2" width="36" height="36" rx="3" 
+              stroke="white" 
+              stroke-width="2" 
+              fill="none"/>
+
+        <!-- Símbolo de código centralizado -->
+        <path d="M24.5 22L27 20L24.5 18M15.5 22L13 20L15.5 18M22 16L18 24" 
+              stroke="white" 
+              stroke-width="2" 
+              stroke-linecap="round" 
+              stroke-linejoin="round"/>
+    </g>
+    
+    <!-- Texto "DevHub" -->
+    <text x="65" y="38" font-family="'Segoe UI', sans-serif" font-size="28" font-weight="bold" fill="white">
+        Dev<tspan fill="white" font-weight="normal">Hub</tspan>
+    </text>
+</svg> 
