@@ -592,8 +592,8 @@ body {
     .navbar-collapse {
         background: rgba(30, 41, 59, 0.98);
         padding: 1rem;
-        border-radius: 8px;
-        margin-top: 1rem;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
     }
 
     .login-btn {
@@ -637,6 +637,15 @@ body {
         font-size: 0.9rem;
         white-space: pre;
     }
+
+    .tech-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+
+    .course-card {
+        margin-bottom: 2rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -650,14 +659,16 @@ body {
 
     .hero h1 {
         font-size: 2rem;
+        margin-bottom: 1rem;
     }
 
     .hero-text {
         font-size: 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .cta-button {
-        padding: 0.8rem 1.5rem;
+        padding: 0.75rem 1.5rem;
         font-size: 0.9rem;
         width: 100%;
         text-align: center;
@@ -665,26 +676,7 @@ body {
 
     .feature-card {
         padding: 1.5rem;
-        margin-bottom: 0;
-        min-height: 200px;
-    }
-
-    .feature-card i {
-        font-size: 2.25rem;
-    }
-
-    .feature-card h3 {
-        font-size: 1.2rem;
-    }
-
-    .feature-card p {
-        font-size: 0.9rem;
-        max-width: 240px;
-    }
-
-    .tech-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+        margin-bottom: 1rem;
     }
 
     .tech-card {
@@ -696,37 +688,15 @@ body {
         height: 40px;
     }
 
-    .course-card {
-        margin-bottom: 1.5rem;
-    }
-
-    .course-image img {
-        height: 180px;
-    }
-
     .testimonial-grid {
         grid-template-columns: 1fr;
         gap: 1.5rem;
-    }
-
-    .features .row {
-        margin-left: -0.75rem;
-        margin-right: -0.75rem;
-    }
-
-    .features .col-md-4 {
-        padding: 0.75rem;
-    }
-
-    .feature-card {
-        padding: 1.5rem;
-        margin-bottom: 0;
     }
 }
 
 @media (max-width: 576px) {
     .hero h1 {
-        font-size: 1.8rem;
+        font-size: 1.75rem;
     }
 
     .hero-stats {
@@ -740,16 +710,15 @@ body {
     }
 
     .tech-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .feature-card {
         padding: 1.25rem;
-        min-height: 180px;
     }
 
     .feature-card i {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     .feature-card h3 {
@@ -757,8 +726,7 @@ body {
     }
 
     .feature-card p {
-        font-size: 0.85rem;
-        max-width: 220px;
+        font-size: 0.9rem;
     }
 
     .section-title {
@@ -769,17 +737,36 @@ body {
         font-size: 0.9rem;
     }
 
-    .features .row {
-        margin-left: -0.5rem;
-        margin-right: -0.5rem;
+    .course-card {
+        margin: 0 -0.5rem 1.5rem;
     }
 
-    .features .col-md-4 {
-        padding: 0.5rem;
+    .course-content {
+        padding: 1rem;
     }
 
-    .feature-card {
-        padding: 1.25rem;
+    .course-content h4 {
+        font-size: 1.1rem;
+    }
+
+    .course-content p {
+        font-size: 0.9rem;
+    }
+
+    .testimonial-card {
+        padding: 1rem;
+    }
+
+    .testimonial-content p {
+        font-size: 0.9rem;
+    }
+
+    .testimonial-author h5 {
+        font-size: 1rem;
+    }
+
+    .testimonial-author span {
+        font-size: 0.8rem;
     }
 }
 
@@ -850,5 +837,77 @@ a {
 
     .parallax-effect {
         display: none !important;
+    }
+}
+
+/* Otimizações de Performance */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Melhorias de Acessibilidade */
+@media (hover: none) {
+    .cta-button:hover,
+    .feature-card:hover,
+    .tech-card:hover,
+    .course-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+/* Ajustes para Telas Ultra Pequenas */
+@media (max-width: 360px) {
+    .hero h1 {
+        font-size: 1.5rem;
+    }
+
+    .tech-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .course-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}
+
+/* Ajustes para Telas Grandes */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+
+    .hero {
+        padding: 8rem 0;
+    }
+
+    .hero h1 {
+        font-size: 4rem;
+    }
+
+    .tech-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+/* Ajustes para Orientação Paisagem em Dispositivos Móveis */
+@media (max-height: 600px) and (orientation: landscape) {
+    .hero {
+        padding: 2rem 0;
+    }
+
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .feature-card {
+        padding: 1rem;
     }
 } 

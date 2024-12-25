@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             lowercase: /[a-z]/.test(password),
             uppercase: /[A-Z]/.test(password),
             number: /\d/.test(password),
-            special: /[@$!%*?&]/.test(password)
+            special: /[@$!%*?&.]/.test(password)
         };
 
         const strengthMeter = document.querySelector('.strength-meter-fill');

@@ -34,23 +34,27 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="/courses.html" aria-current="page">
-                            <i class="bi bi-collection-play" aria-hidden="true"></i> Meus Cursos
+                        <a class="nav-link active d-flex align-items-center" href="/courses.html" aria-current="page">
+                            <i class="bi bi-collection-play" aria-hidden="true"></i>
+                            <span>Meus Cursos</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/catalog.html">
-                            <i class="bi bi-grid" aria-hidden="true"></i> Catálogo
+                        <a class="nav-link d-flex align-items-center" href="/catalog.html">
+                            <i class="bi bi-grid" aria-hidden="true"></i>
+                            <span>Catálogo</span>
                         </a>
                     </li>
                     <li class="nav-item admin-instructor-only" style="display: none;">
-                        <a class="nav-link" href="/course-management.html">
-                            <i class="bi bi-pencil-square" aria-hidden="true"></i> Gerenciar Cursos
+                        <a class="nav-link d-flex align-items-center" href="/course-management.html">
+                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                            <span>Gerenciar Cursos</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/certificates.html">
-                            <i class="bi bi-award" aria-hidden="true"></i> Certificados
+                        <a class="nav-link d-flex align-items-center" href="/certificates.html">
+                            <i class="bi bi-award" aria-hidden="true"></i>
+                            <span>Certificados</span>
                         </a>
                     </li>
                 </ul>
@@ -65,19 +69,22 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-label="Opções do usuário">
                             <li>
-                                <a class="dropdown-item" href="/profile.html">
-                                    <i class="bi bi-person" aria-hidden="true"></i> Perfil
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="/profile.html">
+                                    <i class="bi bi-person" aria-hidden="true"></i>
+                                    <span>Perfil</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="/settings.html">
-                                    <i class="bi bi-gear" aria-hidden="true"></i> Configurações
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="/settings.html">
+                                    <i class="bi bi-gear" aria-hidden="true"></i>
+                                    <span>Configurações</span>
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <button class="dropdown-item text-danger" id="logoutButton" aria-label="Sair da conta">
-                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Sair
+                                <button class="dropdown-item text-danger d-flex align-items-center gap-2" id="logoutButton">
+                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                    <span>Sair</span>
                                 </button>
                             </li>
                         </ul>
@@ -97,38 +104,38 @@
 
             <!-- Estatísticas Rápidas -->
             <section class="stats-section" aria-label="Estatísticas de progresso">
-                <div class="row">
-                    <div class="col-md-3 col-sm-6">
-                        <div class="stat-card" role="status">
+                <div class="row g-3">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card d-flex align-items-center">
                             <i class="bi bi-book" aria-hidden="true"></i>
-                            <div class="stat-info">
+                            <div class="stat-info ms-3">
                                 <h3 id="totalCursos">0</h3>
                                 <p>Cursos em Andamento</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6">
-                        <div class="stat-card" role="status">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card d-flex align-items-center">
                             <i class="bi bi-clock-history" aria-hidden="true"></i>
-                            <div class="stat-info">
+                            <div class="stat-info ms-3">
                                 <h3 id="horasEstudo">0h</h3>
                                 <p>Horas de Estudo</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6">
-                        <div class="stat-card" role="status">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card d-flex align-items-center">
                             <i class="bi bi-award" aria-hidden="true"></i>
-                            <div class="stat-info">
+                            <div class="stat-info ms-3">
                                 <h3 id="certificados">0</h3>
                                 <p>Certificados</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6">
-                        <div class="stat-card" role="status">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="stat-card d-flex align-items-center">
                             <i class="bi bi-lightning" aria-hidden="true"></i>
-                            <div class="stat-info">
+                            <div class="stat-info ms-3">
                                 <h3 id="sequencia">0</h3>
                                 <p>Dias Seguidos</p>
                             </div>
@@ -140,15 +147,15 @@
             <!-- Cursos em Andamento -->
             <section class="progress-section" aria-labelledby="progressTitle">
                 <div class="section-header">
-                    <h2 id="progressTitle">Continue Assistindo</h2>
+                    <h2 id="progressTitle" class="mb-0">Continue Assistindo</h2>
                     <a href="#todos-cursos" class="btn btn-outline-primary btn-sm">Ver Todos</a>
                 </div>
-                <div class="row" id="cursosAndamento" role="list">
+                <div class="row g-4" id="cursosAndamento" role="list">
                     <!-- Cards dos cursos serão inseridos aqui via JavaScript -->
                     <div class="col-12">
-                        <div class="placeholder-message" role="status" aria-live="polite">
+                        <div class="placeholder-message text-center py-4" role="status" aria-live="polite">
                             <i class="bi bi-play-circle" aria-hidden="true"></i>
-                            <p>Carregando seus cursos em andamento...</p>
+                            <p class="mt-2 mb-0">Carregando seus cursos em andamento...</p>
                         </div>
                     </div>
                 </div>
@@ -157,15 +164,15 @@
             <!-- Cursos Recomendados -->
             <section class="recommended-section" aria-labelledby="recommendedTitle">
                 <div class="section-header">
-                    <h2 id="recommendedTitle">Recomendados para Você</h2>
+                    <h2 id="recommendedTitle" class="mb-0">Recomendados para Você</h2>
                     <a href="/catalog.html" class="btn btn-outline-primary btn-sm">Ver Catálogo</a>
                 </div>
-                <div class="row" id="cursosRecomendados" role="list">
+                <div class="row g-4" id="cursosRecomendados" role="list">
                     <!-- Cards dos cursos serão inseridos aqui via JavaScript -->
                     <div class="col-12">
-                        <div class="placeholder-message" role="status" aria-live="polite">
+                        <div class="placeholder-message text-center py-4" role="status" aria-live="polite">
                             <i class="bi bi-lightning" aria-hidden="true"></i>
-                            <p>Carregando recomendações...</p>
+                            <p class="mt-2 mb-0">Carregando recomendações...</p>
                         </div>
                     </div>
                 </div>

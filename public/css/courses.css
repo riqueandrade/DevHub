@@ -332,6 +332,7 @@ body {
         gap: 0.5rem;
         align-items: flex-start;
     }
+
 }
 
 @media (max-width: 576px) {
@@ -339,6 +340,7 @@ body {
         grid-template-columns: 1fr;
         padding: 1rem 0.75rem;
     }
+
 
     .course-card .card-img-top {
         height: 160px;
@@ -445,3 +447,4 @@ body {
 .navbar-toggler:focus {
     box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.2);
 } 
+    

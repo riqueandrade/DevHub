@@ -71,7 +71,8 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 100px;
     transition: all 0.3s ease;
-    min-width: 200px;
+    min-width: auto;
+    width: 100%;
 }
 
 .user-button:hover, 
@@ -91,7 +92,7 @@ body {
     background: var(--primary-color);
     object-fit: cover;
     border: 2px solid rgba(255, 255, 255, 0.2);
-    display: block;
+    flex-shrink: 0;
 }
 
 .user-button #userName {
@@ -100,6 +101,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 150px;
+    flex: 1;
 }
 
 /* Dashboard Content */
@@ -513,4 +515,271 @@ body {
 
 .navbar-toggler:focus {
     box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 1200px) {
+    .course-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .course-thumbnail {
+        height: 160px;
+    }
+}
+
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: rgba(30, 41, 59, 0.98);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        margin: 0.25rem 0;
+    }
+
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: none;
+    }
+
+    .user-menu {
+        margin: 0.5rem 0 0 0;
+    }
+
+    .user-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .welcome-section h1 {
+        font-size: 2rem;
+    }
+
+    .welcome-section .subtitle {
+        font-size: 1.1rem;
+    }
+
+    .stat-card {
+        margin-bottom: 1rem;
+        padding: 1.25rem;
+    }
+
+    .stat-card i {
+        font-size: 1.75rem;
+    }
+
+    .stat-info h3 {
+        font-size: 1.75rem;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header .btn {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 62px;
+    }
+
+    .dashboard-content {
+        padding: 1.5rem 0;
+    }
+
+    .welcome-section {
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+
+    .welcome-section h1 {
+        font-size: 1.75rem;
+    }
+
+    .welcome-section .subtitle {
+        font-size: 1rem;
+    }
+
+    .stat-card {
+        flex-direction: row;
+        text-align: left;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .stat-card i {
+        font-size: 1.5rem;
+        margin-bottom: 0;
+    }
+
+    .stat-info h3 {
+        font-size: 1.5rem;
+    }
+
+    .stat-info p {
+        font-size: 0.9rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .course-card {
+        margin-bottom: 1rem;
+    }
+
+    .course-thumbnail {
+        height: 140px;
+    }
+
+    .course-body {
+        padding: 1.25rem;
+    }
+
+    .course-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .course-description {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    .welcome-section h1 {
+        font-size: 1.5rem;
+    }
+
+    .stat-card {
+        margin: 0 -0.5rem 1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .course-card {
+        margin: 0 -0.5rem 1rem;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .course-thumbnail {
+        height: 120px;
+    }
+
+    .course-level {
+        top: 0.75rem;
+        right: 0.75rem;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .course-body {
+        padding: 1rem;
+    }
+
+    .course-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Ajustes para Telas Grandes */
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+
+    .course-thumbnail {
+        height: 200px;
+    }
+}
+
+/* Ajustes para Orientação Paisagem em Dispositivos Móveis */
+@media (max-height: 600px) and (orientation: landscape) {
+    .dashboard-content {
+        padding: 1rem 0;
+    }
+
+    .welcome-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        padding: 0.75rem;
+    }
+
+    .course-thumbnail {
+        height: 130px;
+    }
+}
+
+/* Otimizações de Performance */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Melhorias de Acessibilidade */
+@media (hover: none) {
+    .nav-link:hover,
+    .user-button:hover,
+    .stat-card:hover,
+    .course-card:hover {
+        transform: none;
+    }
+}
+
+/* Suporte para Dark Mode do Sistema */
+@media (prefers-color-scheme: dark) {
+    .navbar,
+    .stat-card,
+    .course-card {
+        background: rgba(30, 41, 59, 0.95);
+    }
+}
+
+@media (max-width: 576px) {
+    .user-button {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .user-button .user-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .user-button #userName {
+        max-width: 120px;
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
 } 
