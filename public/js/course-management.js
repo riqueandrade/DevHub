@@ -163,6 +163,11 @@ function renderCourses(containerId, courses) {
                                     <i class="bi bi-archive"></i> Arquivar
                                 </button>
                             ` : ''}
+                            ${course.status === 'arquivado' ? `
+                                <button class="btn btn-sm btn-success btn-icon" onclick="unarchiveCourse(${course.id})">
+                                    <i class="bi bi-archive"></i> Desarquivar
+                                </button>
+                            ` : ''}
                             <button class="btn btn-sm btn-danger btn-icon" onclick="deleteCourse(${course.id})">
                                 <i class="bi bi-trash"></i> Excluir
                             </button>
@@ -366,6 +371,25 @@ async function archiveCourse(courseId) {
     } catch (error) {
         console.error('Erro ao arquivar curso:', error);
         showAlert('Erro ao arquivar curso', 'danger');
+    }
+}
+
+async function unarchiveCourse(courseId) {
+    try {
+        const response = await fetch(`/api/courses/${courseId}/unarchive`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) throw new Error('Erro ao desarquivar curso');
+
+        await loadCourses();
+        showAlert('Curso desarquivado com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro ao desarquivar curso:', error);
+        showAlert('Erro ao desarquivar curso', 'danger');
     }
 }
 

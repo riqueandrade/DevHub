@@ -23,6 +23,9 @@ router.get('/instructor', CourseManagementController.getInstructorCourses);
 router.get('/published', CourseManagementController.getPublishedCourses);
 router.get('/:courseId', CourseManagementController.getCourseById);
 router.put('/:courseId', CourseManagementController.updateCourse);
+router.put('/:courseId/archive', CourseManagementController.archiveCourse);
+router.put('/:courseId/unarchive', CourseManagementController.unarchiveCourse);
+router.put('/:courseId/publish', CourseManagementController.publishCourse);
 router.delete('/:courseId', CourseManagementController.deleteCourse);
 
 // Rotas de upload de mídia

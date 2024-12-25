@@ -86,6 +86,122 @@ exports.updateCourse = async (req, res) => {
     }
 };
 
+// Arquivar curso
+exports.archiveCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        // Buscar curso
+        const course = await Course.findByPk(courseId);
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar permissão
+        if (!isAdmin && course.instructor_id !== userId) {
+            return res.status(403).json({ error: 'Sem permissão para arquivar este curso' });
+        }
+
+        // Arquivar curso
+        await course.update({ status: 'arquivado' });
+
+        res.json({
+            message: 'Curso arquivado com sucesso',
+            course
+        });
+    } catch (error) {
+        console.error('Erro ao arquivar curso:', error);
+        res.status(500).json({ error: 'Erro ao arquivar curso' });
+    }
+};
+
+// Publicar curso
+exports.publishCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        // Buscar curso
+        const course = await Course.findByPk(courseId);
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar permissão
+        if (!isAdmin && course.instructor_id !== userId) {
+            return res.status(403).json({ error: 'Sem permissão para publicar este curso' });
+        }
+
+        // Verificar se o curso tem módulos e aulas
+        const hasModules = await Module.count({ where: { course_id: courseId } });
+        if (!hasModules) {
+            return res.status(400).json({ error: 'O curso precisa ter pelo menos um módulo para ser publicado' });
+        }
+
+        const hasLessons = await Lesson.count({
+            include: [{
+                model: Module,
+                as: 'module',
+                where: { course_id: courseId }
+            }]
+        });
+
+        if (!hasLessons) {
+            return res.status(400).json({ error: 'O curso precisa ter pelo menos uma aula para ser publicado' });
+        }
+
+        // Publicar curso
+        await course.update({ status: 'publicado' });
+
+        res.json({
+            message: 'Curso publicado com sucesso',
+            course
+        });
+    } catch (error) {
+        console.error('Erro ao publicar curso:', error);
+        res.status(500).json({ error: 'Erro ao publicar curso' });
+    }
+};
+
+// Desarquivar curso
+exports.unarchiveCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        // Buscar curso
+        const course = await Course.findByPk(courseId);
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar permissão
+        if (!isAdmin && course.instructor_id !== userId) {
+            return res.status(403).json({ error: 'Sem permissão para desarquivar este curso' });
+        }
+
+        // Verificar se o curso está arquivado
+        if (course.status !== 'arquivado') {
+            return res.status(400).json({ error: 'O curso não está arquivado' });
+        }
+
+        // Desarquivar curso (voltar para rascunho)
+        await course.update({ status: 'rascunho' });
+
+        res.json({
+            message: 'Curso desarquivado com sucesso',
+            course
+        });
+    } catch (error) {
+        console.error('Erro ao desarquivar curso:', error);
+        res.status(500).json({ error: 'Erro ao desarquivar curso' });
+    }
+};
+
 // Excluir curso
 exports.deleteCourse = async (req, res) => {
     try {
