@@ -65,7 +65,8 @@ class ProfileController {
                 return res.status(404).json({ error: 'Usuário não encontrado' });
             }
 
-            await user.update({ name, bio });
+            const updatedData = { name, bio };
+            await user.update(updatedData);
 
             const userWithoutPassword = {
                 id: user.id,

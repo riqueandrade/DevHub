@@ -125,6 +125,12 @@ function updateProfileUI(user) {
     profileName.textContent = user.name;
     profileEmail.textContent = user.email;
 
+    // Atualizar bio
+    const profileBio = document.getElementById('profileBio');
+    if (profileBio) {
+        profileBio.textContent = user.bio || 'Nenhuma biografia adicionada';
+    }
+
     // Atualizar nome no dropdown
     const userName = document.getElementById('userName');
     if (userName) {
@@ -398,22 +404,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formData = new FormData(editProfileForm);
                 const token = localStorage.getItem('token');
                 
-                const response = await fetch('/api/user/update', {
+                const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    bio: formData.get('bio')
+                };
+                
+                console.log('Dados a serem enviados:', data);
+                
+                const response = await fetch('/api/user/profile', {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        name: formData.get('name'),
-                        email: formData.get('email'),
-                        bio: formData.get('bio')
-                    })
+                    body: JSON.stringify(data)
                 });
 
-                if (!response.ok) throw new Error('Erro ao atualizar perfil');
+                console.log('Status da resposta:', response.status);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('Erro do servidor:', errorData);
+                    throw new Error(errorData.error || 'Erro ao atualizar perfil');
+                }
 
                 const updatedUser = await response.json();
+                console.log('Usuário atualizado:', updatedUser);
                 
                 // Atualizar localStorage
                 localStorage.setItem('user', JSON.stringify(updatedUser));

@@ -86,6 +86,7 @@
                             </div>
                             <h2 id="profileName">Carregando...</h2>
                             <p id="profileEmail" class="user-email">carregando@email.com</p>
+                            <p id="profileBio" class="user-bio">Carregando...</p>
                         </div>
                         <div class="profile-stats">
                             <div class="stat-item">
@@ -174,26 +175,27 @@
     </main>
 
     <!-- Modal de Edição de Perfil -->
-    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editProfileForm">
                         <div class="mb-3">
                             <label for="editName" class="form-label">Nome</label>
-                            <input type="text" class="form-control" id="editName" name="name" required>
+                            <input type="text" class="form-control" id="editName" name="name" required aria-required="true">
                         </div>
                         <div class="mb-3">
                             <label for="editEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="editEmail" name="email" required>
+                            <input type="email" class="form-control" id="editEmail" name="email" required aria-required="true">
                         </div>
                         <div class="mb-3">
                             <label for="editBio" class="form-label">Biografia</label>
-                            <textarea class="form-control" id="editBio" name="bio" rows="3"></textarea>
+                            <textarea class="form-control" id="editBio" name="bio" rows="3" aria-describedby="bioHelp"></textarea>
+                            <div id="bioHelp" class="form-text">Conte um pouco sobre você</div>
                         </div>
                     </form>
                 </div>
@@ -206,26 +208,27 @@
     </div>
 
     <!-- Modal de Alteração de Senha -->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="changePasswordModalLabel">Alterar Senha</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body">
                     <form id="changePasswordForm">
                         <div class="mb-3">
                             <label for="currentPassword" class="form-label">Senha Atual</label>
-                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required aria-required="true">
                         </div>
                         <div class="mb-3">
                             <label for="newPassword" class="form-label">Nova Senha</label>
-                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required aria-required="true" aria-describedby="passwordHelp">
+                            <div id="passwordHelp" class="form-text">A senha deve ter no mínimo 8 caracteres</div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirmar Nova Senha</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required aria-required="true">
                         </div>
                     </form>
                 </div>
