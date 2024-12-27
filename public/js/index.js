@@ -110,6 +110,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Redirecionar para login ao clicar em "saiba mais"
+    const handleCourseButtons = () => {
+        const courseButtons = document.querySelectorAll('.btn-course');
+        courseButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = '/auth.html';
+            });
+        });
+    };
+
     // Inicializar funcionalidades
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
@@ -123,5 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         parallaxEffect();
         handleNavbarScroll();
         handleNewsletterForm();
+        handleCourseButtons();
     }
 }); 

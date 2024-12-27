@@ -38,6 +38,7 @@ app.post('/api/auth/register', AuthController.register);
 app.post('/api/auth/login', AuthController.login);
 app.get('/api/auth/verify', AuthController.verifyToken);
 app.get('/api/auth/google/config', AuthController.getGoogleConfig);
+app.get('/api/auth/google/callback', AuthController.googleCallback);
 
 // Rotas protegidas
 app.use('/api/user', userRoutes);
@@ -65,10 +66,6 @@ app.get('/course/:id', (req, res) => {
 app.get('/certificate/:id', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'certificate.html'));
 });
-
-// Rotas de callback do Google (antes do catch-all)
-app.get('/auth/google/callback', AuthController.googleCallback);
-app.get('/api/auth/google/callback', AuthController.googleCallback);
 
 // Redirecionar todas as outras rotas para o index.html
 app.get('*', (req, res) => {
