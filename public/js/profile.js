@@ -41,8 +41,16 @@ async function loadUserProfile() {
         if (!response.ok) throw new Error('Erro ao carregar perfil');
 
         const user = await response.json();
+        
         // Atualizar localStorage com dados mais recentes
         localStorage.setItem('user', JSON.stringify(user));
+        
+        // Primeiro atualizar o avatar para garantir que seja carregado
+        if (user.avatar_url) {
+            updateAvatarUI(user.avatar_url);
+        }
+        
+        // Depois atualizar o resto da UI
         updateProfileUI(user);
     } catch (error) {
         console.error('Erro ao carregar perfil:', error);
@@ -110,28 +118,33 @@ async function loadActivities() {
     }
 }
 
-// Atualizar UI do perfil
-function updateProfileUI(user) {
-    // Adicionar timestamp para evitar cache
+// Função para atualizar avatar em todos os lugares
+function updateAvatarUI(avatarUrl) {
     const timestamp = new Date().getTime();
     const defaultAvatar = '/images/default-avatar.svg';
-    const avatarUrl = user.avatar_url ? `${user.avatar_url}?t=${timestamp}` : defaultAvatar;
+    const finalUrl = avatarUrl ? `${avatarUrl}?t=${timestamp}` : defaultAvatar;
 
-    // Atualizar avatar principal
-    profileAvatar.src = avatarUrl;
-    profileAvatar.onerror = function() {
-        this.src = defaultAvatar;
-    };
-
-    // Atualizar avatar no dropdown
-    const userAvatar = document.getElementById('userAvatar');
-    if (userAvatar) {
-        userAvatar.src = avatarUrl;
-        userAvatar.onerror = function() {
+    // Função auxiliar para configurar um elemento de avatar
+    function setupAvatarElement(element) {
+        if (!element) return;
+        element.src = finalUrl;
+        element.onerror = function() {
             this.src = defaultAvatar;
+            this.onerror = null;
         };
     }
 
+    // Atualizar avatar na navbar
+    const userAvatar = document.getElementById('userAvatar');
+    setupAvatarElement(userAvatar);
+
+    // Atualizar avatar do perfil se existir
+    const profileAvatar = document.getElementById('profileAvatar');
+    setupAvatarElement(profileAvatar);
+}
+
+// Atualizar UI do perfil
+function updateProfileUI(user) {
     // Atualizar nome e email
     profileName.textContent = user.name;
     profileEmail.textContent = user.email;
@@ -176,17 +189,55 @@ function updateAchievementsUI(achievements) {
 
 // Atualizar UI das atividades
 function updateActivitiesUI(activities) {
-    activitiesList.innerHTML = activities.map(activity => `
-        <div class="timeline-item">
-            <div class="timeline-icon">
-                <i class="bi ${getActivityIcon(activity.type)}"></i>
-            </div>
-            <div class="timeline-content">
-                <p class="timeline-date">${formatDate(activity.created_at)}</p>
-                <p>${activity.description}</p>
-            </div>
-        </div>
-    `).join('');
+    // Agrupar atividades por data
+    const groupedActivities = activities.reduce((groups, activity) => {
+        const date = new Date(activity.created_at).toLocaleDateString('pt-BR');
+        if (!groups[date]) {
+            groups[date] = [];
+        }
+        groups[date].push(activity);
+        return groups;
+    }, {});
+
+    // Função para remover atividades duplicadas sequenciais
+    function removeDuplicateSequentialActivities(activities) {
+        return activities.filter((activity, index, array) => {
+            if (index === 0) return true;
+            const prevActivity = array[index - 1];
+            return activity.description !== prevActivity.description;
+        });
+    }
+
+    // Gerar HTML para cada grupo de atividades
+    const html = Object.entries(groupedActivities)
+        .sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA)) // Ordenar por data mais recente
+        .map(([date, dateActivities]) => {
+            const uniqueActivities = removeDuplicateSequentialActivities(dateActivities);
+            
+            const activitiesHtml = uniqueActivities.map(activity => `
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="bi ${getActivityIcon(activity.type)}"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <p class="timeline-time">${new Date(activity.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p class="timeline-description">${activity.description}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="timeline-date-group">
+                    <div class="timeline-date">
+                        <i class="bi bi-calendar3"></i>
+                        ${date}
+                    </div>
+                    ${activitiesHtml}
+                </div>
+            `;
+        }).join('');
+
+    activitiesList.innerHTML = html || '<p class="text-center text-muted">Nenhuma atividade recente</p>';
 }
 
 // Funções auxiliares
@@ -217,7 +268,12 @@ function getActivityIcon(type) {
         'course_complete': 'bi-check-circle',
         'lesson_complete': 'bi-book',
         'certificate_earned': 'bi-award',
-        'profile_update': 'bi-person'
+        'profile_update': 'bi-person',
+        'password_reset': 'bi-key',
+        'password_reset_request': 'bi-envelope',
+        'privacy_settings': 'bi-shield-check',
+        'notification_settings': 'bi-bell',
+        'settings_update': 'bi-gear'
     };
     return icons[type] || 'bi-circle';
 }
@@ -289,15 +345,7 @@ async function handleAvatarUpload() {
             const formData = new FormData();
             formData.append('avatar', file);
 
-            // Log do FormData
-            console.log('FormData entries:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0], pair[1]);
-            }
-
             const token = localStorage.getItem('token');
-            console.log('Token presente:', !!token);
-
             const response = await fetch('/api/user/avatar', {
                 method: 'POST',
                 headers: {
@@ -306,44 +354,26 @@ async function handleAvatarUpload() {
                 body: formData
             });
 
-            console.log('Status da resposta:', response.status);
-            console.log('Headers da resposta:', Object.fromEntries(response.headers.entries()));
-
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Resposta do servidor:', errorText);
-                
                 let errorData;
                 try {
                     errorData = JSON.parse(errorText);
                 } catch (e) {
                     errorData = { message: errorText };
                 }
-                
-                console.error('Detalhes do erro:', errorData);
                 throw new Error(errorData.message || errorData.error || 'Erro ao fazer upload do avatar');
             }
 
             const data = await response.json();
-            console.log('Resposta do servidor:', data);
             
-            // Atualizar avatar na interface
-            if (profileAvatar) {
-                profileAvatar.src = data.avatar_url + '?t=' + new Date().getTime();
-                console.log('Avatar principal atualizado');
-            }
-            
-            const userAvatar = document.getElementById('userAvatar');
-            if (userAvatar) {
-                userAvatar.src = data.avatar_url + '?t=' + new Date().getTime();
-                console.log('Avatar do menu atualizado');
-            }
+            // Atualizar avatar na interface usando a nova função
+            updateAvatarUI(data.avatar_url);
 
             // Atualizar dados no localStorage
             const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
             const updatedUser = { ...currentUser, avatar_url: data.avatar_url };
             localStorage.setItem('user', JSON.stringify(updatedUser));
-            console.log('Dados do usuário atualizados no localStorage');
 
             showSuccess('Avatar atualizado com sucesso!');
         } catch (error) {
