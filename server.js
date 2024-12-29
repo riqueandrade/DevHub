@@ -34,6 +34,10 @@ app.use(cors({
     credentials: true
 }));
 
+// Servir arquivos estáticos
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Configurar express-fileupload apenas para rotas específicas
 const fileUploadMiddleware = fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
@@ -152,14 +156,9 @@ app.get('/certificate/:id', (req, res) => {
 });
 
 // Redirecionar todas as outras rotas para o index.html
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) {
         res.status(404).json({ error: 'Rota não encontrada' });
-    } else if (req.path.startsWith('/js/') || 
-               req.path.startsWith('/css/') || 
-               req.path.startsWith('/images/') || 
-               req.path.startsWith('/uploads/')) {
-        next();
     } else {
         res.sendFile(path.join(__dirname, 'public', 'index.html'));
     }

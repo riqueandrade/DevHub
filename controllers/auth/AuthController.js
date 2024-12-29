@@ -107,7 +107,7 @@ class AuthController {
                     email,
                     google_id,
                     avatar_url,
-                    type: 'user'
+                    role: 'aluno'
                 });
             } else if (!user.google_id) {
                 await user.update({
@@ -137,27 +137,51 @@ class AuthController {
 
     async googleCallback(req, res) {
         try {
+            console.log('Iniciando Google Callback:', { query: req.query });
             const { code } = req.query;
+            
+            if (!code) {
+                console.error('Código de autorização não fornecido');
+                return res.redirect('/auth.html?error=missing_code');
+            }
+
+            console.log('Obtendo tokens do Google...');
             const { tokens } = await googleClient.getToken(code);
+            console.log('Tokens obtidos:', { 
+                hasAccessToken: !!tokens.access_token,
+                hasIdToken: !!tokens.id_token
+            });
+
+            console.log('Verificando ID token...');
             const ticket = await googleClient.verifyIdToken({
                 idToken: tokens.id_token,
                 audience: process.env.GOOGLE_CLIENT_ID
             });
 
             const payload = ticket.getPayload();
+            console.log('Payload do token:', { 
+                sub: payload.sub,
+                email: payload.email,
+                name: payload.name
+            });
+
             let user = await User.findOne({ where: { google_id: payload.sub } });
             let isNewUser = false;
 
             if (!user) {
+                console.log('Criando novo usuário...');
                 isNewUser = true;
                 user = await User.create({
                     name: payload.name,
                     email: payload.email,
                     google_id: payload.sub,
                     avatar_url: payload.picture,
+                    role: 'aluno',
                     onboarding_completed: false
                 });
+                console.log('Novo usuário criado:', { userId: user.id });
             } else {
+                console.log('Usuário existente encontrado:', { userId: user.id });
                 if (user.onboarding_completed === null) {
                     await user.update({ onboarding_completed: true });
                 }
@@ -178,7 +202,12 @@ class AuthController {
             
             res.redirect(redirectUrl);
         } catch (error) {
-            console.error('Erro no callback do Google:', error);
+            console.error('Erro detalhado no callback do Google:', {
+                message: error.message,
+                stack: error.stack,
+                code: error.code,
+                details: error.details
+            });
             res.redirect('/auth.html?error=google_auth_failed');
         }
     }
