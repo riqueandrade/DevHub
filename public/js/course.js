@@ -1,3 +1,6 @@
+// Variáveis globais
+let cleanCourseId;
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Verificar autenticação
     const token = localStorage.getItem('token');
@@ -18,17 +21,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('userAvatar').src = user.avatar_url || '/images/default-avatar.png';
 
         // Obter ID do curso da URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const courseId = window.location.pathname.split('/course/')[1];
+        const pathname = window.location.pathname;
+        console.log('URL do curso:', pathname);
+        
+        const courseId = pathname.split('/course/')[1];
+        console.log('ID do curso extraído:', courseId);
         
         if (!courseId) {
+            console.error('ID do curso não encontrado na URL:', pathname);
             throw new Error('ID do curso não encontrado');
         }
+
+        // Remover qualquer / extra no final do ID
+        cleanCourseId = courseId.replace(/\/$/, '');
+        console.log('ID do curso limpo:', cleanCourseId);
 
         console.log('Carregando curso:', courseId);
         
         // Carregar dados do curso
-        const courseResponse = await fetch(`/api/courses/${courseId}`, {
+        const courseResponse = await fetch(`/api/courses/${cleanCourseId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -54,79 +65,76 @@ document.addEventListener('DOMContentLoaded', async () => {
             throw new Error('Estrutura de módulos inválida');
         }
 
+        console.log('Estrutura dos módulos:', course.modules);
+
         let totalLessons = 0;
         let completedLessons = 0;
 
+        // Encontrar a primeira aula não concluída ou a primeira aula do curso
+        let firstUncompletedLesson = null;
+        let firstLesson = null;
+
         course.modules.forEach((module, moduleIndex) => {
+            console.log(`Módulo ${moduleIndex + 1}:`, module);
+            
             if (!module.lessons || !Array.isArray(module.lessons)) {
-                console.warn(`Módulo ${moduleIndex} não tem aulas ou estrutura inválida`);
+                console.warn(`Módulo ${moduleIndex + 1} não possui aulas válidas`);
                 return;
             }
 
-            const moduleElement = document.createElement('div');
-            moduleElement.className = 'module-item';
-            
-            const moduleContent = `
-                <div class="module-title">
-                    <i class="bi bi-folder"></i>
-                    Módulo ${moduleIndex + 1}: ${module.title}
-                </div>
-                <ul class="lesson-list">
-                    ${module.lessons.map((lesson, lessonIndex) => {
-                        totalLessons++;
-                        if (lesson.completed) completedLessons++;
-                        return `
-                            <li class="lesson-item ${lesson.completed ? 'completed' : ''}" 
-                                data-module="${moduleIndex}" 
-                                data-lesson="${lessonIndex}"
-                                onclick="loadLesson(${moduleIndex}, ${lessonIndex})">
-                                <i class="bi ${lesson.completed ? 'bi-check-circle-fill' : 'bi-play-circle'}"></i>
-                                ${lesson.title}
-                            </li>
-                        `;
-                    }).join('')}
-                </ul>
-            `;
-            
-            moduleElement.innerHTML = moduleContent;
-            moduleList.appendChild(moduleElement);
+            module.lessons.forEach((lesson, lessonIndex) => {
+                console.log(`Aula ${lessonIndex + 1} do módulo ${moduleIndex + 1}:`, lesson);
+                
+                if (!firstLesson) {
+                    firstLesson = { moduleId: module.id, lessonId: lesson.id };
+                    console.log('Primeira aula encontrada:', firstLesson);
+                }
+                if (!lesson.completed && !firstUncompletedLesson) {
+                    firstUncompletedLesson = { moduleId: module.id, lessonId: lesson.id };
+                    console.log('Primeira aula não concluída encontrada:', firstUncompletedLesson);
+                }
+                totalLessons++;
+                if (lesson.completed) completedLessons++;
+            });
         });
 
+        // Carregar a primeira aula não concluída ou a primeira aula do curso
+        const lessonToLoad = firstUncompletedLesson || firstLesson;
+        console.log('Aula que será carregada:', lessonToLoad);
+        if (lessonToLoad) {
+            await loadLesson(lessonToLoad.moduleId, lessonToLoad.lessonId);
+        }
+
         // Atualizar progresso
-        if (totalLessons > 0) {
-            const progress = (completedLessons / totalLessons) * 100;
-            document.getElementById('courseProgress').style.width = `${progress}%`;
-            document.getElementById('completionStatus').textContent = `${Math.round(progress)}% Concluído`;
-        }
+        updateProgress(completedLessons, totalLessons);
 
-        // Carregar primeira aula não completada ou primeira aula
-        if (course.modules.length > 0 && course.modules[0].lessons.length > 0) {
-            let firstIncomplete = null;
-
-            // Procurar primeira aula não completada
-            for (let i = 0; i < course.modules.length; i++) {
-                const module = course.modules[i];
-                for (let j = 0; j < module.lessons.length; j++) {
-                    if (!module.lessons[j].completed) {
-                        firstIncomplete = { moduleIndex: i, lessonIndex: j };
-                        break;
-                    }
-                }
-                if (firstIncomplete) break;
-            }
-
-            // Se todas estiverem completas, carregar a última
-            if (!firstIncomplete) {
-                const lastModule = course.modules[course.modules.length - 1];
-                firstIncomplete = {
-                    moduleIndex: course.modules.length - 1,
-                    lessonIndex: lastModule.lessons.length - 1
-                };
-            }
-
-            // Carregar a aula
-            loadLesson(firstIncomplete.moduleIndex, firstIncomplete.lessonIndex);
-        }
+        // Renderizar módulos
+        course.modules.forEach((module, moduleIndex) => {
+            const moduleElement = document.createElement('div');
+            moduleElement.className = 'module';
+            moduleElement.innerHTML = `
+                <div class="module-header" data-bs-toggle="collapse" data-bs-target="#module${module.id}">
+                    <h3>
+                        <i class="bi bi-chevron-down"></i>
+                        ${module.title}
+                    </h3>
+                    <span class="badge bg-primary">${module.lessons.length} aulas</span>
+                </div>
+                <div id="module${module.id}" class="collapse ${moduleIndex === 0 ? 'show' : ''}">
+                    <div class="lesson-list">
+                        ${module.lessons.map((lesson, lessonIndex) => `
+                            <div class="lesson ${lesson.completed ? 'completed' : ''}" 
+                                 onclick="loadLesson(${module.id}, ${lesson.id})">
+                                <i class="bi ${lesson.completed ? 'bi-check-circle-fill' : 'bi-play-circle'}"></i>
+                                <span>${lesson.title}</span>
+                                <span class="duration">${formatDuration(lesson.duration)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            moduleList.appendChild(moduleElement);
+        });
 
     } catch (error) {
         console.error('Erro:', error);
@@ -134,100 +142,100 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Função para carregar uma aula
-async function loadLesson(moduleIndex, lessonIndex) {
+// Carregar aula
+const loadLesson = async (moduleId, lessonId) => {
     try {
+        console.log(`Carregando aula: módulo ${moduleId}, aula ${lessonId}`);
+        console.log('URL da requisição:', `/api/courses/${cleanCourseId}/lessons/${lessonId}`);
+        
         const token = localStorage.getItem('token');
-        const courseId = window.location.pathname.split('/course/')[1];
-
-        if (!courseId) {
-            throw new Error('ID do curso não encontrado');
-        }
-
-        // Remover classe active de todas as aulas
-        document.querySelectorAll('.lesson-item').forEach(item => {
-            item.classList.remove('active');
-        });
-
-        // Adicionar classe active na aula selecionada
-        const selectedLesson = document.querySelector(`[data-module="${moduleIndex}"][data-lesson="${lessonIndex}"]`);
-        if (selectedLesson) {
-            selectedLesson.classList.add('active');
-        }
-
-        // Carregar conteúdo da aula
-        const lessonResponse = await fetch(`/api/courses/${courseId}/modules/${moduleIndex}/lessons/${lessonIndex}`, {
+        const response = await fetch(`/api/courses/${cleanCourseId}/lessons/${lessonId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
 
-        if (!lessonResponse.ok) {
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Erro na resposta da API:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData
+            });
             throw new Error('Erro ao carregar aula');
         }
 
-        const lesson = await lessonResponse.json();
+        const lesson = await response.json();
         console.log('Dados da aula:', lesson);
 
         // Atualizar conteúdo da aula
-        const lessonContent = document.getElementById('lessonContent');
-        lessonContent.innerHTML = `
-            <h2>${lesson.title}</h2>
-            <div class="lesson-content mb-4">
-                ${renderLessonContent(lesson)}
-            </div>
-            <div class="lesson-description">
-                ${lesson.description || ''}
-            </div>
-        `;
+        document.getElementById('lessonTitle').textContent = lesson.title;
+        
+        // Renderizar conteúdo baseado no tipo
+        document.getElementById('lessonContent').innerHTML = renderLessonContent(lesson);
 
-        // Atualizar botões de navegação
-        updateNavigationButtons(moduleIndex, lessonIndex);
+        // Atualizar aula ativa na lista
+        document.querySelectorAll('.lesson').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const lessonElement = document.querySelector(`.lesson[onclick="loadLesson(${moduleId}, ${lessonId})"]`);
+        if (lessonElement) {
+            lessonElement.classList.add('active');
+        } else {
+            console.warn('Elemento da aula não encontrado no DOM');
+        }
 
-        // Marcar aula como concluída após 5 segundos
-        setTimeout(() => markLessonAsCompleted(moduleIndex, lessonIndex), 5000);
-
+        // Atualizar URL sem recarregar a página
+        const newUrl = `/course/${cleanCourseId}/lessons/${lessonId}`;
+        window.history.pushState({ moduleId, lessonId }, '', newUrl);
     } catch (error) {
-        console.error('Erro:', error);
-        showAlert('Erro ao carregar aula. Tente novamente mais tarde.', 'danger');
+        console.error('Erro ao carregar aula:', error);
+        throw error;
     }
-}
+};
 
 // Função para renderizar o conteúdo da aula baseado no tipo
 function renderLessonContent(lesson) {
+    if (!lesson.content_type || !lesson.content_url) {
+        return `<div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Conteúdo da aula não disponível
+        </div>`;
+    }
+
     switch (lesson.content_type) {
         case 'video':
             return `
-                <div class="ratio ratio-16x9">
+                <div class="ratio ratio-16x9 mb-4">
                     <iframe src="${lesson.content_url}" allowfullscreen></iframe>
                 </div>
             `;
         case 'pdf':
             return `
-                <div class="pdf-viewer">
+                <div class="pdf-viewer mb-4">
                     <embed src="${lesson.content_url}" type="application/pdf" width="100%" height="600px">
                 </div>
             `;
-        case 'slides':
+        case 'text':
             return `
-                <div class="slides-viewer">
-                    <iframe src="${lesson.content_url}" width="100%" height="600px"></iframe>
+                <div class="text-content mb-4">
+                    ${lesson.content_url}
                 </div>
             `;
-        case 'documento':
+        case 'html':
             return `
-                <div class="document-viewer">
-                    <iframe src="${lesson.content_url}" width="100%" height="600px"></iframe>
-                </div>
-            `;
-        case 'texto':
-            return `
-                <div class="text-content">
-                    ${lesson.content_url ? `<pre>${lesson.content_url}</pre>` : ''}
+                <div class="html-content mb-4">
+                    ${lesson.content_url}
                 </div>
             `;
         default:
-            return `<p>Tipo de conteúdo não suportado</p>`;
+            return `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Tipo de conteúdo não suportado: ${lesson.content_type}
+                </div>
+            `;
     }
 }
 
@@ -339,4 +347,14 @@ function showAlert(message, type = 'success') {
 document.getElementById('logoutButton').addEventListener('click', () => {
     localStorage.clear();
     window.location.href = '/auth.html';
-}); 
+});
+
+// Atualizar progresso do curso
+const updateProgress = (completed, total) => {
+    if (total > 0) {
+        const progress = (completed / total) * 100;
+        document.getElementById('courseProgress').style.width = `${progress}%`;
+        document.getElementById('courseProgress').setAttribute('aria-valuenow', progress);
+        document.getElementById('completionStatus').textContent = `${completed} de ${total} aulas concluídas (${Math.round(progress)}%)`;
+    }
+}; 

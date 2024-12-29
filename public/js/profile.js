@@ -112,13 +112,24 @@ async function loadActivities() {
 
 // Atualizar UI do perfil
 function updateProfileUI(user) {
+    // Adicionar timestamp para evitar cache
+    const timestamp = new Date().getTime();
+    const defaultAvatar = '/images/default-avatar.svg';
+    const avatarUrl = user.avatar_url ? `${user.avatar_url}?t=${timestamp}` : defaultAvatar;
+
     // Atualizar avatar principal
-    profileAvatar.src = user.avatar_url || '/images/default-avatar.svg';
+    profileAvatar.src = avatarUrl;
+    profileAvatar.onerror = function() {
+        this.src = defaultAvatar;
+    };
 
     // Atualizar avatar no dropdown
     const userAvatar = document.getElementById('userAvatar');
     if (userAvatar) {
-        userAvatar.src = user.avatar_url || '/images/default-avatar.svg';
+        userAvatar.src = avatarUrl;
+        userAvatar.onerror = function() {
+            this.src = defaultAvatar;
+        };
     }
 
     // Atualizar nome e email

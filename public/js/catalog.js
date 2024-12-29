@@ -176,7 +176,7 @@ const renderCourses = () => {
         let actionButton;
         if (course.isEnrolled) {
             actionButton = `
-                <a href="/course.html?id=${course.id}" class="btn btn-primary w-100">
+                <a href="/course/${course.id}" class="btn btn-primary w-100">
                     <i class="bi bi-play-circle"></i> Continuar Curso
                 </a>`;
         } else {
@@ -346,6 +346,7 @@ const enrollCourse = async (courseId) => {
 
 // Função para ir para a página do curso
 function goToCourse(courseId) {
+    console.log('Redirecionando para o curso:', courseId);
     window.location.href = `/course/${courseId}`;
 }
 
