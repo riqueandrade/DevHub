@@ -198,34 +198,49 @@ function updateFileInput(contentType, isEdit = false) {
     } else {
         if (urlGroup) urlGroup.style.display = 'none';
         fileGroup.style.display = 'block';
-        fileInput.setAttribute('required', 'required');
+        // Apenas definir required se não for edição
+        if (!isEdit) {
+            fileInput.setAttribute('required', 'required');
+        }
     }
 
     // Atualizar mensagem de ajuda e tipos de arquivo aceitos
     if (fileHelp) {
         switch (contentType) {
             case 'pdf':
-                fileHelp.textContent = 'Selecione um arquivo PDF (máx. 50MB)';
+                fileHelp.textContent = isEdit ? 
+                    'Selecione um novo arquivo PDF apenas se desejar substituir o atual (máx. 50MB)' :
+                    'Selecione um arquivo PDF (máx. 50MB)';
                 fileInput.accept = '.pdf';
                 break;
             case 'slides':
-                fileHelp.textContent = 'Selecione um arquivo PowerPoint (máx. 50MB)';
+                fileHelp.textContent = isEdit ?
+                    'Selecione um novo arquivo PowerPoint apenas se desejar substituir o atual (máx. 50MB)' :
+                    'Selecione um arquivo PowerPoint (máx. 50MB)';
                 fileInput.accept = '.ppt,.pptx';
                 break;
             case 'documento':
-                fileHelp.textContent = 'Selecione um arquivo Word ou Excel (máx. 50MB)';
+                fileHelp.textContent = isEdit ?
+                    'Selecione um novo arquivo Word ou Excel apenas se desejar substituir o atual (máx. 50MB)' :
+                    'Selecione um arquivo Word ou Excel (máx. 50MB)';
                 fileInput.accept = '.doc,.docx,.xls,.xlsx';
                 break;
             case 'video':
-                fileHelp.textContent = 'Selecione um arquivo de vídeo (máx. 50MB)';
+                fileHelp.textContent = isEdit ?
+                    'Selecione um novo arquivo de vídeo apenas se desejar substituir o atual (máx. 50MB)' :
+                    'Selecione um arquivo de vídeo (máx. 50MB)';
                 fileInput.accept = '.mp4,.webm,.ogg';
                 break;
             case 'texto':
-                fileHelp.textContent = 'Selecione um arquivo de texto (máx. 50MB)';
+                fileHelp.textContent = isEdit ?
+                    'Selecione um novo arquivo de texto apenas se desejar substituir o atual (máx. 50MB)' :
+                    'Selecione um arquivo de texto (máx. 50MB)';
                 fileInput.accept = '.txt,.doc,.docx';
                 break;
             default:
-                fileHelp.textContent = 'Selecione um arquivo (máx. 50MB)';
+                fileHelp.textContent = isEdit ?
+                    'Selecione um novo arquivo apenas se desejar substituir o atual (máx. 50MB)' :
+                    'Selecione um arquivo (máx. 50MB)';
                 fileInput.accept = '';
         }
     }
@@ -484,36 +499,92 @@ async function handleEditLesson(event) {
         const duration = parseInt(document.getElementById('editLessonDuration').value);
         const contentType = document.getElementById('editContentType').value;
 
+        console.log('Dados do formulário:', {
+            lessonId,
+            moduleId,
+            title,
+            description,
+            duration,
+            contentType
+        });
+
         // Criar FormData para envio do arquivo
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
         formData.append('duration', duration);
         formData.append('content_type', contentType);
+        formData.append('moduleId', moduleId);
 
         // Adicionar arquivo se houver
-        const fileInput = document.getElementById('editLessonFile');
-        if (fileInput.files.length > 0) {
-            formData.append('file', fileInput.files[0]);
+        const fileInput = document.getElementById('editContentFile');
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            console.log('Arquivo selecionado:', {
+                name: file.name,
+                type: file.type,
+                size: file.size
+            });
+
+            // Verificar o tipo de arquivo
+            const allowedTypes = {
+                'pdf': ['application/pdf'],
+                'slides': ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+                'documento': ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+                'video': ['video/mp4', 'video/webm', 'video/ogg'],
+                'texto': ['text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+            };
+
+            if (allowedTypes[contentType] && !allowedTypes[contentType].includes(file.type)) {
+                throw new Error(`Tipo de arquivo inválido para ${contentType}. Tipos permitidos: ${allowedTypes[contentType].join(', ')}`);
+            }
+
+            formData.append('content_file', file);
+        } else {
+            console.log('Nenhum arquivo selecionado');
         }
 
         // URL correta para atualização da aula
         const url = `/api/courses/lessons/${lessonId}`;
         console.log('Enviando requisição para:', url);
+        console.log('FormData entries:', [...formData.entries()].map(([key, value]) => {
+            if (value instanceof File) {
+                return [key, { name: value.name, type: value.type, size: value.size }];
+            }
+            return [key, value];
+        }));
 
         const response = await fetch(url, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
 
-        if (!response.ok) {
-            throw new Error(`Erro ao atualizar aula: ${response.statusText}`);
+        // Tentar ler a resposta como texto primeiro
+        const responseText = await response.text();
+        console.log('Resposta do servidor:', responseText);
+        
+        let result;
+        try {
+            // Tentar converter para JSON se possível
+            result = JSON.parse(responseText);
+        } catch {
+            // Se não for JSON, usar o texto como está
+            result = responseText;
         }
 
-        const result = await response.json();
+        if (!response.ok) {
+            console.error('Resposta de erro:', {
+                status: response.status,
+                statusText: response.statusText,
+                result
+            });
+            throw new Error(typeof result === 'object' ? result.error : result || `Erro ao atualizar aula: ${response.statusText}`);
+        }
+
         console.log('Aula atualizada:', result);
 
         // Fechar modal e atualizar lista
@@ -525,7 +596,7 @@ async function handleEditLesson(event) {
 
     } catch (error) {
         console.error('Erro ao atualizar aula:', error);
-        showAlert('Erro ao atualizar aula. Por favor, tente novamente.', 'danger');
+        showAlert(error.message || 'Erro ao atualizar aula. Por favor, tente novamente.', 'danger');
     }
 }
 

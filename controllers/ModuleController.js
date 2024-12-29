@@ -125,7 +125,7 @@ exports.getModules = async (req, res) => {
             include: [{
                 model: Lesson,
                 as: 'lessons',
-                attributes: ['id', 'title', 'duration', 'order_number', 'content_type', 'content_url']
+                attributes: ['id', 'title', 'description', 'duration', 'order_number', 'content_type', 'content_url']
             }],
             order: [
                 ['order_number', 'ASC'],

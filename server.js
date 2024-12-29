@@ -16,28 +16,42 @@ const catalogRoutes = require('./routes/catalogRoutes');
 
 const app = express();
  
+// Garantir que os diretórios necessários existam
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'public', 'uploads', 'lessons');
+const tempDir = path.join(__dirname, 'tmp');
+
+[uploadsDir, tempDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`Diretório criado: ${dir}`);
+    }
+});
+
 // Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload({
-    limits: { fileSize: 50 * 1024 * 1024 }, // Aumentado para 50MB
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
+
+// Configurar express-fileupload apenas para rotas específicas
+const fileUploadMiddleware = fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
     abortOnLimit: true,
     createParentPath: true,
     useTempFiles: true,
-    tempFileDir: path.join(__dirname, 'tmp'),
-    debug: true
-}));
+    tempFileDir: tempDir,
+    debug: true,
+    safeFileNames: true,
+    preserveExtension: true,
+    uploadTimeout: 0,
+    parseNested: true,
+    uriDecoding: 'utf8'
+});
 
-// Servir arquivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-
-// Garantir que o diretório de uploads existe
-const uploadsDir = path.join(__dirname, 'public', 'uploads', 'lessons');
-if (!require('fs').existsSync(uploadsDir)) {
-    require('fs').mkdirSync(uploadsDir, { recursive: true });
-}
+// Aplicar o middleware apenas nas rotas que precisam de upload
+app.use('/api/courses/lessons/:id', fileUploadMiddleware);
+app.use('/api/courses/:courseId/lessons', fileUploadMiddleware);
 
 // Rota específica para arquivos de aula
 app.get('/uploads/lessons/:filename', (req, res) => {
