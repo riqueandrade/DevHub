@@ -1,4 +1,5 @@
 const LessonService = require('./services/LessonService');
+const path = require('path');
 
 // Criar nova aula
 exports.createLesson = async (req, res) => {
@@ -28,7 +29,60 @@ exports.updateLesson = async (req, res) => {
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
-        const lesson = await LessonService.updateLesson(lessonId, userId, isAdmin, req.body);
+        console.log('Atualizando aula:', {
+            lessonId,
+            userId,
+            isAdmin,
+            hasFile: !!req.files?.file,
+            body: req.body
+        });
+
+        // Verificar se há arquivo sendo enviado
+        if (!req.files || !req.files.file) {
+            console.log('Sem arquivo novo, atualizando apenas dados básicos');
+            // Se não houver arquivo, apenas atualizar os dados básicos
+            const lesson = await LessonService.updateLesson(lessonId, userId, isAdmin, req.body);
+            return res.json({
+                message: 'Aula atualizada com sucesso',
+                lesson
+            });
+        }
+
+        // Se houver arquivo, processar o upload
+        const file = req.files.file;
+        console.log('Arquivo recebido:', {
+            name: file.name,
+            size: file.size,
+            mimetype: file.mimetype
+        });
+
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000000000)}.${fileExtension}`;
+        const filePath = path.join(__dirname, '..', 'public', 'uploads', 'lessons', fileName);
+
+        console.log('Salvando arquivo:', {
+            fileName,
+            filePath
+        });
+
+        // Mover o arquivo para o diretório de uploads
+        try {
+            await file.mv(filePath);
+            console.log('Arquivo salvo com sucesso');
+        } catch (error) {
+            console.error('Erro ao salvar arquivo:', error);
+            throw new Error('Erro ao salvar arquivo');
+        }
+
+        // Atualizar a aula com o novo arquivo
+        const data = {
+            ...req.body,
+            content_url: `/uploads/lessons/${fileName}`
+        };
+
+        console.log('Atualizando dados da aula:', data);
+
+        const lesson = await LessonService.updateLesson(lessonId, userId, isAdmin, data);
 
         res.json({
             message: 'Aula atualizada com sucesso',

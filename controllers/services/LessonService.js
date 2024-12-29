@@ -110,14 +110,47 @@ class LessonService {
     async updateLesson(lessonId, userId, isAdmin, data) {
         const lesson = await this.verifyLessonPermission(lessonId, userId, isAdmin);
 
-        await lesson.update({
+        console.log('Atualizando aula no serviço:', {
+            lessonId,
+            currentContentUrl: lesson.content_url,
+            newContentUrl: data.content_url
+        });
+
+        // Se houver uma nova URL de conteúdo, remover o arquivo antigo
+        if (data.content_url && lesson.content_url && lesson.content_url !== data.content_url) {
+            console.log('Removendo arquivo antigo');
+            const oldPath = path.join(__dirname, '..', '..', 'public', lesson.content_url);
+            console.log('Caminho do arquivo antigo:', oldPath);
+            
+            if (fs.existsSync(oldPath)) {
+                try {
+                    fs.unlinkSync(oldPath);
+                    console.log('Arquivo antigo removido com sucesso');
+                } catch (error) {
+                    console.error('Erro ao remover arquivo antigo:', error);
+                }
+            } else {
+                console.log('Arquivo antigo não encontrado');
+            }
+        }
+
+        // Atualizar a aula
+        const updatedLesson = await lesson.update({
             title: data.title || lesson.title,
             description: data.description || lesson.description,
             duration: data.duration || lesson.duration,
+            content_type: data.content_type || lesson.content_type,
+            content_url: data.content_url || lesson.content_url,
             order_number: data.order_number || lesson.order_number
         });
 
-        return lesson;
+        console.log('Aula atualizada:', {
+            id: updatedLesson.id,
+            content_type: updatedLesson.content_type,
+            content_url: updatedLesson.content_url
+        });
+
+        return updatedLesson;
     }
 
     async handleVideoUpload(req, res) {

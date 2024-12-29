@@ -33,11 +33,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Carregar dados do curso
         await loadCourseData();
         
-        // Carregar módulos e aulas
+        // Configurar modais
+        setupModals();
+        
+        // Carregar módulos iniciais
         await loadModules();
+        
+        // Configurar formulário de novo módulo
+        const newModuleForm = document.getElementById('newModuleForm');
+        if (newModuleForm) {
+            newModuleForm.addEventListener('submit', handleNewModule);
+        }
+        
+        // Configurar formulário de nova aula
+        const newLessonForm = document.getElementById('newLessonForm');
+        if (newLessonForm) {
+            newLessonForm.addEventListener('submit', handleNewLesson);
+        }
+        
+        // Configurar select de tipo de conteúdo para nova aula
+        const contentTypeSelect = document.getElementById('contentType');
+        if (contentTypeSelect) {
+            contentTypeSelect.addEventListener('change', function() {
+                updateFileInput(this.value, false);
+            });
+        }
+        
+        // Configurar select de tipo de conteúdo para edição de aula
+        const editContentTypeSelect = document.getElementById('editContentType');
+        if (editContentTypeSelect) {
+            editContentTypeSelect.addEventListener('change', function() {
+                updateFileInput(this.value, true);
+            });
+        }
     } catch (error) {
         console.error('Erro ao inicializar página:', error);
-        showAlert('Erro ao carregar dados. Tente novamente mais tarde.', 'danger');
+        showAlert('Erro ao carregar a página', 'danger');
     }
 });
 
@@ -100,24 +131,7 @@ function setupModals() {
     // Configurar modal de nova aula
     const newLessonModal = document.getElementById('newLessonModal');
     if (newLessonModal) {
-        const bsModal = new bootstrap.Modal(newLessonModal);
-        
-        newLessonModal.addEventListener('show.bs.modal', function() {
-            // Resetar formulário
-            const form = document.getElementById('newLessonForm');
-            if (form) {
-                form.reset();
-            }
-            
-            // Configurar tipo de conteúdo padrão
-            const contentTypeSelect = document.getElementById('contentType');
-            if (contentTypeSelect) {
-                contentTypeSelect.value = 'pdf';
-            }
-        });
-
         newLessonModal.addEventListener('shown.bs.modal', function() {
-            // Configurar event listeners após o modal estar completamente visível
             const contentTypeSelect = document.getElementById('contentType');
             if (contentTypeSelect) {
                 updateFileInput('pdf', false);
@@ -131,6 +145,11 @@ function setupModals() {
     // Configurar modal de edição de aula
     const editLessonModal = document.getElementById('editLessonModal');
     if (editLessonModal) {
+        const editLessonForm = document.getElementById('editLessonForm');
+        if (editLessonForm) {
+            editLessonForm.addEventListener('submit', handleEditLesson);
+        }
+
         editLessonModal.addEventListener('shown.bs.modal', function() {
             const editContentTypeSelect = document.getElementById('editContentType');
             if (editContentTypeSelect) {
@@ -146,47 +165,69 @@ function setupModals() {
 // Atualizar configurações do input de arquivo
 function updateFileInput(contentType, isEdit = false) {
     const prefix = isEdit ? 'edit' : '';
-    const modalId = isEdit ? 'editLessonModal' : 'newLessonModal';
-    const modal = document.getElementById(modalId);
     
-    if (!modal) {
-        console.error('Modal não encontrado');
+    // Elementos do formulário
+    const fileGroup = document.getElementById(`${prefix}ContentFileGroup`);
+    const urlGroup = document.getElementById(`${prefix}ContentUrlGroup`);
+    const fileInput = document.getElementById(`${prefix}ContentFile`);
+    const fileHelp = fileGroup?.querySelector('.text-muted');
+
+    console.log('Elementos do formulário:', {
+        fileGroup: !!fileGroup,
+        urlGroup: !!urlGroup,
+        fileInput: !!fileInput,
+        fileHelp: !!fileHelp,
+        contentType,
+        isEdit
+    });
+
+    if (!fileGroup || !fileInput) {
+        console.error('Elementos do formulário não encontrados:', {
+            prefix,
+            fileGroupId: `${prefix}ContentFileGroup`,
+            fileInputId: `${prefix}ContentFile`
+        });
         return;
     }
 
-    const fileInput = modal.querySelector('#contentFile');
-    const fileHelp = modal.querySelector('#contentFileGroup .text-muted');
-
-    if (!fileInput || !fileHelp) {
-        console.error('Elementos do formulário não encontrados');
-        return;
+    // Alternar visibilidade dos grupos
+    if (contentType === 'video') {
+        if (urlGroup) urlGroup.style.display = 'block';
+        fileGroup.style.display = 'none';
+        fileInput.removeAttribute('required');
+    } else {
+        if (urlGroup) urlGroup.style.display = 'none';
+        fileGroup.style.display = 'block';
+        fileInput.setAttribute('required', 'required');
     }
 
     // Atualizar mensagem de ajuda e tipos de arquivo aceitos
-    switch (contentType) {
-        case 'pdf':
-            fileHelp.textContent = 'Selecione um arquivo PDF (máx. 50MB)';
-            fileInput.accept = '.pdf';
-            break;
-        case 'slides':
-            fileHelp.textContent = 'Selecione um arquivo PowerPoint (máx. 50MB)';
-            fileInput.accept = '.ppt,.pptx';
-            break;
-        case 'documento':
-            fileHelp.textContent = 'Selecione um arquivo Word ou Excel (máx. 50MB)';
-            fileInput.accept = '.doc,.docx,.xls,.xlsx';
-            break;
-        case 'video':
-            fileHelp.textContent = 'Selecione um arquivo de vídeo (máx. 50MB)';
-            fileInput.accept = '.mp4,.webm,.ogg';
-            break;
-        case 'texto':
-            fileHelp.textContent = 'Selecione um arquivo de texto (máx. 50MB)';
-            fileInput.accept = '.txt,.doc,.docx';
-            break;
-        default:
-            fileHelp.textContent = 'Selecione um arquivo (máx. 50MB)';
-            fileInput.accept = '';
+    if (fileHelp) {
+        switch (contentType) {
+            case 'pdf':
+                fileHelp.textContent = 'Selecione um arquivo PDF (máx. 50MB)';
+                fileInput.accept = '.pdf';
+                break;
+            case 'slides':
+                fileHelp.textContent = 'Selecione um arquivo PowerPoint (máx. 50MB)';
+                fileInput.accept = '.ppt,.pptx';
+                break;
+            case 'documento':
+                fileHelp.textContent = 'Selecione um arquivo Word ou Excel (máx. 50MB)';
+                fileInput.accept = '.doc,.docx,.xls,.xlsx';
+                break;
+            case 'video':
+                fileHelp.textContent = 'Selecione um arquivo de vídeo (máx. 50MB)';
+                fileInput.accept = '.mp4,.webm,.ogg';
+                break;
+            case 'texto':
+                fileHelp.textContent = 'Selecione um arquivo de texto (máx. 50MB)';
+                fileInput.accept = '.txt,.doc,.docx';
+                break;
+            default:
+                fileHelp.textContent = 'Selecione um arquivo (máx. 50MB)';
+                fileInput.accept = '';
+        }
     }
 }
 
@@ -227,38 +268,103 @@ function openNewLessonModal(moduleId) {
 }
 
 // Abrir modal de edição de aula
-function editLesson(lessonId, moduleId) {
-    const modal = new bootstrap.Modal(document.getElementById('editLessonModal'));
-
-    // Buscar dados da aula
-    fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`, {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+async function editLesson(lessonId, moduleId) {
+    try {
+        console.log('Editando aula:', { lessonId, moduleId, courseId });
+        
+        if (!courseId || !moduleId || !lessonId) {
+            throw new Error('IDs inválidos para edição da aula');
         }
-    })
-        .then(response => response.json())
-        .then(lesson => {
-            document.getElementById('editLessonId').value = lessonId;
-            document.getElementById('editLessonModuleId').value = moduleId;
-            document.getElementById('editLessonTitle').value = lesson.title;
-            document.getElementById('editLessonDescription').value = lesson.description;
-            document.getElementById('editContentType').value = lesson.content_type;
-            document.getElementById('editLessonDuration').value = lesson.duration;
+
+        // Buscar dados atualizados dos módulos
+        const response = await fetch(`/api/courses/${courseId}/modules`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao carregar dados dos módulos');
+        }
+
+        const modules = await response.json();
+        
+        // Encontrar o módulo e a aula
+        const module = modules.find(m => m.id === parseInt(moduleId));
+        if (!module) {
+            throw new Error('Módulo não encontrado');
+        }
+
+        const lesson = module.lessons.find(l => l.id === parseInt(lessonId));
+        if (!lesson) {
+            throw new Error('Aula não encontrada');
+        }
+
+        console.log('Dados da aula encontrados:', lesson);
+
+        // Abrir o modal
+        const modalElement = document.getElementById('editLessonModal');
+        if (!modalElement) {
+            throw new Error('Modal de edição não encontrado');
+        }
+
+        const modal = new bootstrap.Modal(modalElement);
+
+        // Aguardar o modal estar completamente visível antes de manipular os elementos
+        modalElement.addEventListener('shown.bs.modal', function onModalShown() {
+            // Preencher campos do formulário
+            const fields = {
+                'editLessonId': lessonId,
+                'editLessonModuleId': moduleId,
+                'editLessonTitle': lesson.title || '',
+                'editLessonDescription': lesson.description || '',
+                'editContentType': lesson.content_type || 'pdf',
+                'editLessonDuration': lesson.duration || ''
+            };
+
+            // Preencher cada campo e verificar se existe
+            Object.entries(fields).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = value;
+                } else {
+                    console.error(`Elemento não encontrado: ${id}`);
+                }
+            });
 
             // Configurar campos baseado no tipo de conteúdo
-            toggleContentFields(lesson.content_type, true);
+            updateFileInput(lesson.content_type || 'pdf', true);
 
             // Se for vídeo, preencher URL
-            if (lesson.content_type === 'video') {
-                document.getElementById('editContentUrl').value = lesson.content_url;
+            if (lesson.content_type === 'video' && lesson.content_url) {
+                const urlInput = document.getElementById('editContentUrl');
+                if (urlInput) {
+                    urlInput.value = lesson.content_url;
+                }
             }
 
-            modal.show();
-        })
-        .catch(error => {
-            console.error('Erro ao carregar dados da aula:', error);
-            showAlert('Erro ao carregar dados da aula', 'danger');
+            // Mostrar o arquivo atual se existir
+            if (lesson.content_url && lesson.content_type !== 'video') {
+                const fileHelp = document.querySelector('#editContentFileGroup .text-muted');
+                if (fileHelp) {
+                    fileHelp.innerHTML = `
+                        Arquivo atual: <a href="${lesson.content_url}" target="_blank">${lesson.content_url.split('/').pop()}</a>
+                        <br>
+                        Selecione um novo arquivo apenas se desejar substituir o atual (máx. 50MB)
+                    `;
+                }
+            }
+
+            // Remover o listener após a primeira execução
+            modalElement.removeEventListener('shown.bs.modal', onModalShown);
         });
+
+        modal.show();
+
+    } catch (error) {
+        console.error('Erro detalhado ao carregar dados da aula:', error);
+        showAlert(`Não foi possível carregar a aula. ${error.message}`, 'danger');
+    }
 }
 
 // Funções de manipulação de formulário
@@ -366,30 +472,36 @@ async function handleNewLesson(event) {
     }
 }
 
+// Manipular edição de aula
 async function handleEditLesson(event) {
     event.preventDefault();
     
     try {
-        const form = event.target;
-        const lessonId = form.querySelector('#editLessonId').value;
-        const moduleId = form.querySelector('#editLessonModuleId').value;
-        const title = form.querySelector('#editLessonTitle').value;
-        const description = form.querySelector('#editLessonDescription').value;
-        const contentType = form.querySelector('#editContentType').value;
-        const duration = form.querySelector('#editLessonDuration').value;
-        const contentFile = form.querySelector('#editContentFile').files[0];
+        const lessonId = document.getElementById('editLessonId').value;
+        const moduleId = document.getElementById('editLessonModuleId').value;
+        const title = document.getElementById('editLessonTitle').value;
+        const description = document.getElementById('editLessonDescription').value;
+        const duration = parseInt(document.getElementById('editLessonDuration').value);
+        const contentType = document.getElementById('editContentType').value;
 
+        // Criar FormData para envio do arquivo
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
-        formData.append('content_type', contentType);
         formData.append('duration', duration);
+        formData.append('content_type', contentType);
 
-        if (contentFile) {
-            formData.append('content_file', contentFile);
+        // Adicionar arquivo se houver
+        const fileInput = document.getElementById('editLessonFile');
+        if (fileInput.files.length > 0) {
+            formData.append('file', fileInput.files[0]);
         }
 
-        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`, {
+        // URL correta para atualização da aula
+        const url = `/api/courses/lessons/${lessonId}`;
+        console.log('Enviando requisição para:', url);
+
+        const response = await fetch(url, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -398,18 +510,22 @@ async function handleEditLesson(event) {
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Erro ao atualizar aula');
+            throw new Error(`Erro ao atualizar aula: ${response.statusText}`);
         }
 
-        // Fechar modal e recarregar módulos
+        const result = await response.json();
+        console.log('Aula atualizada:', result);
+
+        // Fechar modal e atualizar lista
         const modal = bootstrap.Modal.getInstance(document.getElementById('editLessonModal'));
         modal.hide();
-        await loadModules();
-        showAlert('Aula atualizada com sucesso!', 'success');
+
+        // Recarregar a página para mostrar as alterações
+        window.location.reload();
+
     } catch (error) {
         console.error('Erro ao atualizar aula:', error);
-        showAlert(error.message || 'Erro ao atualizar aula', 'danger');
+        showAlert('Erro ao atualizar aula. Por favor, tente novamente.', 'danger');
     }
 }
 
@@ -690,55 +806,57 @@ function renderModules(modules) {
         return;
     }
 
-    container.innerHTML = modules.map(module => `
-        <div class="module-card" data-module-id="${module.id}">
-            <div class="module-header">
-                <h3 class="module-title">
-                    <i class="bi bi-collection"></i>
-                    ${module.title}
-                </h3>
-                <div class="module-actions">
-                    <button class="btn btn-sm btn-primary btn-icon" onclick="editModule(${module.id})">
-                        <i class="bi bi-pencil"></i> Editar
-                    </button>
-                    <button class="btn btn-sm btn-success btn-icon" onclick="openNewLessonModal(${module.id})">
-                        <i class="bi bi-plus-lg"></i> Nova Aula
-                    </button>
-                    <button class="btn btn-sm btn-danger btn-icon" onclick="deleteModule(${module.id})">
-                        <i class="bi bi-trash"></i>
-                    </button>
+    container.innerHTML = modules.map(module => {
+        return `
+            <div class="module-card" data-module-id="${module.id}">
+                <div class="module-header">
+                    <h3 class="module-title">
+                        <i class="bi bi-collection"></i>
+                        ${module.title}
+                    </h3>
+                    <div class="module-actions">
+                        <button class="btn btn-sm btn-primary btn-icon" onclick="editModule(${module.id})">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                        <button class="btn btn-sm btn-success btn-icon" onclick="openNewLessonModal(${module.id})">
+                            <i class="bi bi-plus-lg"></i> Nova Aula
+                        </button>
+                        <button class="btn btn-sm btn-danger btn-icon" onclick="deleteModule(${module.id})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <p class="module-description">${module.description}</p>
-            <ul class="lessons-list" data-module-id="${module.id}">
-                ${module.lessons.map(lesson => `
-                    <li class="lesson-item" data-lesson-id="${lesson.id}">
-                        <div class="lesson-info">
-                            <div class="lesson-icon">
-                                ${getLessonIcon(lesson.content_type || 'documento')}
-                            </div>
-                            <div class="lesson-details">
-                                <h4>${lesson.title}</h4>
-                                <div class="lesson-meta">
-                                    <span><i class="bi bi-clock"></i> ${lesson.duration} min</span>
-                                    <span><i class="bi bi-${getLessonTypeIcon(lesson.content_type || 'documento')}"></i> ${formatContentType(lesson.content_type || 'documento')}</span>
+                <p class="module-description">${module.description}</p>
+                <ul class="lessons-list" data-module-id="${module.id}">
+                    ${module.lessons.map(lesson => `
+                        <li class="lesson-item" data-lesson-id="${lesson.id}">
+                            <div class="lesson-info">
+                                <div class="lesson-icon">
+                                    ${getLessonIcon(lesson.content_type || 'documento')}
+                                </div>
+                                <div class="lesson-details">
+                                    <h4>${lesson.title}</h4>
+                                    <div class="lesson-meta">
+                                        <span><i class="bi bi-clock"></i> ${lesson.duration} min</span>
+                                        <span><i class="bi bi-${getLessonTypeIcon(lesson.content_type || 'documento')}"></i> ${formatContentType(lesson.content_type || 'documento')}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="lesson-actions">
-                            <button class="btn btn-sm btn-primary btn-icon" onclick="editLesson(${lesson.id}, ${module.id})">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger btn-icon" onclick="deleteLesson(${lesson.id}, ${module.id})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                            <i class="bi bi-grip-vertical drag-handle"></i>
-                        </div>
-                    </li>
-                `).join('')}
-            </ul>
-        </div>
-    `).join('');
+                            <div class="lesson-actions">
+                                <button class="btn btn-sm btn-primary btn-icon" onclick="editLesson(${lesson.id}, ${module.id})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-icon" onclick="deleteLesson(${lesson.id}, ${module.id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <i class="bi bi-grip-vertical drag-handle"></i>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+    }).join('');
 }
 
 // Funções auxiliares
