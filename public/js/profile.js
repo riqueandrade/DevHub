@@ -121,17 +121,29 @@ async function loadActivities() {
 // Função para atualizar avatar em todos os lugares
 function updateAvatarUI(avatarUrl) {
     const timestamp = new Date().getTime();
-    const defaultAvatar = '/images/default-avatar.svg';
-    const finalUrl = avatarUrl ? `${avatarUrl}?t=${timestamp}` : defaultAvatar;
-
+    const defaultAvatar = '/images/default-avatar.png';
+    
+    console.log('Atualizando avatar:', {
+        avatarUrl,
+        timestamp,
+        defaultAvatar
+    });
+    
     // Função auxiliar para configurar um elemento de avatar
     function setupAvatarElement(element) {
         if (!element) return;
-        element.src = finalUrl;
-        element.onerror = function() {
-            this.src = defaultAvatar;
-            this.onerror = null;
-        };
+        
+        if (avatarUrl) {
+            element.src = `${avatarUrl}?t=${timestamp}`;
+            element.onerror = function() {
+                console.log('Erro ao carregar avatar, usando default:', defaultAvatar);
+                this.src = defaultAvatar;
+                this.onerror = null;
+            };
+        } else {
+            console.log('Sem avatar, usando default:', defaultAvatar);
+            element.src = defaultAvatar;
+        }
     }
 
     // Atualizar avatar na navbar

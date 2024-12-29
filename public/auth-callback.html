@@ -44,42 +44,54 @@
             const params = new URLSearchParams(window.location.search);
             const token = params.get('token');
             const isNewUser = params.get('isNewUser') === 'true';
+            const userDataStr = params.get('userData');
 
             console.log('Parâmetros recebidos:', {
                 token: token ? token.substring(0, 10) + '...' : null,
-                isNewUser
+                isNewUser,
+                hasUserData: !!userDataStr
             });
 
             if (token) {
-                // Buscar dados do usuário
-                fetch('/api/user/me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
+                try {
+                    // Se temos dados do usuário direto da URL, use-os
+                    if (userDataStr) {
+                        const userData = JSON.parse(decodeURIComponent(userDataStr));
+                        console.log('Dados do usuário da URL:', userData);
+                        
+                        localStorage.setItem('token', token);
+                        localStorage.setItem('user', JSON.stringify(userData));
+                        
+                        const redirectUrl = isNewUser ? '/onboarding.html' : '/dashboard.html';
+                        console.log('Redirecionando para:', redirectUrl);
+                        window.location.href = redirectUrl;
+                    } else {
+                        // Caso contrário, busque do servidor
+                        fetch('/api/user/me', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(user => {
+                            console.log('Dados do usuário do servidor:', user);
+                            
+                            localStorage.setItem('token', token);
+                            localStorage.setItem('user', JSON.stringify(user));
+                            
+                            const redirectUrl = isNewUser ? '/onboarding.html' : '/dashboard.html';
+                            console.log('Redirecionando para:', redirectUrl);
+                            window.location.href = redirectUrl;
+                        })
+                        .catch(error => {
+                            console.error('Erro ao buscar dados do usuário:', error);
+                            window.location.href = '/auth.html?error=auth_failed';
+                        });
                     }
-                })
-                .then(response => response.json())
-                .then(user => {
-                    console.log('Dados do usuário:', {
-                        ...user,
-                        onboarding_completed: user.onboarding_completed,
-                        isNewUser
-                    });
-
-                    // Salvar dados no localStorage
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('user', JSON.stringify(user));
-
-                    // Redirecionar baseado no tipo de usuário
-                    // Apenas redireciona para onboarding se for um usuário novo
-                    const redirectUrl = isNewUser ? '/onboarding.html' : '/dashboard.html';
-
-                    console.log('Redirecionando para:', redirectUrl);
-                    window.location.href = redirectUrl;
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar dados do usuário:', error);
-                    window.location.href = '/auth.html?error=auth_failed';
-                });
+                } catch (error) {
+                    console.error('Erro ao processar dados do usuário:', error);
+                    window.location.href = '/auth.html?error=invalid_user_data';
+                }
             } else {
                 console.error('Token não encontrado');
                 window.location.href = '/auth.html?error=no_token';

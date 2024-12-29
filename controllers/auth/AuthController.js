@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
 const Activity = require('../../models/Activity');
 const MailService = require('../../config/mail');
+const AvatarService = require('../services/AvatarService');
 
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -168,6 +169,10 @@ class AuthController {
             let user = await User.findOne({ where: { google_id: payload.sub } });
             let isNewUser = false;
 
+            console.log('Baixando avatar do Google:', payload.picture);
+            const localAvatarUrl = await AvatarService.downloadAndSaveAvatar(payload.picture);
+            console.log('Avatar salvo localmente:', localAvatarUrl);
+
             if (!user) {
                 console.log('Criando novo usuário...');
                 isNewUser = true;
@@ -175,7 +180,7 @@ class AuthController {
                     name: payload.name,
                     email: payload.email,
                     google_id: payload.sub,
-                    avatar_url: payload.picture,
+                    avatar_url: localAvatarUrl,
                     role: 'aluno',
                     onboarding_completed: false
                 });
@@ -185,6 +190,9 @@ class AuthController {
                 if (user.onboarding_completed === null) {
                     await user.update({ onboarding_completed: true });
                 }
+                if (localAvatarUrl) {
+                    await user.update({ avatar_url: localAvatarUrl });
+                }
             }
 
             const token = jwt.sign(
@@ -193,11 +201,21 @@ class AuthController {
                 { expiresIn: '24h' }
             );
 
-            const redirectUrl = `/auth-callback.html?token=${token}&isNewUser=${isNewUser}`;
+            const userData = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                avatar_url: user.avatar_url,
+                onboarding_completed: user.onboarding_completed
+            };
+
+            const redirectUrl = `/auth-callback.html?token=${token}&isNewUser=${isNewUser}&userData=${encodeURIComponent(JSON.stringify(userData))}`;
             console.log('Redirecionando para:', redirectUrl, {
                 isNewUser,
                 userId: user.id,
-                onboarding_completed: user.onboarding_completed
+                onboarding_completed: user.onboarding_completed,
+                avatar_url: userData.avatar_url
             });
             
             res.redirect(redirectUrl);
