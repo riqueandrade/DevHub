@@ -111,6 +111,14 @@ exports.listCertificates = async (req, res) => {
         const search = req.query.search || '';
         const sort = req.query.sort || 'date_desc';
 
+        console.log('Buscando certificados para usuário:', {
+            userId,
+            page,
+            limit,
+            search,
+            sort
+        });
+
         // Configurar ordenação
         let order = [['updated_at', 'DESC']];
         if (sort === 'date_asc') order = [['updated_at', 'ASC']];
@@ -142,15 +150,27 @@ exports.listCertificates = async (req, res) => {
             offset
         });
 
+        console.log('Matrículas encontradas:', {
+            total: count,
+            enrollments: enrollments.map(e => ({
+                id: e.id,
+                course_id: e.course_id,
+                course_title: e.course.title,
+                status: e.status
+            }))
+        });
+
         // Formatar certificados
         const certificates = enrollments.map(enrollment => ({
             id: enrollment.id,
             course_id: enrollment.course_id,
-            course_name: enrollment.course.title,
+            course_title: enrollment.course.title,
             instructor_name: enrollment.course.instructor.name,
             completion_date: enrollment.updated_at,
             code: `${enrollment.course_id}-${userId}-${Date.now()}`
         }));
+
+        console.log('Certificados formatados:', certificates);
 
         res.json({
             certificates,

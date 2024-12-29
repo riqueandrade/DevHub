@@ -64,26 +64,46 @@ const loadCertificates = async () => {
             search: state.filters.search
         });
 
+        console.log('Carregando certificados com parâmetros:', {
+            queryParams: queryParams.toString(),
+            token: !!localStorage.getItem('token')
+        });
+
         const response = await fetch(`/api/user/certificates?${queryParams}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         });
 
-        if (!response.ok) throw new Error('Erro ao carregar certificados');
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Erro na resposta:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData
+            });
+            throw new Error(errorData.error || 'Erro ao carregar certificados');
+        }
 
         const data = await response.json();
+        console.log('Dados dos certificados recebidos:', data);
+        
         state.certificates = data.certificates;
         state.pagination = {
             ...state.pagination,
             ...data.pagination
         };
 
+        console.log('Estado atualizado:', {
+            certificates: state.certificates,
+            pagination: state.pagination
+        });
+
         renderCertificates();
         renderPagination();
     } catch (error) {
         console.error('Erro ao carregar certificados:', error);
-        showError('Erro ao carregar certificados');
+        showError('Erro ao carregar certificados. ' + error.message);
     }
 };
 
