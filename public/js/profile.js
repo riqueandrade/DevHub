@@ -118,14 +118,29 @@ async function loadActivities() {
     }
 }
 
+// Cache de avatar para evitar downloads duplicados
+let avatarCache = {
+    url: null,
+    timestamp: null
+};
+
 // Função para atualizar avatar em todos os lugares
 function updateAvatarUI(avatarUrl) {
-    const timestamp = new Date().getTime();
     const defaultAvatar = '/images/default-avatar.png';
+    
+    // Se o avatar já estiver em cache e for o mesmo, não atualiza
+    if (avatarCache.url === avatarUrl) {
+        console.log('Avatar já em cache, usando versão existente');
+        return;
+    }
+    
+    // Atualiza o cache
+    avatarCache.url = avatarUrl;
+    avatarCache.timestamp = new Date().getTime();
     
     console.log('Atualizando avatar:', {
         avatarUrl,
-        timestamp,
+        timestamp: avatarCache.timestamp,
         defaultAvatar
     });
     
@@ -134,7 +149,8 @@ function updateAvatarUI(avatarUrl) {
         if (!element) return;
         
         if (avatarUrl) {
-            element.src = `${avatarUrl}?t=${timestamp}`;
+            // Usa o timestamp do cache para todos os elementos
+            element.src = `${avatarUrl}?t=${avatarCache.timestamp}`;
             element.onerror = function() {
                 console.log('Erro ao carregar avatar, usando default:', defaultAvatar);
                 this.src = defaultAvatar;

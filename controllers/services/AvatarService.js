@@ -13,7 +13,25 @@ class AvatarService {
         }
     }
 
-    async downloadAndSaveAvatar(avatarUrl) {
+    // Limpar avatares antigos do usuário
+    async cleanOldAvatars(userId) {
+        try {
+            const uploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'avatars');
+            const files = fs.readdirSync(uploadDir);
+            
+            // Procura e remove arquivos antigos do usuário
+            files.forEach(file => {
+                if (file.startsWith(`avatar_${userId}_`)) {
+                    fs.unlinkSync(path.join(uploadDir, file));
+                    console.log('Avatar antigo removido:', file);
+                }
+            });
+        } catch (error) {
+            console.error('Erro ao limpar avatares antigos:', error);
+        }
+    }
+
+    async downloadAndSaveAvatar(avatarUrl, userId) {
         try {
             if (!avatarUrl) return null;
 
@@ -24,10 +42,15 @@ class AvatarService {
                 console.log('Diretório de avatares criado:', uploadDir);
             }
 
+            // Limpar avatares antigos
+            await this.cleanOldAvatars(userId);
+
             const response = await axios.get(avatarUrl, { responseType: 'arraybuffer' });
             const buffer = Buffer.from(response.data, 'binary');
             
-            const filename = `${uuidv4()}.jpg`;
+            // Usar ID do usuário + timestamp no nome do arquivo
+            const timestamp = new Date().getTime();
+            const filename = `avatar_${userId}_${timestamp}.jpg`;
             const filepath = path.join(uploadDir, filename);
             
             fs.writeFileSync(filepath, buffer);
@@ -62,12 +85,19 @@ class AvatarService {
         return true;
     }
 
-    async processAvatar(file) {
+    async processAvatar(file, userId) {
         try {
             this.validateAvatar(file);
 
             const uploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'avatars');
-            const filename = `${uuidv4()}${path.extname(file.name)}`;
+            
+            // Limpar avatares antigos
+            await this.cleanOldAvatars(userId);
+
+            // Usar ID do usuário + timestamp no nome do arquivo
+            const timestamp = new Date().getTime();
+            const extension = path.extname(file.name).toLowerCase();
+            const filename = `avatar_${userId}_${timestamp}${extension}`;
             const filepath = path.join(uploadDir, filename);
 
             await file.mv(filepath);

@@ -41,25 +41,24 @@ const loadUserData = () => {
             nameInput.value = state.userData.name;
         }
 
-        // Atualizar preview do avatar
-        const avatarPreview = document.getElementById('avatarPreview');
-        const avatarPlaceholder = document.querySelector('.avatar-placeholder');
+        // Atualizar preview do avatar usando o sistema de cache
+        if (typeof updateAvatarUI === 'function' && state.userData.avatar) {
+            updateAvatarUI(state.userData.avatar);
+        } else {
+            // Fallback para o comportamento antigo
+            const avatarPreview = document.getElementById('avatarPreview');
+            const avatarPlaceholder = document.querySelector('.avatar-placeholder');
 
-        if (avatarPreview && state.userData.avatar) {
-            console.log('Atualizando avatar preview...');
-            avatarPreview.src = state.userData.avatar;
-            avatarPreview.style.display = 'block';
-            avatarPreview.classList.remove('d-none');
-            
-            if (avatarPlaceholder) {
-                avatarPlaceholder.style.display = 'none';
+            if (avatarPreview && state.userData.avatar) {
+                console.log('Atualizando avatar preview...');
+                avatarPreview.src = state.userData.avatar;
+                avatarPreview.style.display = 'block';
+                avatarPreview.classList.remove('d-none');
+                
+                if (avatarPlaceholder) {
+                    avatarPlaceholder.style.display = 'none';
+                }
             }
-
-            console.log('Avatar atualizado:', {
-                src: avatarPreview.src,
-                display: avatarPreview.style.display,
-                isHidden: avatarPreview.classList.contains('d-none')
-            });
         }
 
         console.log('Dados do usuário carregados:', {
@@ -183,7 +182,13 @@ const handleAvatarUpload = async (file) => {
 
         const data = await response.json();
         state.userData.avatar = data.avatar_url;
-        document.getElementById('avatarPreview').src = data.avatar_url;
+        
+        // Usa o sistema de cache para atualizar o avatar
+        if (typeof updateAvatarUI === 'function') {
+            updateAvatarUI(data.avatar_url);
+        } else {
+            document.getElementById('avatarPreview').src = data.avatar_url;
+        }
     } catch (error) {
         console.error('Erro no upload do avatar:', error);
         alert('Erro ao fazer upload da imagem');

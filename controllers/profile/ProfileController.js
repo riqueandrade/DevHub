@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
+const AvatarService = require('../services/AvatarService');
 
 class ProfileController {
     constructor() {
@@ -93,26 +94,13 @@ class ProfileController {
             const avatar = req.files.avatar;
             const userId = req.user.id;
 
-            // Verificar tipo do arquivo
-            if (!avatar.mimetype.startsWith('image/')) {
-                return res.status(400).json({ error: 'Arquivo deve ser uma imagem' });
+            // Processar avatar com o ID do usuário
+            const avatarUrl = await AvatarService.processAvatar(avatar, userId);
+            if (!avatarUrl) {
+                return res.status(500).json({ error: 'Erro ao processar avatar' });
             }
-
-            // Criar diretório de uploads se não existir
-            const uploadDir = path.join(__dirname, '..', '..', 'public', 'uploads', 'avatars');
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
-
-            // Gerar nome único para o arquivo
-            const filename = `${uuidv4()}${path.extname(avatar.name)}`;
-            const filepath = path.join(uploadDir, filename);
-
-            // Salvar arquivo
-            await avatar.mv(filepath);
 
             // Atualizar URL do avatar no banco
-            const avatarUrl = `/uploads/avatars/${filename}`;
             await User.update(
                 { avatar_url: avatarUrl },
                 { where: { id: userId } }

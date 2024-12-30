@@ -47,15 +47,17 @@ async function loadUserData() {
         const userAvatar = document.getElementById('userAvatar');
         const userName = document.getElementById('userName');
         
-        // Adicionar timestamp para evitar cache
-        const timestamp = new Date().getTime();
-        const defaultAvatar = '/images/default-avatar.svg';
-        const avatarUrl = userData.avatar_url ? `${userData.avatar_url}?t=${timestamp}` : defaultAvatar;
-        
-        userAvatar.src = avatarUrl;
-        userAvatar.onerror = function() {
-            this.src = defaultAvatar;
-        };
+        // Usa o sistema de cache do profile.js
+        if (typeof updateAvatarUI === 'function') {
+            updateAvatarUI(userData.avatar_url);
+        } else {
+            // Fallback caso a função não esteja disponível
+            const defaultAvatar = '/images/default-avatar.svg';
+            userAvatar.src = userData.avatar_url || defaultAvatar;
+            userAvatar.onerror = function() {
+                this.src = defaultAvatar;
+            };
+        }
         
         userName.textContent = userData.name;
 
