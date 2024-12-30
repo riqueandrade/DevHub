@@ -680,7 +680,7 @@ function initializeSortable() {
 // Funções de ação
 async function editModule(moduleId) {
     try {
-        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}`, {
+        const response = await fetch(`/api/courses/modules/${moduleId}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -707,7 +707,7 @@ async function deleteModule(moduleId) {
     }
 
     try {
-        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}`, {
+        const response = await fetch(`/api/courses/modules/${moduleId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -803,7 +803,7 @@ async function handleEditModule(e) {
             description: document.getElementById('editModuleDescription').value
         };
 
-        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}`, {
+        const response = await fetch(`/api/courses/modules/${moduleId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,

@@ -34,6 +34,7 @@ router.post('/:id/thumbnail', MediaController.uploadCourseThumbnail);
 // Rotas de módulos
 router.post('/:courseId/modules', ModuleController.createModule);
 router.get('/:courseId/modules', ModuleController.getModules);
+router.get('/modules/:moduleId', ModuleController.getModule);
 router.put('/modules/:moduleId', ModuleController.updateModule);
 router.delete('/modules/:moduleId', ModuleController.deleteModule);
 router.put('/:courseId/modules/reorder', ModuleController.reorderModules);

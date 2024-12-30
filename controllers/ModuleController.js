@@ -193,4 +193,35 @@ async function getNextModuleOrder(courseId) {
     });
 
     return lastModule ? lastModule.order_number + 1 : 1;
-} 
+}
+
+// Obter módulo específico
+exports.getModule = async (req, res) => {
+    try {
+        const { moduleId } = req.params;
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        // Buscar módulo com curso
+        const module = await Module.findByPk(moduleId, {
+            include: [{
+                model: Course,
+                as: 'course'
+            }]
+        });
+
+        if (!module) {
+            return res.status(404).json({ error: 'Módulo não encontrado' });
+        }
+
+        // Verificar permissão
+        if (!isAdmin && module.course.instructor_id !== userId) {
+            return res.status(403).json({ error: 'Sem permissão para acessar este módulo' });
+        }
+
+        res.json(module);
+    } catch (error) {
+        console.error('Erro ao buscar módulo:', error);
+        res.status(500).json({ error: 'Erro ao buscar módulo' });
+    }
+}; 
