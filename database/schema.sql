@@ -79,9 +79,24 @@ CREATE TABLE IF NOT EXISTS categories (
     name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     icon VARCHAR(50),
+    slug VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Inserir categorias iniciais
+INSERT INTO categories (name, description, icon, slug) VALUES
+('Programação Web', 'Cursos de desenvolvimento web front-end e back-end', 'bi-code-slash', 'programacao-web'),
+('Mobile', 'Desenvolvimento de aplicativos móveis', 'bi-phone', 'mobile'),
+('DevOps', 'Cursos de infraestrutura e deploy', 'bi-gear-fill', 'devops'),
+('Banco de Dados', 'Modelagem e administração de bancos de dados', 'bi-database', 'banco-de-dados'),
+('UI/UX Design', 'Design de interfaces e experiência do usuário', 'bi-palette', 'ui-ux-design'),
+('Cloud Computing', 'Computação em nuvem e serviços AWS/Azure/GCP', 'bi-cloud', 'cloud-computing'),
+('Segurança', 'Segurança da informação e cibersegurança', 'bi-shield-lock', 'seguranca'),
+('Data Science', 'Ciência de dados, análise e machine learning', 'bi-graph-up', 'data-science'),
+('Jogos', 'Desenvolvimento de jogos e engines', 'bi-controller', 'jogos'),
+('IoT', 'Internet das Coisas e sistemas embarcados', 'bi-cpu', 'iot');
+
 -- Tabela de cursos
 CREATE TABLE IF NOT EXISTS courses (
     id SERIAL PRIMARY KEY,

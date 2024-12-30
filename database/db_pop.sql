@@ -1,12 +1,12 @@
 USE devhub;
 
 -- Inserir categorias
-INSERT INTO categories (name, description, icon) VALUES
-('Programação Web', 'Cursos de desenvolvimento web front-end e back-end', 'bi-code-slash'),
-('Mobile', 'Desenvolvimento de aplicativos móveis', 'bi-phone'),
-('DevOps', 'Cursos de infraestrutura e deploy', 'bi-gear-fill'),
-('Banco de Dados', 'Modelagem e administração de bancos de dados', 'bi-database'),
-('UI/UX Design', 'Design de interfaces e experiência do usuário', 'bi-palette');
+INSERT INTO categories (name, description, icon, slug) VALUES
+('Programação Web', 'Cursos de desenvolvimento web front-end e back-end', 'bi-code-slash', 'programacao-web'),
+('Mobile', 'Desenvolvimento de aplicativos móveis', 'bi-phone', 'mobile'),
+('DevOps', 'Cursos de infraestrutura e deploy', 'bi-gear-fill', 'devops'),
+('Banco de Dados', 'Modelagem e administração de bancos de dados', 'bi-database', 'banco-de-dados'),
+('UI/UX Design', 'Design de interfaces e experiência do usuário', 'bi-palette', 'ui-ux-design');
 
 -- Inserir usuários (senha: 123456)
 INSERT INTO users (name, email, password, role, avatar_url, bio, status, email_notifications, course_updates, promotional_emails, profile_visibility, show_progress, show_certificates, created_at, updated_at) VALUES

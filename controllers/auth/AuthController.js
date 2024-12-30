@@ -28,7 +28,8 @@ class AuthController {
                 name,
                 email,
                 password: hashedPassword,
-                type: 'user'
+                role: 'aluno',
+                onboarding_completed: false
             });
 
             const userWithoutPassword = {

@@ -258,7 +258,8 @@ async function handleNewCourse(e) {
             throw new Error(errorData.error || 'Erro ao criar curso');
         }
 
-        const course = await response.json();
+        const courseData = await response.json();
+        console.log('Curso criado:', courseData);
 
         // Se houver thumbnail, fazer upload em seguida
         if (thumbnailInput.files && thumbnailInput.files[0]) {
@@ -271,7 +272,8 @@ async function handleNewCourse(e) {
             const formData = new FormData();
             formData.append('thumbnail', file);
 
-            const uploadResponse = await fetch(`/api/courses/${course.id}/thumbnail`, {
+            console.log('Enviando thumbnail para o curso:', courseData.course.id);
+            const uploadResponse = await fetch(`/api/courses/${courseData.course.id}/thumbnail`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
