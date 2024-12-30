@@ -96,10 +96,19 @@ class LessonService {
     async createLesson(moduleId, userId, isAdmin, data) {
         await this.verifyModulePermission(moduleId, userId, isAdmin);
 
+        console.log('Criando aula com dados:', {
+            moduleId,
+            userId,
+            isAdmin,
+            data
+        });
+
         const lesson = await Lesson.create({
             module_id: moduleId,
             title: data.title,
             description: data.description,
+            content_type: data.content_type,
+            content_url: data.content_url,
             duration: data.duration,
             order_number: data.order_number || await this.getNextLessonOrder(moduleId)
         });

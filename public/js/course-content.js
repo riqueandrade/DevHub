@@ -131,15 +131,11 @@ function setupModals() {
     // Configurar modal de nova aula
     const newLessonModal = document.getElementById('newLessonModal');
     if (newLessonModal) {
-        newLessonModal.addEventListener('shown.bs.modal', function() {
-            const contentTypeSelect = document.getElementById('contentType');
-            if (contentTypeSelect) {
-                updateFileInput('pdf', false);
-                contentTypeSelect.addEventListener('change', function() {
-                    updateFileInput(this.value, false);
-                });
-            }
-        });
+        // Configurar formulário de nova aula
+        const newLessonForm = document.getElementById('newLessonForm');
+        if (newLessonForm) {
+            newLessonForm.addEventListener('submit', handleNewLesson);
+        }
     }
 
     // Configurar modal de edição de aula
@@ -149,16 +145,6 @@ function setupModals() {
         if (editLessonForm) {
             editLessonForm.addEventListener('submit', handleEditLesson);
         }
-
-        editLessonModal.addEventListener('shown.bs.modal', function() {
-            const editContentTypeSelect = document.getElementById('editContentType');
-            if (editContentTypeSelect) {
-                updateFileInput(editContentTypeSelect.value, true);
-                editContentTypeSelect.addEventListener('change', function() {
-                    updateFileInput(this.value, true);
-                });
-            }
-        });
     }
 }
 
@@ -167,26 +153,12 @@ function updateFileInput(contentType, isEdit = false) {
     const prefix = isEdit ? 'edit' : '';
     
     // Elementos do formulário
-    const fileGroup = document.getElementById(`${prefix}ContentFileGroup`);
-    const urlGroup = document.getElementById(`${prefix}ContentUrlGroup`);
-    const fileInput = document.getElementById(`${prefix}ContentFile`);
-    const fileHelp = fileGroup?.querySelector('.text-muted');
-
-    console.log('Elementos do formulário:', {
-        fileGroup: !!fileGroup,
-        urlGroup: !!urlGroup,
-        fileInput: !!fileInput,
-        fileHelp: !!fileHelp,
-        contentType,
-        isEdit
-    });
+    const fileGroup = document.getElementById(`${prefix}contentFileGroup`);
+    const urlGroup = document.getElementById(`${prefix}contentUrlGroup`);
+    const fileInput = document.getElementById(`${prefix}contentFile`);
 
     if (!fileGroup || !fileInput) {
-        console.error('Elementos do formulário não encontrados:', {
-            prefix,
-            fileGroupId: `${prefix}ContentFileGroup`,
-            fileInputId: `${prefix}ContentFile`
-        });
+        console.error('Elementos do formulário não encontrados');
         return;
     }
 
@@ -198,51 +170,57 @@ function updateFileInput(contentType, isEdit = false) {
     } else {
         if (urlGroup) urlGroup.style.display = 'none';
         fileGroup.style.display = 'block';
-        // Apenas definir required se não for edição
         if (!isEdit) {
             fileInput.setAttribute('required', 'required');
         }
     }
 
     // Atualizar mensagem de ajuda e tipos de arquivo aceitos
+    const fileHelp = fileGroup.querySelector('.text-muted');
     if (fileHelp) {
+        let helpText = '';
+        let acceptTypes = '';
+        
         switch (contentType) {
             case 'pdf':
-                fileHelp.textContent = isEdit ? 
+                helpText = isEdit ? 
                     'Selecione um novo arquivo PDF apenas se desejar substituir o atual (máx. 50MB)' :
                     'Selecione um arquivo PDF (máx. 50MB)';
-                fileInput.accept = '.pdf';
+                acceptTypes = '.pdf';
                 break;
             case 'slides':
-                fileHelp.textContent = isEdit ?
+                helpText = isEdit ?
                     'Selecione um novo arquivo PowerPoint apenas se desejar substituir o atual (máx. 50MB)' :
                     'Selecione um arquivo PowerPoint (máx. 50MB)';
-                fileInput.accept = '.ppt,.pptx';
+                acceptTypes = '.ppt,.pptx';
                 break;
             case 'documento':
-                fileHelp.textContent = isEdit ?
+                helpText = isEdit ?
                     'Selecione um novo arquivo Word ou Excel apenas se desejar substituir o atual (máx. 50MB)' :
                     'Selecione um arquivo Word ou Excel (máx. 50MB)';
-                fileInput.accept = '.doc,.docx,.xls,.xlsx';
+                acceptTypes = '.doc,.docx,.xls,.xlsx';
                 break;
             case 'video':
-                fileHelp.textContent = isEdit ?
+                helpText = isEdit ?
                     'Selecione um novo arquivo de vídeo apenas se desejar substituir o atual (máx. 50MB)' :
                     'Selecione um arquivo de vídeo (máx. 50MB)';
-                fileInput.accept = '.mp4,.webm,.ogg';
+                acceptTypes = '.mp4,.webm,.ogg';
                 break;
             case 'texto':
-                fileHelp.textContent = isEdit ?
+                helpText = isEdit ?
                     'Selecione um novo arquivo de texto apenas se desejar substituir o atual (máx. 50MB)' :
                     'Selecione um arquivo de texto (máx. 50MB)';
-                fileInput.accept = '.txt,.doc,.docx';
+                acceptTypes = '.txt,.doc,.docx';
                 break;
             default:
-                fileHelp.textContent = isEdit ?
+                helpText = isEdit ?
                     'Selecione um novo arquivo apenas se desejar substituir o atual (máx. 50MB)' :
                     'Selecione um arquivo (máx. 50MB)';
-                fileInput.accept = '';
+                acceptTypes = '';
         }
+        
+        fileHelp.textContent = helpText;
+        fileInput.accept = acceptTypes;
     }
 }
 
@@ -258,7 +236,6 @@ function openNewLessonModal(moduleId) {
     const moduleIdInput = document.getElementById('moduleId');
     if (moduleIdInput) {
         moduleIdInput.value = moduleId;
-        console.log('Module ID definido:', moduleId);
     } else {
         console.error('Input moduleId não encontrado');
         return;
@@ -270,15 +247,30 @@ function openNewLessonModal(moduleId) {
         form.reset();
     }
 
-    // Configurar tipo de conteúdo padrão
-    const contentTypeSelect = document.getElementById('contentType');
-    if (contentTypeSelect) {
-        contentTypeSelect.value = 'pdf';
-        updateFileInput('pdf', false);
-    }
+    // Criar e mostrar o modal
+    const modal = new bootstrap.Modal(modalElement);
+    
+    // Aguardar o modal estar completamente visível antes de inicializar os campos
+    modalElement.addEventListener('shown.bs.modal', function onModalShown() {
+        // Configurar tipo de conteúdo padrão e campos relacionados
+        const contentTypeSelect = document.getElementById('contentType');
+        if (contentTypeSelect) {
+            // Remover listeners antigos para evitar duplicação
+            const newListener = function() {
+                updateFileInput(this.value, false);
+            };
+            contentTypeSelect.removeEventListener('change', newListener);
+            contentTypeSelect.addEventListener('change', newListener);
+            
+            // Definir valor padrão e atualizar campos
+            contentTypeSelect.value = 'pdf';
+            updateFileInput('pdf', false);
+        }
+        
+        // Remover o listener após a execução
+        modalElement.removeEventListener('shown.bs.modal', onModalShown);
+    });
 
-    // Mostrar o modal
-    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
     modal.show();
 }
 
@@ -388,7 +380,6 @@ async function handleNewLesson(event) {
     
     try {
         const moduleId = document.getElementById('moduleId').value;
-        console.log('Module ID no envio:', moduleId);
         
         if (!moduleId) {
             throw new Error('ID do módulo não encontrado');
@@ -411,13 +402,6 @@ async function handleNewLesson(event) {
         if (!contentType) {
             throw new Error('O tipo de conteúdo é obrigatório');
         }
-        
-        // Validar tipo de conteúdo
-        const allowedTypes = ['video', 'texto', 'quiz', 'slides', 'documento', 'pdf'];
-        if (!allowedTypes.includes(contentType)) {
-            throw new Error('Tipo de conteúdo inválido');
-        }
-
         if (!duration || duration < 1) {
             throw new Error('A duração deve ser maior que zero');
         }
@@ -438,17 +422,6 @@ async function handleNewLesson(event) {
             throw new Error(`Tipo de arquivo inválido para ${contentType}`);
         }
 
-        console.log('Dados do formulário:', {
-            moduleId,
-            title,
-            description,
-            contentType,
-            duration,
-            fileName: contentFile.name,
-            fileType: contentFile.type,
-            fileSize: contentFile.size
-        });
-
         // Criar FormData
         const formData = new FormData();
         formData.append('title', title);
@@ -457,9 +430,9 @@ async function handleNewLesson(event) {
         formData.append('duration', duration);
         formData.append('content_file', contentFile);
 
-        console.log('Enviando requisição para:', `/api/courses/${courseId}/modules/${moduleId}/lessons`);
+        const url = `/api/courses/${courseId}/modules/${moduleId}/lessons`;
 
-        const response = await fetch(`/api/courses/${courseId}/modules/${moduleId}/lessons`, {
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -467,14 +440,12 @@ async function handleNewLesson(event) {
             body: formData
         });
 
-        const responseData = await response.json();
-
         if (!response.ok) {
-            console.error('Erro na resposta:', responseData);
+            const responseData = await response.json();
             throw new Error(responseData.error || 'Erro ao criar aula');
         }
 
-        console.log('Aula criada com sucesso:', responseData);
+        const responseData = await response.json();
 
         // Fechar modal e atualizar lista
         const modal = bootstrap.Modal.getInstance(document.getElementById('newLessonModal'));

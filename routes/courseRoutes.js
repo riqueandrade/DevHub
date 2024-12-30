@@ -40,7 +40,7 @@ router.delete('/modules/:moduleId', ModuleController.deleteModule);
 router.put('/:courseId/modules/reorder', ModuleController.reorderModules);
 
 // Rotas de aulas
-router.post('/modules/:moduleId/lessons', LessonController.createLesson);
+router.post('/:courseId/modules/:moduleId/lessons', LessonController.createLesson);
 router.put('/lessons/:lessonId', LessonController.updateLesson);
 router.delete('/lessons/:lessonId', LessonController.deleteLesson);
 router.post('/lessons/:lessonId/video', LessonController.uploadVideo);

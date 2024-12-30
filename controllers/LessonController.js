@@ -8,7 +8,67 @@ exports.createLesson = async (req, res) => {
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
-        const lesson = await LessonService.createLesson(moduleId, userId, isAdmin, req.body);
+        console.log('Criando aula:', {
+            moduleId,
+            userId,
+            isAdmin,
+            body: req.body,
+            files: req.files ? Object.keys(req.files) : []
+        });
+
+        // Se houver arquivo, processar o upload
+        if (req.files && req.files.content_file) {
+            const file = req.files.content_file;
+            console.log('Arquivo recebido:', {
+                name: file.name,
+                size: file.size,
+                mimetype: file.mimetype
+            });
+
+            // Validar tipo de arquivo
+            const allowedTypes = {
+                'pdf': ['application/pdf'],
+                'slides': ['application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+                'documento': ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+                'video': ['video/mp4', 'video/webm', 'video/ogg'],
+                'texto': ['text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+            };
+
+            const contentType = req.body.content_type;
+            if (!allowedTypes[contentType] || !allowedTypes[contentType].includes(file.mimetype)) {
+                throw new Error(`Tipo de arquivo inválido para ${contentType}. Tipos permitidos: ${allowedTypes[contentType].join(', ')}`);
+            }
+
+            // Gerar nome único para o arquivo
+            const fileExtension = path.extname(file.name).toLowerCase();
+            const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000000000)}${fileExtension}`;
+            const filePath = path.join(__dirname, '..', 'public', 'uploads', 'lessons', fileName);
+
+            // Garantir que o diretório existe
+            const uploadDir = path.join(__dirname, '..', 'public', 'uploads', 'lessons');
+            if (!require('fs').existsSync(uploadDir)) {
+                require('fs').mkdirSync(uploadDir, { recursive: true });
+            }
+
+            // Mover o arquivo
+            await file.mv(filePath);
+
+            // Adicionar URL do arquivo aos dados
+            req.body.content_url = `/uploads/lessons/${fileName}`;
+        }
+
+        // Criar objeto com os dados da aula
+        const lessonData = {
+            title: req.body.title,
+            description: req.body.description,
+            content_type: req.body.content_type,
+            content_url: req.body.content_url,
+            duration: parseInt(req.body.duration)
+        };
+
+        console.log('Dados da aula para criação:', lessonData);
+
+        const lesson = await LessonService.createLesson(moduleId, userId, isAdmin, lessonData);
 
         res.status(201).json({
             message: 'Aula criada com sucesso',

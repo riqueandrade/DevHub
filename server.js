@@ -56,6 +56,7 @@ const fileUploadMiddleware = fileUpload({
 // Aplicar o middleware apenas nas rotas que precisam de upload
 app.use('/api/courses/lessons/:id', fileUploadMiddleware);
 app.use('/api/courses/:courseId/lessons', fileUploadMiddleware);
+app.use('/api/courses/:courseId/modules/:moduleId/lessons', fileUploadMiddleware);
 
 // Rota específica para arquivos de aula
 app.get('/uploads/lessons/:filename', (req, res) => {
