@@ -215,8 +215,14 @@ const loadLesson = async (moduleId, lessonId) => {
         titleElement.textContent = lesson.title;
         descriptionElement.textContent = lesson.description;
         
+        // Adicionar module_id à aula
+        const lessonWithModule = {
+            ...lesson,
+            module_id: moduleId
+        };
+        
         // Atualizar o conteúdo baseado no tipo
-        updateLessonContent(lesson);
+        updateLessonContent(lessonWithModule);
         
         // Atualizar navegação
         updateNavigation(moduleId, lessonId);
@@ -237,7 +243,7 @@ const loadLesson = async (moduleId, lessonId) => {
             currentLesson.classList.add('active');
         }
 
-        return lesson;
+        return lessonWithModule;
     } catch (error) {
         console.error('Erro ao carregar aula:', error);
         showAlert('Não foi possível carregar a aula. Por favor, tente novamente.', 'danger');
@@ -330,21 +336,25 @@ function updateNavigationButtons(currentModule, currentLesson) {
 }
 
 // Função para marcar aula como concluída
-async function markLessonAsCompleted(moduleIndex, lessonIndex) {
+async function markLessonAsCompleted(moduleId, lessonId) {
     try {
         const token = localStorage.getItem('token');
-        const courseId = window.location.pathname.split('/course/')[1];
-
-        if (!courseId) {
-            throw new Error('ID do curso não encontrado');
+        
+        // Encontrar o enrollment_id nos dados do curso
+        if (!courseData || !courseData.enrollment_id) {
+            throw new Error('Dados da matrícula não encontrados');
         }
 
-        const response = await fetch(`/api/courses/${courseId}/modules/${moduleIndex}/lessons/${lessonIndex}/complete`, {
-            method: 'POST',
+        const response = await fetch(`/api/courses/enrollments/${courseData.enrollment_id}/lessons/${lessonId}/progress`, {
+            method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+                status: 'concluido',
+                timeWatched: 0 // Opcional, pode ser atualizado depois com o tempo real assistido
+            })
         });
 
         if (!response.ok) {
@@ -352,19 +362,21 @@ async function markLessonAsCompleted(moduleIndex, lessonIndex) {
         }
 
         // Atualizar interface
-        const lessonItem = document.querySelector(`[data-module="${moduleIndex}"][data-lesson="${lessonIndex}"]`);
-        if (lessonItem) {
-            lessonItem.classList.add('completed');
-            lessonItem.querySelector('i').className = 'bi bi-check-circle-fill';
+        const lessonElement = document.querySelector(`.lesson[onclick="loadLesson(${moduleId}, ${lessonId})"]`);
+        if (lessonElement) {
+            lessonElement.classList.add('completed');
+            const icon = lessonElement.querySelector('i');
+            if (icon) {
+                icon.className = 'bi bi-check-circle-fill';
+            }
         }
 
         // Atualizar progresso
-        const totalLessons = document.querySelectorAll('.lesson-item').length;
-        const completedLessons = document.querySelectorAll('.lesson-item.completed').length;
-        const progress = (completedLessons / totalLessons) * 100;
-        
-        document.getElementById('courseProgress').style.width = `${progress}%`;
-        document.getElementById('completionStatus').textContent = `${Math.round(progress)}% Concluído`;
+        const totalLessons = document.querySelectorAll('.lesson').length;
+        const completedLessons = document.querySelectorAll('.lesson.completed').length;
+        updateProgress(completedLessons, totalLessons);
+
+        showAlert('Aula marcada como concluída!', 'success');
 
     } catch (error) {
         console.error('Erro:', error);
@@ -468,6 +480,18 @@ const updateLessonContent = (lesson) => {
                     <iframe src="${lesson.content_url}" allowfullscreen></iframe>
                 </div>
             `;
+            // Marcar como concluída quando o vídeo terminar
+            const videoIframe = contentElement.querySelector('iframe');
+            videoIframe.onload = () => {
+                const video = videoIframe.contentWindow.document.querySelector('video');
+                if (video) {
+                    video.onended = () => {
+                        if (!lesson.completed) {
+                            markLessonAsCompleted(lesson.module_id, lesson.id);
+                        }
+                    };
+                }
+            };
             break;
         case 'pdf':
             // Primeiro mostrar um loading
@@ -498,6 +522,7 @@ const updateLessonContent = (lesson) => {
                                 width="100%" 
                                 height="100%" 
                                 frameborder="0"
+                                onload="if(!${lesson.completed}){markLessonAsCompleted(${lesson.module_id}, ${lesson.id})}"
                             ></iframe>
                         </div>
                     `;
@@ -522,6 +547,10 @@ const updateLessonContent = (lesson) => {
                             <pre class="p-3 bg-dark text-light rounded">${text}</pre>
                         </div>
                     `;
+                    // Marcar como concluída após carregar o texto
+                    if (!lesson.completed) {
+                        markLessonAsCompleted(lesson.module_id, lesson.id);
+                    }
                 })
                 .catch(error => {
                     console.error('Erro ao carregar texto:', error);
@@ -532,7 +561,8 @@ const updateLessonContent = (lesson) => {
             contentElement.innerHTML = `
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle me-2"></i>
-                    <a href="${lesson.content_url}" target="_blank" class="alert-link">
+                    <a href="${lesson.content_url}" target="_blank" class="alert-link" 
+                       onclick="if(!${lesson.completed}){markLessonAsCompleted(${lesson.module_id}, ${lesson.id})}">
                         Clique aqui para baixar o conteúdo
                     </a>
                 </div>

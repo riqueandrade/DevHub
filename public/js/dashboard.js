@@ -329,4 +329,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.clear();
         window.location.replace('/auth.html');
     });
+
+    // Função para matricular em um curso
+    window.enrollCourse = async function(courseId, price) {
+        try {
+            // Se o curso for pago, redirecionar para página de pagamento
+            if (price > 0) {
+                window.location.href = `/payment.html?courseId=${courseId}`;
+                return;
+            }
+
+            // Se for gratuito, matricular diretamente
+            const response = await fetch(`/api/courses/${courseId}/enroll`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Erro ao se matricular no curso');
+            }
+
+            // Redirecionar para o curso
+            window.location.href = `/course/${courseId}`;
+        } catch (error) {
+            console.error('Erro ao matricular no curso:', error);
+            showAlert(error.message || 'Erro ao se matricular no curso', 'danger');
+        }
+    }
+
+    // Função para mostrar alertas
+    function showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+        alertDiv.style.zIndex = '9999';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+
+        // Remover o alerta após 5 segundos
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
 }); 
