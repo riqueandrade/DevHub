@@ -980,9 +980,16 @@ function initializeSortable() {
             animation: 150,
             handle: '.module-header',
             onEnd: async function (evt) {
-                const moduleOrder = Array.from(modulesList.children).map(module =>
-                    module.getAttribute('data-module-id')
-                );
+                // Obter todos os módulos e extrair IDs
+                const moduleOrder = Array.from(modulesList.children)
+                    .map(module => parseInt(module.getAttribute('data-module-id')))
+                    .filter(id => !isNaN(id));
+
+                if (moduleOrder.length === 0) {
+                    showAlert('Erro ao reordenar módulos: IDs inválidos', 'danger');
+                    await loadModules();
+                    return;
+                }
 
                 try {
                     const response = await fetch(`/api/courses/${courseId}/modules/reorder`, {
@@ -994,10 +1001,16 @@ function initializeSortable() {
                         body: JSON.stringify({ moduleOrder })
                     });
 
-                    if (!response.ok) throw new Error('Erro ao reordenar módulos');
+                    const responseData = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(responseData.error || 'Erro ao reordenar módulos');
+                    }
                 } catch (error) {
                     console.error('Erro ao reordenar módulos:', error);
                     showAlert('Erro ao reordenar módulos', 'danger');
+                    // Recarregar módulos para restaurar a ordem original
+                    await loadModules();
                 }
             }
         });

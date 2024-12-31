@@ -1,4 +1,6 @@
 const { Module, Course, Lesson } = require('../models');
+const sequelize = require('../config/database');
+const { Op } = require('sequelize');
 
 // Criar novo módulo
 exports.createModule = async (req, res) => {
@@ -155,33 +157,120 @@ exports.getModules = async (req, res) => {
 
 // Reordenar módulos
 exports.reorderModules = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    
     try {
         const { courseId } = req.params;
-        const { moduleOrders } = req.body; // Array de { id, order_number }
+        const { moduleOrder } = req.body;
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
-        // Verificar permissão
-        const course = await Course.findByPk(courseId);
+        // Validar dados de entrada
+        if (!moduleOrder || !Array.isArray(moduleOrder) || moduleOrder.length === 0) {
+            await transaction.rollback();
+            return res.status(400).json({
+                error: 'Dados inválidos',
+                details: 'moduleOrder deve ser um array não vazio de IDs'
+            });
+        }
+
+        // Converter IDs para números
+        const moduleIds = moduleOrder.map(id => parseInt(id)).filter(id => !isNaN(id));
+
+        // Verificar se o curso existe e se o usuário tem permissão
+        const course = await Course.findByPk(courseId, { transaction });
         if (!course) {
+            await transaction.rollback();
             return res.status(404).json({ error: 'Curso não encontrado' });
         }
 
         if (!isAdmin && course.instructor_id !== userId) {
+            await transaction.rollback();
             return res.status(403).json({ error: 'Sem permissão para editar este curso' });
         }
 
-        // Atualizar ordem dos módulos
-        await Promise.all(moduleOrders.map(({ id, order_number }) => 
-            Module.update({ order_number }, { where: { id } })
-        ));
+        // Verificar se todos os módulos existem e pertencem ao curso
+        const modules = await Module.findAll({
+            where: { 
+                id: { [Op.in]: moduleIds },
+                course_id: courseId 
+            },
+            order: [['order_number', 'ASC']],
+            transaction
+        });
 
-        res.json({
-            message: 'Ordem dos módulos atualizada com sucesso'
+        if (modules.length !== moduleIds.length) {
+            const foundIds = modules.map(m => m.id);
+            const missingIds = moduleIds.filter(id => !foundIds.includes(id));
+            
+            await transaction.rollback();
+            return res.status(400).json({ 
+                error: 'Alguns módulos não foram encontrados ou não pertencem a este curso',
+                expected: moduleIds,
+                found: foundIds,
+                missing: missingIds
+            });
+        }
+
+        // Primeiro, definir uma ordem temporária para evitar conflitos de unique
+        for (let i = 0; i < moduleIds.length; i++) {
+            const moduleId = moduleIds[i];
+            const tempOrder = -1 * (i + 1); // Usar números negativos temporariamente
+            
+            await Module.update(
+                { order_number: tempOrder },
+                { 
+                    where: { 
+                        id: moduleId,
+                        course_id: courseId 
+                    },
+                    transaction
+                }
+            );
+        }
+
+        // Depois, definir a ordem final
+        for (let i = 0; i < moduleIds.length; i++) {
+            const moduleId = moduleIds[i];
+            const newOrder = i + 1;
+            
+            await Module.update(
+                { order_number: newOrder },
+                { 
+                    where: { 
+                        id: moduleId,
+                        course_id: courseId 
+                    },
+                    transaction
+                }
+            );
+        }
+
+        // Buscar módulos atualizados para confirmar
+        const updatedModules = await Module.findAll({
+            where: { course_id: courseId },
+            order: [['order_number', 'ASC']],
+            transaction
+        });
+
+        // Commit da transação
+        await transaction.commit();
+
+        res.json({ 
+            message: 'Módulos reordenados com sucesso',
+            newOrder: updatedModules.map(m => ({
+                id: m.id,
+                order: m.order_number
+            }))
         });
     } catch (error) {
+        // Rollback em caso de erro
+        await transaction.rollback();
         console.error('Erro ao reordenar módulos:', error);
-        res.status(500).json({ error: 'Erro ao reordenar módulos' });
+        res.status(500).json({ 
+            error: 'Erro ao reordenar módulos',
+            details: error.message
+        });
     }
 };
 

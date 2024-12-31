@@ -24,12 +24,13 @@ const Module = sequelize.define('Module', {
     },
     order_number: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
     }
 }, {
+    tableName: 'modules',
     createdAt: 'created_at',
-    updatedAt: false,
-    tableName: 'modules'
+    updatedAt: 'updated_at'
 });
 
 module.exports = Module; 
