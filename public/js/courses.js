@@ -160,6 +160,21 @@ async function loadCoursesCompleted() {
     }
 }
 
+// Função para mostrar alertas
+function showAlert(message, type = 'success') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
+}
+
 // Carregar cursos recomendados
 async function loadCoursesRecommended() {
     try {
@@ -197,28 +212,43 @@ async function loadCoursesRecommended() {
                             <span class="course-duration">${course.duration} min</span>
                         </div>
 
-                        <button onclick="enrollCourse(${course.id})" class="btn btn-primary btn-continue">
-                            Matricular-se
-                        </button>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="course-price">${course.price > 0 ? `R$ ${course.price.toFixed(2)}` : 'Grátis'}</span>
+                            <button onclick="enrollCourse(${course.id}, ${course.price})" class="btn btn-primary">
+                                ${course.price > 0 ? 'Comprar' : 'Matricular-se'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         `).join('');
     } catch (error) {
         console.error('Erro ao carregar cursos recomendados:', error);
+        showAlert('Erro ao carregar cursos recomendados', 'danger');
     }
 }
 
 // Função para matricular em um curso
-async function enrollCourse(courseId) {
+async function enrollCourse(courseId, price) {
     try {
+        // Se o curso for pago, redireciona para a página de pagamento
+        if (price > 0) {
+            window.location.href = `/payment.html?courseId=${courseId}&price=${price}`;
+            return;
+        }
+
+        // Se for gratuito, realiza a matrícula diretamente
         const response = await fetch('/api/courses/enroll', {
             method: 'POST',
-            headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
             body: JSON.stringify({ courseId })
         });
 
         if (response.ok) {
+            showAlert('Matrícula realizada com sucesso!', 'success');
             // Recarregar as listas de cursos
             await Promise.all([
                 loadCoursesInProgress(),
@@ -226,11 +256,11 @@ async function enrollCourse(courseId) {
             ]);
         } else {
             const error = await response.json();
-            alert(error.message || 'Erro ao se matricular no curso');
+            showAlert(error.error || 'Erro ao se matricular no curso', 'danger');
         }
     } catch (error) {
         console.error('Erro ao matricular no curso:', error);
-        alert('Erro ao se matricular no curso');
+        showAlert('Erro ao se matricular no curso', 'danger');
     }
 }
 

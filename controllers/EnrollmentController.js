@@ -161,12 +161,17 @@ exports.getRecommended = async (req, res) => {
 exports.enrollInCourse = async (req, res) => {
     try {
         const userId = req.user.id;
-        const courseId = req.params.courseId;
+        const { courseId } = req.body;
 
         // Verificar se o curso existe
         const course = await Course.findByPk(courseId);
         if (!course) {
             return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar se o curso está publicado
+        if (course.status !== 'publicado') {
+            return res.status(403).json({ error: 'Este curso não está disponível para matrícula' });
         }
 
         // Verificar se já está matriculado

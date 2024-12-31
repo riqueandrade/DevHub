@@ -17,12 +17,14 @@ router.get('/enrollments', EnrollmentController.getAllEnrollments);
 router.get('/in-progress', EnrollmentController.getInProgress);
 router.get('/completed', EnrollmentController.getCompleted);
 router.get('/recommended', EnrollmentController.getRecommended);
+router.post('/enroll', EnrollmentController.enrollInCourse);
 
 // Rotas de gerenciamento de cursos
 router.post('/', CourseManagementController.createCourse);
 router.get('/instructor', CourseManagementController.getInstructorCourses);
 router.get('/published', CourseManagementController.getPublishedCourses);
 router.get('/:courseId/view', CourseViewController.getCourseWithProgress);
+router.get('/:courseId/details', CourseController.getCourseDetails);
 router.get('/:courseId', CourseManagementController.getCourse);
 router.put('/:courseId', CourseManagementController.updateCourse);
 router.put('/:courseId/archive', CourseManagementController.archiveCourse);

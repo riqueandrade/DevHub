@@ -240,3 +240,32 @@ exports.getCourseRatings = async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar avaliações' });
     }
 };
+
+// Obter detalhes do curso para pagamento
+exports.getCourseDetails = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+
+        const course = await Course.findByPk(courseId, {
+            include: [{
+                model: User,
+                as: 'instructor',
+                attributes: ['id', 'name', 'avatar_url']
+            }]
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar se o curso está publicado
+        if (course.status !== 'publicado') {
+            return res.status(403).json({ error: 'Este curso não está disponível para compra' });
+        }
+
+        res.json(course);
+    } catch (error) {
+        console.error('Erro ao buscar detalhes do curso:', error);
+        res.status(500).json({ error: 'Erro ao buscar detalhes do curso' });
+    }
+};

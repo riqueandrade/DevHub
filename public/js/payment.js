@@ -87,11 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Obter parâmetros da URL
         const urlParams = new URLSearchParams(window.location.search);
         const courseId = urlParams.get('courseId');
-        const price = parseFloat(urlParams.get('price'));
-
-        console.log('Preço recebido:', urlParams.get('price'));
-        console.log('Preço parseado:', price);
-
+        
         if (!courseId) {
             showAlert('ID do curso não fornecido', 'danger');
             document.getElementById('courseInfo').innerHTML = `
@@ -103,30 +99,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        if (!urlParams.get('price') || isNaN(price)) {
-            showAlert('Preço do curso não fornecido ou inválido', 'danger');
-            document.getElementById('courseInfo').innerHTML = `
-                <div class="alert alert-danger">
-                    Preço do curso inválido ou não fornecido. 
-                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
-                </div>
-            `;
-            return;
-        }
-
-        if (price <= 0) {
-            showAlert('Este curso é gratuito', 'danger');
-            document.getElementById('courseInfo').innerHTML = `
-                <div class="alert alert-danger">
-                    Este curso é gratuito. 
-                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
-                </div>
-            `;
-            return;
-        }
-
         // Carregar detalhes do curso
-        const courseResponse = await fetch(`/api/courses/${courseId}`, {
+        const courseResponse = await fetch(`/api/courses/${courseId}/details`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -159,9 +133,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Verificar se o preço corresponde
+        // Obter preço do curso (da URL ou do curso)
+        const urlPrice = parseFloat(urlParams.get('price'));
         const coursePrice = parseFloat(course.price);
-        if (isNaN(coursePrice) || Math.abs(coursePrice - price) > 0.01) {
+        
+        if (isNaN(coursePrice)) {
+            showAlert('Preço do curso inválido', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Preço do curso inválido. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                </div>
+            `;
+            return;
+        }
+
+        // Usar preço da URL se válido, senão usar preço do curso
+        const price = !isNaN(urlPrice) ? urlPrice : coursePrice;
+
+        if (price <= 0) {
+            showAlert('Este curso é gratuito', 'danger');
+            document.getElementById('courseInfo').innerHTML = `
+                <div class="alert alert-danger">
+                    Este curso é gratuito. 
+                    <a href="/catalog.html" class="btn btn-link">Voltar ao catálogo</a>
+                </div>
+            `;
+            return;
+        }
+
+        // Verificar se o preço corresponde ao do curso
+        if (Math.abs(coursePrice - price) > 0.01) {
             showAlert('Preço do curso inválido', 'danger');
             document.getElementById('courseInfo').innerHTML = `
                 <div class="alert alert-danger">
