@@ -347,13 +347,21 @@ async function publishCourse(courseId) {
             }
         });
 
-        if (!response.ok) throw new Error('Erro ao publicar curso');
+        const data = await response.json();
+        
+        if (!response.ok) {
+            if (data.error === 'O curso precisa ter pelo menos um módulo para ser publicado') {
+                showAlert('Para publicar o curso, você precisa adicionar pelo menos um módulo com uma aula', 'warning');
+                return;
+            }
+            throw new Error(data.error || 'Erro ao publicar curso');
+        }
 
         await loadCourses();
         showAlert('Curso publicado com sucesso!', 'success');
     } catch (error) {
         console.error('Erro ao publicar curso:', error);
-        showAlert('Erro ao publicar curso', 'danger');
+        showAlert(error.message, 'danger');
     }
 }
 
@@ -519,17 +527,26 @@ async function saveCourseEdit() {
 // Função para mostrar alertas
 function showAlert(message, type = 'success') {
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3 z-index-1000`;
+    alertDiv.style.zIndex = '9999';
     alertDiv.role = 'alert';
     alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>${message}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
     `;
+    
+    // Remover alertas anteriores
+    const existingAlerts = document.querySelectorAll('.alert');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Adicionar novo alerta
     document.body.appendChild(alertDiv);
 
     // Remover o alerta após 5 segundos
     setTimeout(() => {
-        alertDiv.remove();
+        if (alertDiv && document.body.contains(alertDiv)) {
+            alertDiv.remove();
+        }
     }, 5000);
 }
 

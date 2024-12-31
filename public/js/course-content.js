@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const user = JSON.parse(localStorage.getItem('user'));
+        
         if (!user || (user.role !== 'admin' && user.role !== 'instrutor')) {
             window.location.replace('/dashboard.html');
             return;
@@ -22,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Obter ID do curso da URL
         const urlParams = new URLSearchParams(window.location.search);
         courseId = urlParams.get('id');
+        
         if (!courseId) {
             window.location.replace('/course-management.html');
             return;
@@ -158,7 +160,6 @@ function updateFileInput(contentType, isEdit = false) {
     const fileInput = document.getElementById(`${prefix}contentFile`);
 
     if (!fileGroup || !fileInput) {
-        console.error('Elementos do formulário não encontrados');
         return;
     }
 
@@ -228,7 +229,6 @@ function updateFileInput(contentType, isEdit = false) {
 function openNewLessonModal(moduleId) {
     const modalElement = document.getElementById('newLessonModal');
     if (!modalElement) {
-        console.error('Modal não encontrado');
         return;
     }
 
@@ -237,7 +237,6 @@ function openNewLessonModal(moduleId) {
     if (moduleIdInput) {
         moduleIdInput.value = moduleId;
     } else {
-        console.error('Input moduleId não encontrado');
         return;
     }
 
@@ -277,8 +276,6 @@ function openNewLessonModal(moduleId) {
 // Abrir modal de edição de aula
 async function editLesson(lessonId, moduleId) {
     try {
-        console.log('Editando aula:', { lessonId, moduleId, courseId });
-        
         if (!courseId || !moduleId || !lessonId) {
             throw new Error('IDs inválidos para edição da aula');
         }
@@ -306,8 +303,6 @@ async function editLesson(lessonId, moduleId) {
         if (!lesson) {
             throw new Error('Aula não encontrada');
         }
-
-        console.log('Dados da aula encontrados:', lesson);
 
         // Abrir o modal
         const modalElement = document.getElementById('editLessonModal');
@@ -469,15 +464,6 @@ async function handleEditLesson(event) {
         const description = document.getElementById('editLessonDescription').value;
         const duration = parseInt(document.getElementById('editLessonDuration').value);
         const contentType = document.getElementById('editContentType').value;
-
-        console.log('Dados do formulário:', {
-            lessonId,
-            moduleId,
-            title,
-            description,
-            duration,
-            contentType
-        });
 
         // Criar FormData para envio do arquivo
         const formData = new FormData();
@@ -797,20 +783,36 @@ async function handleEditModule(e) {
 // Carregar dados do curso
 async function loadCourseData() {
     try {
+        const token = localStorage.getItem('token');
+
         const response = await fetch(`/api/courses/${courseId}`, {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`
             }
         });
 
-        if (!response.ok) throw new Error('Erro ao carregar dados do curso');
+        const data = await response.json();
 
-        const course = await response.json();
-        document.getElementById('courseTitle').textContent = course.title;
-        document.getElementById('courseDescription').textContent = course.description;
+        if (!response.ok) {
+            if (response.status === 403) {
+                const user = JSON.parse(localStorage.getItem('user'));
+                
+                showAlert('Você não tem permissão para acessar este curso. Apenas o instrutor do curso ou administradores podem gerenciar o conteúdo.', 'warning');
+                setTimeout(() => {
+                    window.location.replace('/course-management.html');
+                }, 3000);
+                return;
+            }
+            throw new Error(data.error || 'Erro ao carregar dados do curso');
+        }
+
+        document.getElementById('courseTitle').textContent = data.title;
+        document.getElementById('courseDescription').textContent = data.description;
     } catch (error) {
-        console.error('Erro ao carregar dados do curso:', error);
-        showAlert('Erro ao carregar dados do curso', 'danger');
+        showAlert(error.message, 'danger');
+        setTimeout(() => {
+            window.location.replace('/course-management.html');
+        }, 3000);
     }
 }
 
@@ -829,7 +831,6 @@ async function loadModules() {
         renderModules(modules);
         initializeSortable();
     } catch (error) {
-        console.error('Erro ao carregar módulos:', error);
         showAlert('Erro ao carregar módulos', 'danger');
     }
 }
@@ -964,7 +965,6 @@ async function handleNewModule(e) {
         e.target.reset();
         showAlert('Módulo criado com sucesso', 'success');
     } catch (error) {
-        console.error('Erro ao criar módulo:', error);
         showAlert(error.message, 'danger');
     }
 }
@@ -1052,9 +1052,6 @@ function initializeFormHandlers() {
     const newLessonForm = document.getElementById('newLessonForm');
     if (newLessonForm) {
         newLessonForm.addEventListener('submit', handleNewLesson);
-        console.log('Event listener adicionado ao formulário de nova aula');
-    } else {
-        console.error('Formulário de nova aula não encontrado');
     }
 
     // Select de tipo de conteúdo
@@ -1063,7 +1060,6 @@ function initializeFormHandlers() {
         contentTypeSelect.addEventListener('change', function() {
             updateFileInput(this.value, false);
         });
-        console.log('Event listener adicionado ao select de tipo de conteúdo');
     }
 }
 
@@ -1100,7 +1096,6 @@ async function handleModuleReorder() {
 
         showAlert('Módulos reordenados com sucesso', 'success');
     } catch (error) {
-        console.error('Erro ao reordenar módulos:', error);
         showAlert('Erro ao reordenar módulos', 'danger');
     }
 }
@@ -1131,7 +1126,6 @@ async function handleLessonReorder(moduleId) {
 
         showAlert('Aulas reordenadas com sucesso', 'success');
     } catch (error) {
-        console.error('Erro ao reordenar aulas:', error);
         showAlert('Erro ao reordenar aulas', 'danger');
     }
 }
@@ -1163,7 +1157,6 @@ async function handleModuleDrop(evt) {
 
         showAlert('Módulos reordenados com sucesso', 'success');
     } catch (error) {
-        console.error('Erro ao reordenar módulos:', error);
         showAlert('Erro ao reordenar módulos', 'danger');
     }
 }
@@ -1195,7 +1188,6 @@ async function handleLessonDrop(evt, moduleId) {
 
         showAlert('Aulas reordenadas com sucesso', 'success');
     } catch (error) {
-        console.error('Erro ao reordenar aulas:', error);
         showAlert('Erro ao reordenar aulas', 'danger');
     }
 }

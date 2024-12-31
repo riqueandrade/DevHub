@@ -355,4 +355,47 @@ exports.getPublishedCourses = async (req, res) => {
         console.error('Erro ao buscar cursos:', error);
         res.status(500).json({ error: 'Erro ao buscar cursos' });
     }
+};
+
+// Obter curso para gerenciamento
+exports.getCourse = async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const userId = req.user.id;
+        const isAdmin = req.user.role === 'admin';
+
+        // Buscar curso com módulos e aulas
+        const course = await Course.findByPk(courseId, {
+            include: [
+                {
+                    model: Module,
+                    as: 'modules',
+                    include: [{
+                        model: Lesson,
+                        as: 'lessons',
+                        attributes: ['id', 'title', 'description', 'duration', 'content_type', 'content_url']
+                    }]
+                },
+                {
+                    model: User,
+                    as: 'instructor',
+                    attributes: ['id', 'name', 'avatar_url']
+                }
+            ]
+        });
+
+        if (!course) {
+            return res.status(404).json({ error: 'Curso não encontrado' });
+        }
+
+        // Verificar permissão (apenas instrutor do curso ou admin)
+        if (!isAdmin && course.instructor_id !== userId) {
+            return res.status(403).json({ error: 'Sem permissão para gerenciar este curso' });
+        }
+
+        res.json(course);
+    } catch (error) {
+        console.error('Erro ao carregar curso:', error);
+        res.status(500).json({ error: 'Erro ao carregar dados do curso' });
+    }
 }; 

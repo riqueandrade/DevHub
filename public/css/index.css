@@ -785,7 +785,7 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-button, 
+button,
 a {
     touch-action: manipulation;
 }
@@ -852,6 +852,7 @@ a {
 
 /* Melhorias de Acessibilidade */
 @media (hover: none) {
+
     .cta-button:hover,
     .feature-card:hover,
     .tech-card:hover,
@@ -910,4 +911,4 @@ a {
     .feature-card {
         padding: 1rem;
     }
-} 
+}
