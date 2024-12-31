@@ -45,7 +45,7 @@ router.post('/:courseId/modules/:moduleId/lessons', LessonController.createLesso
 router.put('/lessons/:lessonId', LessonController.updateLesson);
 router.delete('/lessons/:lessonId', LessonController.deleteLesson);
 router.post('/lessons/:lessonId/video', LessonController.uploadVideo);
-router.put('/modules/:moduleId/lessons/reorder', LessonController.reorderLessons);
+router.put('/:courseId/modules/:moduleId/lessons/reorder', LessonController.reorderLessons);
 
 // Rotas de matrícula e progresso
 router.post('/:courseId/enroll', EnrollmentController.enrollInCourse);

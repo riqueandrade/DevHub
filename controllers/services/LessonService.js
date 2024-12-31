@@ -217,22 +217,19 @@ class LessonService {
         await lesson.destroy();
     }
 
-    async reorderLessons(moduleId, userId, isAdmin, newOrder) {
+    async reorderLessons(moduleId, userId, isAdmin, lessonOrder) {
+        // Verificar permissão
         await this.verifyModulePermission(moduleId, userId, isAdmin);
 
         // Atualizar a ordem das aulas
-        for (const item of newOrder) {
-            await Lesson.update(
-                { order_number: item.order },
-                { where: { id: item.lessonId, module_id: moduleId } }
+        const updatePromises = lessonOrder.map((lessonId, index) => {
+            return Lesson.update(
+                { order: index + 1 },
+                { where: { id: lessonId, module_id: moduleId } }
             );
-        }
-
-        // Retornar aulas atualizadas
-        return await Lesson.findAll({
-            where: { module_id: moduleId },
-            order: [['order_number', 'ASC']]
         });
+
+        await Promise.all(updatePromises);
     }
 }
 

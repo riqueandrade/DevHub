@@ -239,20 +239,24 @@ exports.deleteLesson = async (req, res) => {
 exports.reorderLessons = async (req, res) => {
     try {
         const { moduleId } = req.params;
-        const { newOrder } = req.body;
+        const { lessonOrder } = req.body;
         const userId = req.user.id;
         const isAdmin = req.user.role === 'admin';
 
-        const updatedLessons = await LessonService.reorderLessons(moduleId, userId, isAdmin, newOrder);
-
-        res.json({
-            message: 'Aulas reordenadas com sucesso',
-            lessons: updatedLessons
+        console.log('Reordenando aulas:', {
+            moduleId,
+            lessonOrder,
+            userId,
+            isAdmin
         });
+
+        await LessonService.reorderLessons(moduleId, userId, isAdmin, lessonOrder);
+        res.json({ message: 'Aulas reordenadas com sucesso' });
     } catch (error) {
         console.error('Erro ao reordenar aulas:', error);
-        res.status(error.message.includes('permissão') ? 403 : 
-                  error.message.includes('encontrado') ? 404 : 500)
-           .json({ error: error.message || 'Erro ao reordenar aulas' });
+        res.status(500).json({ 
+            error: 'Erro ao reordenar aulas',
+            details: error.message
+        });
     }
 }; 
